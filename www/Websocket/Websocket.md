@@ -4,11 +4,19 @@
 
 ### "[пример сокет клиента и сервера на php](#)"
 
+---
+
 ### [wsMaestroprog - WebSocket сервер на PHP](wsMaestroprog/wsMaestroprog.md)
 
 Примеры клиента и сокет-сервера по материалам репозитария [WebSocket сервер на PHP](https://github.com/maestroprog/websocket-server-php).
 
-### [wsRusakov - изучение материалов по сайтам Михаила Русакова](#)
+### [wsRusakov - изучение материалов по сайтам Михаила Русакова](wsRusakov/wsRusakov.md)
+
+Примеры клиента и сокет-сервера на PHP по материалам сайтов:
+
+- [Сокеты: Сервер на PHP](https://myrusakov.ru/php-socket-server.html),
+
+- [Сокеты: Клиент на PHP](https://myrusakov.ru/php-socket-client.html)
 
 
 
@@ -36,13 +44,6 @@
 
 ---
 ---
-
-### wsRusakov - изучение материалов по сайтам Михаила Русакова
-
-#### [Сокеты: Сервер на PHP](https://myrusakov.ru/php-socket-server.html)
-
-#### [Сокеты: Клиент на PHP](https://myrusakov.ru/php-socket-client.html)
-
 
 ---
 
