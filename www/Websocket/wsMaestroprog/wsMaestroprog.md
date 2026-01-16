@@ -2,6 +2,8 @@
 
 Класс [WebSocketServer](src/WebSocketServer.php) представляет из себя реализацию простого WebSocket сервера на PHP.
 
+> ***В данном каталоге три работающих файла помечены в тексте комментарием "by tve on 2026-01-16"***
+
 #### Поднимаем WebSocket сервер на порту 8898
 
 Выбираем из каталога ***src*** файл с кодом сервера ***WebSocketServer.php*** и формируем сценарий запуска сервера ***ServerSocket.php***.
@@ -16,7 +18,7 @@ $server = new WebSocketServer(8898);
 while (false !== ($activity = $server->listen()))
 {
   // каждую секунду читаем поступающие данные от клиентов
-  foreach (array_keys($server->wsClients) as $address) 
+  foreach (array_keys($server->clients) as $address) 
   {
     if ($data = $server->readFrom($address))
     {
