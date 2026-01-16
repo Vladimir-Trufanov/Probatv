@@ -1,0 +1,1 @@
+[12-Dec-2024 10:07:50 Asia/Kuwait] PHP Fatal error:  require_once(): Failed opening required 'C:\Probatv\www/ViewEnviron.php' (include_path='.;C:\php\pear') in C:\Probatv\www\Pages\Signaphoto\SignaPhoto.php on line 36

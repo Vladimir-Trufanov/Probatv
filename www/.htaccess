@@ -1,0 +1,100 @@
+## PHP-APACHE                                                   *** .htaccess ***
+##
+## ******************************************************************************
+## * doortry.ru                              Произвести локальные установки PHP *
+## ******************************************************************************
+##
+##                                                     Автор:       Труфанов В.Е.
+##                                                     Дата создания:  09.04.2019
+## Copyright © 2019 tve                                Посл.изменение: 02.08.2019
+
+## Устанавливаем кодировку сайта по умолчанию
+AddDefaultCharset utf-8
+
+## Определяем, что сессию автоматически при старте не запускать.
+## http://php.net/session.auto-start
+php_flag session.auto_start off
+
+## Определяем время жизни файлов куки до закрытия браузера, 
+## если задать этому параметру определенное значение, сессия будет прерываться 
+## при активном сеансе, поэтому лучше ее оставлять в значении ноль;
+###php_value session.cookie_lifetime 0
+
+## Задаём время сессии в секундах, по прошествии которого 
+## данные могут быть удалены (по умолчанию 1440 сек = 24 минуты).
+## php_value session.gc_maxlifetime 30
+###php_value session.gc_maxlifetime 1440
+
+## Определяем, что будет использоваться кукис для хранения идентификатора 
+## сессии на стороне клиента. on[boolean] = "включено".
+###php_flag session.use_cookies on
+
+## Определяем, что будет использоваться только cookies для хранения идентификатора сессии 
+## на стороне клиента (такой подход предотвращает атаки с использованием идентификатора
+## сессии, размещенного в URL). on[boolean] = "включено"
+###php_flag session.use_only_cookies on
+
+## Определяем максимальный размер загружаемых файлов
+## http://php.net/upload-max-filesize
+###php_value upload_max_filesize 3M
+
+## Запрещаем использование прозрачной поддержки sid. 
+## Замечание: Управление сессией на основе URL имеет дополнительные риски безопасности по 
+## сравнению с управлением на основе cookies. В качестве примера можно упомянуть такие ситуации, 
+## когда пользователи могут отправить URL, содержащий идентификатор активной сессии своим 
+## друзьям по электронной почте или сохранить ссылку с идентификатором в закладках и все 
+## время посещать сайт с одним и тем же идентификатором. С PHP 7.1.0, полный путь URL, т.е. 
+## https://php.net/, обрабатывается "trans sid". Ранее обрабатывался только относительный 
+## путь URL. Перезапись целевого хоста задается session.trans_sid_hosts.
+###php_flag session.use_trans_sid off
+
+## Показываем ошибки PHP на экране с помощью следующих двух строк
+## php_flag display_errors on
+## php_value error_reporting -1
+
+## Запрещаем просмотр файла php.ini
+<Files php.ini>  
+order allow,deny  
+deny from all  
+</Files>
+
+## Запрещаем загрузку базы данных .db3
+<FilesMatch "\.db3$">        
+    Order allow,deny
+    Deny from all     
+</FilesMatch>
+
+## Закрываем доступ к файлам с определенными расширениями
+<FilesMatch "\.(txt|exe|doc|docx)$">
+    Order Deny,Allow
+    Deny from all
+</FilesMatch>
+
+## Включаем преобразование URL
+RewriteEngine On
+## Преобразовываем URL-запросы главных страниц сайта
+###RewriteRule ^home$ index.php [L]
+## https://kwinflatht.nichost.ru/podpisat-fotografiyu 
+## https://kwinflatht.nichost.ru/Pages/SignaPhoto/Signaphoto.php
+## RewriteRule ^podpisat-fotografiyu$ /Pages/Signaphoto/SignaPhoto.php
+
+## Перенаправляем все запросы с HTTP на HTTPS
+## RewriteCond %{ENV:HTTPS} !on
+## RewriteRule ^.*$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+## Уточненные настройки MASTERHOST
+## RewriteCond %{HTTP:PORT} !^443$
+## RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R]
+
+## Перенаправляем ошибки в файл e404.php
+ErrorDocument 400 /e404.php?err=400 
+ErrorDocument 403 /e404.php?err=403 
+ErrorDocument 404 /e404.php?err=404 
+ErrorDocument 405 /e404.php?err=405 
+ErrorDocument 408 /e404.php?err=408 
+
+ErrorDocument 500 /e404.php?err=500 
+ErrorDocument 502 /e404.php?err=502 
+ErrorDocument 504 /e404.php?err=504 
+
+## **************************************************************** .htaccess ***
