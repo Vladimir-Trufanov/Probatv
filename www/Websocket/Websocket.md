@@ -18,7 +18,15 @@
 
 - [Сокеты: Клиент на PHP](https://myrusakov.ru/php-socket-client.html)
 
+### [wsTokmakov - изучение материалов по сайтам Токмакова](wsTokmakov/wsTokmakov.md)
 
+Примеры клиента и сокет-сервера на PHP по материалам сайтов:
+
+- [WebSocket сервер на PHP](https://tokmakov.msk.ru/blog/item/202)
+
+- [GitHub: web-socket-server](https://github.com/tokmakov/web-socket-server)
+
+### [Ratchet - сокет-сервер на PHP](Ratchet/Ratchet.md)
 
 
 ---
@@ -71,10 +79,6 @@
 ### [v2 Примеры из PHP](https://www.php.net/manual/ru/sockets.examples.php) 
 
 ---
-
-#### [WebSocket сервер на PHP, токмаков](https://tokmakov.msk.ru/blog/item/202)
-
-#### [web-socket-server](https://github.com/tokmakov/web-socket-server)
 
 #### [WebSocket](https://learn.javascript.ru/websockets)
 

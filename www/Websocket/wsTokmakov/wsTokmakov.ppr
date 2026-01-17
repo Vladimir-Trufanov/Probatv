@@ -1,0 +1,62 @@
+[Config]
+Compilator.SaveAll=0
+Compilator.Capture=0
+Compilator.CompileOnBackground=0
+Compilator.ProgSaveAll=0
+Compilator.ProgRunSelection=0
+Compilator.LogType=0
+Compilator.LogEncoding=0
+DefaultDir=C:\Probatv\www\Websocket\wsTokmakov
+DefaultCP=0
+LogtoEnd=1
+DontOpen=0
+AbsolutePath=0
+FileFormat=0
+ProjectFilesOnly=0
+HTServer=localhost
+Extensions=*.*
+[Project tree]
+wsTokmakov
+	+wsTokmakov
+		-tokEx1
+			tokEx1\tokEx1SocketServer.php
+		+tokEx2
+			tokEx2\tokEx2echo-server.php
+			tokEx2\tokEx2socket.js
+			tokEx2\tokEx2SocketClient.html
+			tokEx2\tokEx2WebSocketServer.php
+		-web-socket-server-master
+			-web-socket-server-master
+				web-socket-server-master\web-socket-server-master\cmd-server.php
+				web-socket-server-master\web-socket-server-master\echo-server.php
+				web-socket-server-master\web-socket-server-master\socket.js
+				web-socket-server-master\web-socket-server-master\style.css
+				web-socket-server-master\web-socket-server-master\WebSocketServer-2.class.php
+		web-socket-server-master.zip
+		wsTokmakov.md
+		wsTokmakov.md.backup
+		wsTokmakov.ppr
+[Open project files]
+0=tokEx2\tokEx2WebSocketServer.php
+1=tokEx2\tokEx2echo-server.php
+2=tokEx2\tokEx2SocketClient.html
+3=tokEx2\tokEx2socket.js
+4=tokEx2\tokEx2style.css
+[Selected Project Files]
+Main=
+Selected=tokEx2\tokEx2WebSocketServer.php
+[tokEx2\tokEx2WebSocketServer.php]
+TopLine=79
+Caret=76,3
+[tokEx2\tokEx2echo-server.php]
+TopLine=1
+Caret=48,10
+[tokEx2\tokEx2SocketClient.html]
+TopLine=1
+Caret=58,13
+[tokEx2\tokEx2socket.js]
+TopLine=1
+Caret=76,1
+[tokEx2\tokEx2style.css]
+TopLine=1
+Caret=23,1

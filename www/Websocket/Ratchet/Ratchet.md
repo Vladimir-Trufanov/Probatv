@@ -4,7 +4,7 @@
 
 ### [Учебник по PHP WebSockets, ...](https://web.archive.org/web/20161122141317/http://blog.samuelattard.com/the-tutorial-for-php-websockets-that-i-wish-had-existed/)
 
-### [Ratchet](https://github.com/ratchetphp/Ratchet)
+### [Ratchet - сокет-сервер на PHP](https://github.com/ratchetphp/Ratchet)
 
 ### [Использование HTML5 WebSockets c PHP сервером](https://blog-programmista.ru/post/160-ispol-zovanie-html5-websockets-c-php-serverom.html)
 

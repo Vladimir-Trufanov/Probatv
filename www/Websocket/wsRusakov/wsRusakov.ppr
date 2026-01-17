@@ -1,0 +1,54 @@
+[Config]
+Compilator.SaveAll=0
+Compilator.Capture=0
+Compilator.CompileOnBackground=0
+Compilator.ProgSaveAll=0
+Compilator.ProgRunSelection=0
+Compilator.LogType=0
+Compilator.LogEncoding=0
+DefaultDir=C:\Probatv\www\Websocket\wsRusakov
+DefaultCP=0
+LogtoEnd=1
+DontOpen=0
+AbsolutePath=0
+FileFormat=0
+ProjectFilesOnly=0
+HTServer=localhost
+Extensions=*.*
+[Project tree]
+wsRusakov
+	+wsRusakov
+		-rusEx1
+			rusEx1\index.php
+			rusEx1\RusakovServer.php
+		+rusEx2
+			rusEx2\index.php
+			rusEx2\RusakovServerEx2.php
+		+rusEx3
+			rusEx3\RusakovClient.php
+			rusEx3\RusakovJs.js
+			rusEx3\RusakovLead.php
+			rusEx3\RusakovServer.php
+		wsRusakov.md
+		wsRusakov.md.backup
+		wsRusakov.ppr
+[Open project files]
+0=rusEx2\index.php
+1=rusEx3\RusakovLead.php
+2=rusEx3\RusakovClient.php
+3=rusEx3\RusakovJs.js
+[Selected Project Files]
+Main=
+Selected=rusEx3\RusakovJs.js
+[rusEx2\index.php]
+TopLine=1
+Caret=45,3
+[rusEx3\RusakovLead.php]
+TopLine=1
+Caret=1,1
+[rusEx3\RusakovClient.php]
+TopLine=13
+Caret=1,1
+[rusEx3\RusakovJs.js]
+TopLine=55
+Caret=1,1
