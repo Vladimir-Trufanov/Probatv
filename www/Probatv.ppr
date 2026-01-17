@@ -975,11 +975,11 @@ Caret=1,1
 TopLine=1
 Caret=1,13
 [chat.php]
-TopLine=10
+TopLine=18
 Caret=2,57
 [ServerForHTML5.php]
-TopLine=10
+TopLine=11
 Caret=1,50
 [ClientForHTML5.html]
-TopLine=1
+TopLine=42
 Caret=8,80
