@@ -1,11 +1,14 @@
 <?php 
+
+// php.exe -f com-server.php
+
 error_reporting(E_ALL);
 set_time_limit(0);
 ob_implicit_flush();
 
-require 'WebSocketServer.class.php';
+require 'WebSocketServerClass.php';
 
-$server = new WebSocketServer('127.0.0.1', 7777);
+$server = new WebSocketServer('127.0.0.1', 7773);
 // максимальное время работы 100 секунд, выводить сообщения в консоль
 $server->settings(100, true);
 
@@ -17,10 +20,10 @@ $server->handler = function($connect, $data) {
         return;
     }
     switch ($data) {
-        case 'date'   : $response = date('d.m.Y'); break;
-        case 'time'   : $response = date('H:i:s'); break;
-        case 'country': $response = 'Россия';      break;
-        case 'city'   : $response = 'Москва';      break;
+        case 'date'   : $response = date('d.m.Y');   break;
+        case 'time'   : $response = date('H:i:s');   break;
+        case 'country': $response = 'Россия';        break;
+        case 'city'   : $response = 'Петрозаводск';  break;
     }
     WebSocketServer::response($connect, $response);
 };

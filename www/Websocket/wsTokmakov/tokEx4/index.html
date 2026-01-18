@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<!--
+Это код страницы https://echo.websocket.org
+
+Request served by 4d896d95b55478
+
+GET / HTTP/1.1
+
+Host: echo.websocket.org
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+Accept-Encoding: gzip, deflate, br, zstd
+Accept-Language: ru,en;q=0.9,ko;q=0.8
+Cookie: _ga=GA1.1.285392712.1768469848; _ga_BZ0LYEZXEJ=GS2.1.s1768469847$o1$g1$t1768470257$j60$l0$h0
+Fly-Client-Ip: 178.19.253.110
+Fly-Forwarded-Port: 443
+Fly-Forwarded-Proto: https
+Fly-Forwarded-Ssl: on
+Fly-Region: arn
+Fly-Request-Id: 01KF7WPCBPQT141P9JSPVN20VM-arn
+Priority: u=0, i
+Sec-Ch-Ua: "Chromium";v="142", "YaBrowser";v="25.12", "Not_A Brand";v="99", "Yowser";v="2.5"
+Sec-Ch-Ua-Mobile: ?0
+Sec-Ch-Ua-Platform: "Windows"
+Sec-Fetch-Dest: document
+Sec-Fetch-Mode: navigate
+Sec-Fetch-Site: none
+Sec-Fetch-User: ?1
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 YaBrowser/25.12.0.0 Safari/537.36
+Via: 2 fly.io, 2 fly.io
+X-Forwarded-For: 178.19.253.110, 66.241.124.119
+X-Forwarded-Port: 443
+X-Forwarded-Proto: https
+X-Forwarded-Ssl: on
+X-Request-Start: t=1768717758838781
+
+----------------------------------------------------------------------
+         __      __   _                 _        _                    
+         \ \    / /__| |__  ___ ___  __| |_____| |_                  
+          \ \/\/ / -_) '_ \(_-</ _ \/ _| / / -_)  _|                 
+           \_/\_/\___|_.__//__/\___/\__|_\_\___|\__|                 
+
+  WebSocket UI: https://echo.websocket.org/.ws  |  SSE: https://echo.websocket.org/.sse
+  Learn more: https://websocket.org/tools/websocket-echo-server
+------------------------------------------------------------------------>
+
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Простой WebSocket клиент</title>
+    <link rel="stylesheet" href="tokEx4style.css" type="text/css" />
+    <script src="tokEx4socket.js" type="text/javascript"></script>
+</head>
+
+<body>
+    <div>
+        <span>Сервер</span>
+        <input id="server" type="text" value="wss://echo.websocket.org" />
+    </div>
+    <div>
+        <input id="connect" type="button" value="Установить соединение" />
+        <input id="disconnect" type="button" value="Разорвать соединение" />
+    </div>
+    <div>
+        <span>Сообщение</span>
+        <input id="message" type="text" value="" />
+        <input id="send-msg" type="button" value="Отправить сообщение" />
+    </div>
+    <div>
+        <span>Информация</span>
+        <div id="socket-info"></div>
+    </div>
+</body>
+</html>
+

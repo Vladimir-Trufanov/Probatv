@@ -18,42 +18,57 @@ Extensions=*.*
 [Project tree]
 wsTokmakov
 	+wsTokmakov
-		-Echo-server
-			Echo-server\echo-server.php
-			Echo-server\favicon.ico
-			Echo-server\index.html
-			Echo-server\socket.js
-			Echo-server\style.css
-			Echo-server\WebSocketServerClass.php
 		-tokEx1
 			tokEx1\tokEx1SocketServer.php
-		+tokEx2
+		-tokEx2
 			tokEx2\index.html
 			tokEx2\tokEx2echo-server.php
 			tokEx2\tokEx2socket.js
 			tokEx2\tokEx2SocketClient.html
 			tokEx2\tokEx2style.css
 			tokEx2\tokEx2WebSocketServer.php
+		-tokEx3
+			tokEx3\index.html
+		-tokEx4
+			tokEx4\index.html
+			tokEx4\tokEx4socket.js
+			tokEx4\tokEx4style.css
+		+tokEx5
+			tokEx5\com-server.php
+			tokEx5\favicon.ico
+			tokEx5\index.html
+			tokEx5\socket.js
+			tokEx5\style.css
+			tokEx5\WebSocketServerClass.php
 		-web-socket-server-master
 			-web-socket-server-master
 				web-socket-server-master\web-socket-server-master\cmd-server.php
 				web-socket-server-master\web-socket-server-master\WebSocketServer-2.class.php
 		web-socket-server-master.zip
 		wsTokmakov.md
+		wsTokmakov.md.backup
 		wsTokmakov.ppr
 [Open project files]
-0=tokEx2\tokEx2WebSocketServer.php
-1=tokEx2\index.html
-2=tokEx2\tokEx2SocketClient.html
+0=tokEx5\WebSocketServerClass.php
+1=tokEx5\com-server.php
+2=tokEx5\index.html
+3=tokEx5\socket.js
+4=tokEx5\style.css
 [Selected Project Files]
 Main=
-Selected=tokEx2\tokEx2SocketClient.html
-[tokEx2\tokEx2WebSocketServer.php]
-TopLine=3
-Caret=76,3
-[tokEx2\index.html]
+Selected=tokEx5\com-server.php
+[tokEx5\WebSocketServerClass.php]
+TopLine=49
+Caret=1,1
+[tokEx5\com-server.php]
 TopLine=1
-Caret=1,14
-[tokEx2\tokEx2SocketClient.html]
+Caret=4,3
+[tokEx5\index.html]
 TopLine=1
-Caret=1,13
+Caret=1,1
+[tokEx5\socket.js]
+TopLine=1
+Caret=1,1
+[tokEx5\style.css]
+TopLine=1
+Caret=7,1
