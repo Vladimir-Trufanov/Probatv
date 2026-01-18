@@ -26,11 +26,11 @@
 
 - [GitHub: web-socket-server](https://github.com/tokmakov/web-socket-server)
 
+### [wsNetwork - PHP and Sockets: Network Programming with PHP](wsNetwork/wsNetwork.md)
+
 ### [Ratchet - сокет-сервер на PHP](Ratchet/Ratchet.md)
 
 ### [wsSergeev: Веб-сокеты в каждый дом](https://hharek.ru/веб-сокеты-в-каждый-дом)
-
-### [wsNetwork - PHP and Sockets: Network Programming with PHP](https://reintech.io/blog/php-and-sockets-network-programming)
 
 ---
 
