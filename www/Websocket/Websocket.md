@@ -28,15 +28,18 @@
 
 ### [Ratchet - сокет-сервер на PHP](Ratchet/Ratchet.md)
 
+### [wsSergeev: Веб-сокеты в каждый дом](https://hharek.ru/веб-сокеты-в-каждый-дом)
+
+### [wsNetwork - PHP and Sockets: Network Programming with PHP](https://reintech.io/blog/php-and-sockets-network-programming)
 
 ---
 
-#### Не очищенные склады:
+### [Сокеты - документация PHP](https://www.php.net/manual/ru/book.sockets.php)
 
-- ittve-ESP8266/Websocket
-- KwinFlat/Kvizzy30
+### [Сокеты - документация JS](https://learn.javascript.ru/websockets)
 
----
+### [RFC6455 - The WebSocket Protocol](https://datatracker.ietf.org/doc/html/rfc6455#section-7.4)
+
 
 ### Общие рекомендации по запуску PHP-скриптов в командной строке Windows:
 
