@@ -33,16 +33,16 @@ wsTve
 3=WebSocketServer.php
 [Selected Project Files]
 Main=
-Selected=index.php
+Selected=WebSocketServer.php
 [index.php]
 TopLine=1
 Caret=26,9
 [SocketServer.php]
 TopLine=1
-Caret=87,11
+Caret=43,2
 [socket.js]
 TopLine=1
 Caret=1,33
 [WebSocketServer.php]
-TopLine=31
-Caret=14,70
+TopLine=25
+Caret=121,46

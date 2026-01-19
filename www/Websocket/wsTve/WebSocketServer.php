@@ -34,62 +34,31 @@
 **/
 class WebSocketServer 
 {
-  /**
-   * Функция вызывается, когда получено сообщение от клиента
-     */
-    public $handler;
+  // Обработать сообщения от клиентов
+  public $handler;
+  
+  private $ip;                   // IP адрес сервера
+  private $port;                 // Порт сервера
+  private $connection;           // Сокет для принятия новых соединений, прослушивает указанный порт
+  private $connects;             // Для хранения всех подключений, принятых слушающим сокетом
+  private $timeLimit = 0;        // Ограничение по времени работы сервера
+  private $startTime;            // Время начала работы сервера
+  private $verbose=true;         // true - выводить сообщения в консоль (в командную строку, если локальный запуск php "SocketServer.php")
+  private $logging=true;         // true - записывать сообщения в log-файл
+  private $logFile='ws-log.txt'; // Имя log-файла
+  private $resource;             // Ресурс log-файла
 
-    /**
-     * IP адрес сервера
-     */
-    private $ip;
-    /**
-     * Порт сервера
-     */
-    private $port;
-    /**
-     * Сокет для принятия новых соединений, прослушивает указанный порт
-     */
-    private $connection;
-    /**
-     * Для хранения всех подключений, принятых слушающим сокетом
-     */
-    private $connects;
-
-    /**
-     * Ограничение по времени работы сервера
-     */
-    private $timeLimit = 0;
-    /**
-     * Время начала работы сервера
-     */
-    private $startTime;
-    /**
-     * Выводить сообщения в консоль?
-     */
-    private $verbose = false;
-    /**
-     * Записывать сообщения в log-файл?
-     */
-    private $logging = true; //false;
-    /**
-     * Имя log-файла
-     */
-    private $logFile = 'ws-log.txt';
-    /**
-     * Ресурс log-файла
-     */
-    private $resource;
-
-
-    public function __construct($ip = '127.0.0.1', $port = 7777) {
-        $this->ip = $ip;
-        $this->port = $port;
-
-        // эта функция вызывается, когда получено сообщение от клиента;
+  // **************************************************************************
+  // *                          Создать экземпляр класса                      *
+  // **************************************************************************
+  public function __construct($ip = '127.0.0.1', $port = 7777) 
+  {
+    $this->ip = $ip;
+    $this->port = $port;
+    // эта функция вызывается, когда получено сообщение от клиента;
         // при создании экземпляра класса должна быть переопределена
         $this->handler = function($connection, $data) {
-            $message = '[' . date('r') . '] Получено сообщение от клиента: ' . $data . PHP_EOL;
+            $message = '[' . date('r') . '] Получено сообщение 325 от клиента: ' . $data . PHP_EOL;
             if ($this->verbose) {
                 echo $message;
             }
@@ -116,10 +85,22 @@ class WebSocketServer
         $this->verbose = $verbose;
         $this->logging = $logging;
         $this->logFile = $logFile;
-        if ($this->logging) {
+        echo '11 message';
+        if ($this->logging) 
+        {
+            echo '12 message';
             $this->resource = fopen($this->logFile, 'a');
+            fwrite($this->resource, '12 message');
         }
     }
+
+  // **************************************************************************
+  // *                     Подготовить префикс сообщения сервера              *
+  // **************************************************************************
+  private function prefmess()
+  {
+    $mess='SSRV';
+  }
 
     /**
      * Выводит сообщение в консоль и/или записывает в лог-файл
@@ -147,7 +128,7 @@ class WebSocketServer
      */
     public function startServer() {
 
-        $this->debug('Try start server...');
+        $this->debug('Try 23 start server...');
 
         $this->connection = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
 
