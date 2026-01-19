@@ -1,47 +1,41 @@
 <?php
-
-// ****************************************************************************
-// *                   Занести строку информации в лог-файл                   *
-// ****************************************************************************
-function put($errstr)
-{
-   // Oпределяем имя лог-файла
-   $logfile=$_SERVER['DOCUMENT_ROOT']."/ws_mess.txt";
-   // Формируем $Today - текущая дата и время в формате DATETIME;
-   $Today=date("Y-m-d H:i:s");
-   // Формируем строку в случае "Вывести только сообщение!"
-   $Result="$Today "."$errstr "."\r\n";
-   // Открываем лог-файл ошибок для чтения и записи:"a+"; помещаем указатель 
-   // в конец файла. Если файл не существует, пытаемся его создать. В данном 
-   // режиме функция fseek() влияет только на позицию чтения, записи всегда 
-   // добавляются в конец
-   $fp = fopen($logfile,"a+");
-   // Блокируем файл для записи данных об ошибке (LOCK_EX для получения 
-   // эксклюзивной блокировки на запись
-   if (flock($fp,LOCK_EX)) 
-   // В случае успешной блокировки записываем строку, снимаем блокировку,
-   // закрываем файл
-   { 
-      fputs($fp,$Result);
-      flock($fp, LOCK_UN); 
-      fclose($fp);
-   } 
-   // Если файл занят, то выдаем сообщение
-   else 
-   {
-      Alert('Не удалось сбросить ошибку в лог-файл: \r\n'.$Result);
-   }
-}
-
-
-/**
- * Класс WebSocket сервера
- */
+/** 
+ * Класс WebSocket сервера (wsTve)                  *** WebSocketServer.php ***
+ * 
+ * Для информации:
+ * 
+ * Протокол WebSocket работает над TCP. Это означает, что при соединении браузер 
+ * отправляет по HTTP специальные заголовки, спрашивая: «Поддерживает ли сервер WebSocket?». 
+ * Если сервер в ответных заголовках отвечает «Да, поддерживаю», 
+ * то дальше HTTP прекращается и общение идёт на специальном протоколе WebSocket, 
+ * который уже не имеет с HTTP ничего общего.
+ * 
+ * GET /chat HTTP/1.1
+ * Host: websocket.server.com
+ * Upgrade: websocket
+ * Connection: Upgrade
+ * Origin: http://www.example.com
+ * Sec-WebSocket-Key: Iv8io/9s+lYFgZWcXczP8Q==
+ * Sec-WebSocket-Version: 13
+ * 
+ * Здесь GET и Host — стандартные HTTP-заголовки, а Upgrade и Connection указывают, 
+ * что браузер хочет перейти на WebSocket.
+ * 
+ * Сервер может проанализировать эти заголовки и решить, разрешает ли он WebSocket 
+ * с данного домена Origin. 
+ * 
+ * Ответ сервера, если он понимает и разрешает WebSocket-подключение:
+ * 
+ * HTTP/1.1 101 Switching Protocols
+ * Upgrade: websocket
+ * Connection: Upgrade
+ * Sec-WebSocket-Accept: hsBlbuDTkk24srzEOTBUlZAlC2g=
+ *  
+**/
 class WebSocketServer 
 {
-
-    /**
-     * Функция вызывается, когда получено сообщение от клиента
+  /**
+   * Функция вызывается, когда получено сообщение от клиента
      */
     public $handler;
 
@@ -77,7 +71,7 @@ class WebSocketServer
     /**
      * Записывать сообщения в log-файл?
      */
-    private $logging = false;
+    private $logging = true; //false;
     /**
      * Имя log-файла
      */
@@ -88,35 +82,24 @@ class WebSocketServer
     private $resource;
 
 
-    public function __construct($ip = '127.0.0.1', $port = 7777) 
-    {
+    public function __construct($ip = '127.0.0.1', $port = 7777) {
         $this->ip = $ip;
         $this->port = $port;
-        
-        put('Создали сокет '.$this->ip.':'.(string)$this->port);
 
         // эта функция вызывается, когда получено сообщение от клиента;
         // при создании экземпляра класса должна быть переопределена
-        $this->handler = function($connection, $data) 
-        {
+        $this->handler = function($connection, $data) {
             $message = '[' . date('r') . '] Получено сообщение от клиента: ' . $data . PHP_EOL;
-            put($message);
-
-            /*
-            if ($this->verbose) 
-            {
+            if ($this->verbose) {
                 echo $message;
             }
-            if ($this->logging) 
-            {
+            if ($this->logging) {
                 fwrite($this->resource, $message);
             }
-            */
         };
     }
 
-    public function __destruct() 
-    {
+    public function __destruct() {
         if (is_resource($this->connection)) {
             $this->stopServer();
         }
@@ -128,30 +111,26 @@ class WebSocketServer
     /**
      * Дополнительные настройки для отладки
      */
-    public function settings($timeLimit = 0, $verbose = false, $logging = false, $logFile = 'ws-log.txt') 
-    {
-        //public function settings($timeLimit = 0, $verbose = false, $logging = true,  $logFile = 'ws-log.txt') {
+    public function settings($timeLimit = 0, $verbose = false, $logging = false, $logFile = 'ws-log.txt') {
         $this->timeLimit = $timeLimit;
         $this->verbose = $verbose;
         $this->logging = $logging;
         $this->logFile = $logFile;
-        if ($this->logging) 
-        {
+        if ($this->logging) {
             $this->resource = fopen($this->logFile, 'a');
         }
-        put('Приняли настройки. timeLimit='.(string)$this->timeLimit);
     }
 
     /**
      * Выводит сообщение в консоль и/или записывает в лог-файл
      */
-    private function debug($message) 
-    {
+    private function debug($message) {
         $message = '[' . date('r') . '] ' . $message . PHP_EOL;
         if ($this->verbose) {
             echo $message;
         }
-        if ($this->logging) {
+        if ($this->logging) 
+        {
             fwrite($this->resource, $message);
         }
     }
@@ -159,17 +138,14 @@ class WebSocketServer
     /**
      * Отправляет сообщение клиенту
      */
-    public static function response($connect, $data) 
-    {
-       put('response');
-       socket_write($connect, self::encode($data));
+    public static function response($connect, $data) {
+        socket_write($connect, self::encode($data));
     }
 
     /**
      * Запускает сервер в работу
      */
-    public function startServer() 
-    {
+    public function startServer() {
 
         $this->debug('Try start server...');
 
@@ -488,3 +464,4 @@ class WebSocketServer
     }
 
 }
+// ********************************************** tokEx2WebSocketServer.php ***

@@ -1,0 +1,48 @@
+[Config]
+Compilator.SaveAll=0
+Compilator.Capture=0
+Compilator.CompileOnBackground=0
+Compilator.ProgSaveAll=0
+Compilator.ProgRunSelection=0
+Compilator.LogType=0
+Compilator.LogEncoding=0
+DefaultDir=C:\Probatv\www\Websocket\wsTve
+DefaultCP=0
+LogtoEnd=1
+DontOpen=0
+AbsolutePath=0
+FileFormat=0
+ProjectFilesOnly=0
+HTServer=localhost
+Extensions=*.*
+[Project tree]
+wsTve
+	+wsTve
+		favicon.ico
+		index.php
+		LeadSocket.php
+		socket.js
+		SocketServer.php
+		style.css
+		WebSocketServer.php
+		wsTve.ppr
+[Open project files]
+0=index.php
+1=SocketServer.php
+2=socket.js
+3=WebSocketServer.php
+[Selected Project Files]
+Main=
+Selected=index.php
+[index.php]
+TopLine=1
+Caret=26,9
+[SocketServer.php]
+TopLine=1
+Caret=87,11
+[socket.js]
+TopLine=1
+Caret=1,33
+[WebSocketServer.php]
+TopLine=31
+Caret=14,70

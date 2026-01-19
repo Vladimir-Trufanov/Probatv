@@ -24,6 +24,7 @@ echo '
         <input id="server" type="text" value="ws://127.0.0.1:7776" />
     </div>
      -->
+     
     <div>
         <input id="connect" type="button" value="Установить соединение" />
         <input id="disconnect" type="button" value="Разорвать соединение" />
@@ -37,6 +38,7 @@ echo '
         <span>Информация</span>
         <div id="socket-info"></div>
     </div>
+
 <?php
 
 // <!-- --> ************************************************ LeadSocket.php ***
