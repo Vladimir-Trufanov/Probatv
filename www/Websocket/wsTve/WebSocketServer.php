@@ -43,7 +43,7 @@ class WebSocketServer
   private $connects;             // Для хранения всех подключений, принятых слушающим сокетом
   private $timeLimit = 0;        // Ограничение по времени работы сервера
   private $startTime;            // Время начала работы сервера
-  private $verbose=true;         // true - выводить сообщения в консоль (в командную строку, если локальный запуск php "SocketServer.php")
+  private $verbose=false;         // true - выводить сообщения в консоль (в командную строку, если локальный запуск php "SocketServer.php")
   private $logging=true;         // true - записывать сообщения в log-файл
   private $logFile='ws-log.txt'; // Имя log-файла
   private $resource;             // Ресурс log-файла
@@ -55,20 +55,27 @@ class WebSocketServer
   {
     $this->ip = $ip;
     $this->port = $port;
-    // эта функция вызывается, когда получено сообщение от клиента;
-        // при создании экземпляра класса должна быть переопределена
-        $this->handler = function($connection, $data) {
-            $message = '[' . date('r') . '] Получено сообщение 325 от клиента: ' . $data . PHP_EOL;
-            if ($this->verbose) {
-                echo $message;
-            }
-            if ($this->logging) {
-                fwrite($this->resource, $message);
-            }
-        };
-    }
+    // Определяем функцию по умолчанию для приема сообщения от клиента
+    // (эта функция вызывается, когда получено сообщение от клиента;
+    // при создании экземпляра класса должна быть переопределена)
+    $this->handler = function($connection, $data) 
+    {
+      $message='['.date('r').'] Получено сообщение от клиента: '.$data.PHP_EOL;
+      if ($this->verbose) 
+      {
+        echo $message;
+      }
+      if ($this->logging) 
+      {
+        fwrite($this->resource, $message);
+      }
+    };
+  }
+  
+  public function __destruct() 
+  {
+    $this->debug('__destruct()');
 
-    public function __destruct() {
         if (is_resource($this->connection)) {
             $this->stopServer();
         }
@@ -77,51 +84,42 @@ class WebSocketServer
         }
     }
 
-    /**
-     * Дополнительные настройки для отладки
-     */
-    public function settings($timeLimit = 0, $verbose = false, $logging = false, $logFile = 'ws-log.txt') {
-        $this->timeLimit = $timeLimit;
-        $this->verbose = $verbose;
-        $this->logging = $logging;
-        $this->logFile = $logFile;
-        echo '11 message';
-        if ($this->logging) 
-        {
-            echo '12 message';
-            $this->resource = fopen($this->logFile, 'a');
-            fwrite($this->resource, '12 message');
-        }
-    }
-
   // **************************************************************************
-  // *                     Подготовить префикс сообщения сервера              *
+  // *                   Установить дополнительные настройки                  *
   // **************************************************************************
-  private function prefmess()
+  public function settings($timeLimit = 0, $verbose = false, $logging = false, $logFile = 'ws-log.txt') 
   {
-    $mess='SSRV';
+    $this->timeLimit = $timeLimit;
+    $this->verbose = $verbose;
+    $this->logging = $logging;
+    $this->logFile = $logFile;
+    if ($this->logging) 
+    {
+      $this->resource = fopen($this->logFile,'a');
+    }
   }
-
-    /**
-     * Выводит сообщение в консоль и/или записывает в лог-файл
-     */
-    private function debug($message) {
-        $message = '[' . date('r') . '] ' . $message . PHP_EOL;
-        if ($this->verbose) {
-            echo $message;
-        }
-        if ($this->logging) 
-        {
-            fwrite($this->resource, $message);
-        }
+  // **************************************************************************
+  // *         Вывести сообщение в консоль и/или записать в лог-файл          *
+  // **************************************************************************
+  private function debug($message) 
+  {
+    $mess = '[' . date('r') . '] ' . $message . PHP_EOL;
+    if ($this->verbose) 
+    {
+      echo $mess;
     }
-
-    /**
-     * Отправляет сообщение клиенту
-     */
-    public static function response($connect, $data) {
-        socket_write($connect, self::encode($data));
+    if ($this->logging) 
+    {
+      fwrite($this->resource, $mess);
     }
+  }  
+  // **************************************************************************
+  // *                           Отправить сообщение клиенту                  *
+  // **************************************************************************
+  public static function response($connect, $data) 
+  {
+    socket_write($connect, self::encode($data));
+  }
 
     /**
      * Запускает сервер в работу
@@ -224,7 +222,10 @@ class WebSocketServer
     /**
      * Останавливает работу сервера
      */
-    public function stopServer() {
+    public function stopServer() 
+    {
+        $this->debug('stopServer()');
+        sleep(5);
         // закрываем слушающий сокет
         socket_close($this->connection);
         if (!empty($this->connects)) { // отправляем все клиентам сообщение о разрыве соединения
