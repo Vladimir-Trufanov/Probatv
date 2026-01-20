@@ -44,6 +44,7 @@ class WebSocketServer
   // Обработать сообщения от клиентов
   public $handler;
   
+  private $mess;                   // -----IP адрес сервера
   private $ip;                   // IP адрес сервера
   private $port;                 // Порт сервера
   private $connection;           // Сокет для принятия новых соединений, прослушивает указанный порт
@@ -211,13 +212,25 @@ class WebSocketServer
                 }
                 // получено сообщение от клиента, вызываем пользовательскую
                 // функцию, чтобы обработать полученные данные
-                if (is_callable($this->handler)) {
-                    call_user_func($this->handler, $connect, $decoded['payload']);
+                if (is_callable($this->handler)) 
+                {
+                  $mess=$decoded['payload'];
+                  $this->debug('***'.$mess.'***');
+                  //call_user_func($this->handler, $connect, $decoded['payload']);
+                  
+                  if ($mess=='wsStop')
+                  {
+                    $this->debug('Команда wsStop');
+                    $this->stopServer();
+                   return;
+                  }
+                  else call_user_func($this->handler, $connect, $mess);
                 }
             }
 
             // если истекло ограничение по времени, останавливаем сервер
-            if ($this->timeLimit && time() - $this->startTime > $this->timeLimit) {
+            if ($this->timeLimit && time() - $this->startTime > $this->timeLimit) 
+            {
                 $this->debug('Time limit. Stopping server.');
                 $this->stopServer();
                 return;

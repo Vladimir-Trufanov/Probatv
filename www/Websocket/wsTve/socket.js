@@ -4,8 +4,21 @@
 // *             Обеспечить взаимодействие клиента с сокет-сервером           *
 // ****************************************************************************
 
-// v3.0.1, 20.01.2026                                 Автор:      Труфанов В.Е.
+// v3.0.2, 20.01.2026                                 Автор:      Труфанов В.Е.
 // Copyright © 2024 tve                               Дата создания: 18.03.2025
+
+/**
+ * Состояние соединения. Чтобы получить состояние соединения, существует 
+ * дополнительное свойство socket.readyState со значениями:
+ * 
+ * 0 – «CONNECTING»: соединение ещё не установлено,
+ * 1 – «OPEN»: обмен данными,
+ * 2 – «CLOSING»: соединение закрывается,
+ * 3 – «CLOSED»: соединение закрыто.
+ * 
+**/ 
+
+    var socket;
 
 // показать сообщение в #socket-info
 function showMessage(message) 
@@ -15,9 +28,9 @@ function showMessage(message)
   document.getElementById('socket-info').appendChild(div);
 }
 
-function isSocket(ipath,iip)
+function isSocket(ipath,iip,iport)
 {
-  console.log('isSocket: '+ipath+': '+iip);
+  console.log(iip+': '+ipath+': '+iport);
   showMessage('Включаем вэбсокет сервер!');
   
   // Выполняем запрос
@@ -26,9 +39,12 @@ function isSocket(ipath,iip)
   $.ajax({
     url: pathsocket,
     type: 'POST',
-    data: {ip:iip},
+    data: {ip:iip,pport:iport},
     // Выводим ошибки при выполнении запроса в PHP-сценарии
-    error: function (jqXHR,exception) {console.log('Ошибка');},
+    error: function (jqXHR,exception) 
+    {
+      console.log('Cокет-сервер завершил работу!');
+    },
     // Обрабатываем ответное сообщение
     success: function(message)
     {
@@ -38,9 +54,15 @@ function isSocket(ipath,iip)
   });
 }
 
+function resetSocket(ipath,iip)
+{
+  console.log('Удаляем вэбсокет сервер!');
+  showMessage('Удаляем вэбсокет сервер!');
+}
+
 window.addEventListener('DOMContentLoaded', function () 
 {
-    var socket;
+    //var socket;
     // показать сообщение в #socket-info
     function showMessage(message) {
         var div = document.createElement('div');

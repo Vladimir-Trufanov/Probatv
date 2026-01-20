@@ -25,6 +25,7 @@
 <body>
 
 <?php
+//phpinfo();
 require_once 'LeadSocket.php';
 ?>
 </body>

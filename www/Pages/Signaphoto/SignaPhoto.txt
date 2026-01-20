@@ -120,3 +120,19 @@ Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like
 Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 
 ***sph***Tue, 20 Jan 2026 12:33:54 +0300 IP: ::1 URL: /Pages/Signaphoto/SignaPhoto.php 
 Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 
+***sph***Tue, 20 Jan 2026 19:05:28 +0300 IP: ::1 URL: /Pages/Signaphoto/SignaPhoto.php 
+Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 
+***sph***Tue, 20 Jan 2026 19:41:42 +0300 IP: ::1 URL: /Pages/Signaphoto/SignaPhoto.php 
+Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 
+===sph===Tue, 20 Jan 2026 19:42:02 +0300 IP: ::1 URL: /Pages/Signaphoto/SignaPhoto.php 
+Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 
+***sph***Tue, 20 Jan 2026 21:32:24 +0300 IP: ::1 URL: /Pages/Signaphoto/SignaPhoto.php 
+Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 
+***sph***Tue, 20 Jan 2026 21:37:30 +0300 IP: ::1 URL: /Pages/Signaphoto/SignaPhoto.php 
+Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 
+***sph***Tue, 20 Jan 2026 21:44:42 +0300 IP: ::1 URL: /Pages/Signaphoto/SignaPhoto.php 
+Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 
+===sph===Tue, 20 Jan 2026 21:44:53 +0300 IP: ::1 URL: /Pages/Signaphoto/SignaPhoto.php 
+Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 
+***sph***Tue, 20 Jan 2026 21:49:15 +0300 IP: ::1 URL: /Pages/Signaphoto/SignaPhoto.php 
+Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 
