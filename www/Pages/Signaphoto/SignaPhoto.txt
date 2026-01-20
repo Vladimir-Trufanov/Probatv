@@ -110,3 +110,13 @@ Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like
 Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 
 ***sph***Mon, 19 Jan 2026 21:09:37 +0300 IP: ::1 URL: /Pages/Signaphoto/SignaPhoto.php 
 Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 
+***sph***Tue, 20 Jan 2026 08:38:47 +0300 IP: ::1 URL: /Pages/Signaphoto/SignaPhoto.php 
+Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 
+***sph***Tue, 20 Jan 2026 09:15:37 +0300 IP: ::1 URL: /Pages/Signaphoto/SignaPhoto.php 
+Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 
+***sph***Tue, 20 Jan 2026 09:57:32 +0300 IP: ::1 URL: /Pages/Signaphoto/SignaPhoto.php 
+Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 
+***sph***Tue, 20 Jan 2026 12:14:36 +0300 IP: ::1 URL: /Pages/Signaphoto/SignaPhoto.php 
+Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 
+***sph***Tue, 20 Jan 2026 12:33:54 +0300 IP: ::1 URL: /Pages/Signaphoto/SignaPhoto.php 
+Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36 

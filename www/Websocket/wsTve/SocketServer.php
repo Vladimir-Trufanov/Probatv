@@ -1,6 +1,13 @@
-<?php 
-// wsTve          === php SocketServer.php ===         *** SocketServer.php ***
- 
+<?php
+// PHP7/HTML5, EDGE/CHROME/YANDEX                *** wsTve/SocketServer.php ***
+
+// ****************************************************************************
+// * === php SocketServer.php ===                      Запустить сокет-сервер *
+// ****************************************************************************
+
+// v3.0.1, 20.01.2026                                 Автор:      Труфанов В.Е.
+// Copyright © 2025 tve                               Дата создания: 18.03.2025
+
 error_reporting(E_ALL);
 set_time_limit(0);
 ob_implicit_flush();
@@ -20,6 +27,5 @@ $server->handler = function($connect, $data)
 };
 
 $server->startServer();
-echo "ZHDEM Ждем 5 сек";
-sleep(5);
-$server->stopServer();
+
+// ************************************************* wsTve/SocketServer.php ***

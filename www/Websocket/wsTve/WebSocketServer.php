@@ -1,7 +1,14 @@
 <?php
+// PHP7/HTML5, EDGE/CHROME/YANDEX             *** wsTve/WebSocketServer.php ***
+
+// ****************************************************************************
+// *                        Построить класс сокет-сервера                     *
+// ****************************************************************************
+
+// v3.0.2, 20.01.2026                                 Автор:      Труфанов В.Е.
+// Copyright © 2025 tve                               Дата создания: 18.03.2025
+
 /** 
- * Класс WebSocket сервера (wsTve)                  *** WebSocketServer.php ***
- * 
  * Для информации:
  * 
  * Протокол WebSocket работает над TCP. Это означает, что при соединении браузер 
@@ -159,7 +166,8 @@ class WebSocketServer
         $this->connects = array($this->connection);
         $this->startTime = time();
 
-        while (true) {
+        while (true) 
+        {
 
             $this->debug('Waiting for connections...');
 
@@ -225,7 +233,7 @@ class WebSocketServer
     public function stopServer() 
     {
         $this->debug('stopServer()');
-        sleep(5);
+        // sleep(5);
         // закрываем слушающий сокет
         socket_close($this->connection);
         if (!empty($this->connects)) { // отправляем все клиентам сообщение о разрыве соединения
@@ -446,4 +454,5 @@ class WebSocketServer
     }
 
 }
-// ********************************************** tokEx2WebSocketServer.php ***
+
+// ********************************************** wsTve/WebSocketServer.php ***

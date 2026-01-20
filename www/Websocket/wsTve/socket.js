@@ -1,6 +1,11 @@
-// wsTve                                                      *** socket.js ***
+// PHP7/HTML5, EDGE/CHROME/YANDEX                      ***  wsTve/socket.js ***
 
-// ---------------------------------------- здесь добавка - подключение сервера
+// ****************************************************************************
+// *             Обеспечить взаимодействие клиента с сокет-сервером           *
+// ****************************************************************************
+
+// v3.0.1, 20.01.2026                                 Автор:      Труфанов В.Е.
+// Copyright © 2024 tve                               Дата создания: 18.03.2025
 
 // показать сообщение в #socket-info
 function showMessage(message) 
@@ -27,19 +32,15 @@ function isSocket(ipath,iip)
     // Обрабатываем ответное сообщение
     success: function(message)
     {
+      console.log('message');
       console.log(message);
     }
   });
 }
 
-
-
-// ----------------------------------------- здесь, что уже работает с сервером
-
-window.addEventListener('DOMContentLoaded', function () {
-
+window.addEventListener('DOMContentLoaded', function () 
+{
     var socket;
-
     // показать сообщение в #socket-info
     function showMessage(message) {
         var div = document.createElement('div');
@@ -106,3 +107,5 @@ window.addEventListener('DOMContentLoaded', function () {
     };
 
 });
+
+// ******************************************************** wsTve/socket.js ***
