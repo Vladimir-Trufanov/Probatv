@@ -14,8 +14,8 @@
   header('Content-Type: text/plain;'); // Мы будем выводить простой текст
   set_time_limit(0);                   // Скрипт должен работать постоянно
   ob_implicit_flush();                 // Все echo должны сразу же выводиться
-  $address = 'localhost';              // Адрес работы сервера
-  $port = 1985;                        // Порт работы сервера (лучше какой-нибудь редкоиспользуемый)
+  $address=$_SERVER['SERVER_NAME'];    // Адрес работы сервера 'localhost' или 'probatv.ru'
+  $port = 7774;                        // Порт работы сервера (лучше какой-нибудь редкоиспользуемый)
   if (($socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP)) < 0) 
   {
     //AF_INET - семейство протоколов

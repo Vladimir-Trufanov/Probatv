@@ -32,3 +32,16 @@
 ***http://localhost:88/Websocket/wsRusakov/rusEx1/***
 
 
+На ***'probatv.ru'***:
+
+***http://probatv.ru/Websocket/wsRusakov/rusSocketServer/***
+
+***http://probatv.ru/Websocket/wsRusakov/rusEx1/***
+
+---
+
+***https://probatv.ru/Websocket/wsRusakov/rusSocketServer/***
+
+***https://probatv.ru/Websocket/wsRusakov/rusEx1/***
+
+---
