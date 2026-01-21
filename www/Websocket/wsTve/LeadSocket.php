@@ -20,17 +20,29 @@ curl_close($ch);
 echo $output;
 */
 
-$ip='127.0.0.1';
-//$ip='87.242.70.183';
-$port=7777;
+$hostname=$_SERVER['SERVER_NAME'];
+$hostprotocol=$_SERVER['SERVER_PROTOCOL'];
+echo $hostprotocol.': '.$hostname.':'.$_SERVER['SERVER_PORT'].' ['.$_SERVER['SERVER_SOFTWARE'].'] '.'from '. $_SERVER['REMOTE_ADDR'].':'.$_SERVER['REMOTE_PORT'].'<br>';
+
+if ($hostname=='probatv.ru') $ip='87.242.70.183';
+else if ($hostname=='localhost') $ip='127.0.0.1';
+else $ip='0.0.0.0';
+
+if ($_SERVER['HTTPS']==1) $ws='wss';
+else $ws='ws';
+
+$port=7775;
 $echoserver='SocketServer.php';
+
+//echo $_SERVER['HTTPS'].'<br>';
+//echo $_SERVER['SERVER_PORT'].'<br>';
 
 echo '
    <p><button onclick="isSocket(\''.$echoserver.'\',\''.$ip.'\','.$port.')">Загрузить Websocket Server</button></p>
    <p><button onclick="resetSocket()">Удалить Websocket Server</button></p>
    <div>
        <span>Сервер</span>
-       <input id="server" type="text" value="ws://'.$ip.':'.$port.'" />
+       <input id="server" type="text" value="'.$ws.'://'.$ip.':'.$port.'" />
    </div>
 ';
 

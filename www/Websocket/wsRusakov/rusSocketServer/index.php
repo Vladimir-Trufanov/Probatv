@@ -1,9 +1,13 @@
 <?php
+
+  // index.php из RusakovServer.php
+  
   header('Content-Type: text/plain;');     // Мы будем выводить простой текст
   set_time_limit(0);                       // Скрипт должен работать постоянно
   ob_implicit_flush();                     // Все echo должны сразу же отправляться клиенту
   $address = 'localhost';                  // Адрес работы сервера
   $port = 1985;                            // Порт работы сервера (лучше какой-нибудь редкоиспользуемый)
+  echo "Загружаем сервер";
   if (($sock = socket_create(AF_INET, SOCK_STREAM, SOL_TCP)) < 0) 
   {
     //AF_INET - семейство протоколов
@@ -42,9 +46,9 @@
     } 
     else 
     {
-      echo "Сокет готов к приёму сообщений\n";
+      echo "----Сокет готов к приёму сообщений\n";
     }
-    $msg = "Hello!";                            // Сообщение клиенту
+    $msg = "----Hello!";                            // Сообщение клиенту
     echo "Сообщение от сервера: $msg";
     socket_write($msgsock, $msg, strlen($msg)); // Запись в сокет
     // Бесконечный цикл ожидания клиентов

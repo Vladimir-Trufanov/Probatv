@@ -1,4 +1,7 @@
 <?php
+
+  // php RusakovServer.php
+  
   header('Content-Type: text/plain;');     // Мы будем выводить простой текст
   set_time_limit(0);                       // Скрипт должен работать постоянно
   ob_implicit_flush();                     // Все echo должны сразу же отправляться клиенту
