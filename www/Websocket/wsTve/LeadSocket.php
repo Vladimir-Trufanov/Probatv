@@ -26,12 +26,13 @@ echo $hostprotocol.': '.$hostname.':'.$_SERVER['SERVER_PORT'].' ['.$_SERVER['SER
 
 if ($hostname=='probatv.ru') $ip='87.242.70.183';
 else if ($hostname=='localhost') $ip='127.0.0.1';
+else if ($hostname=='ittve.ru') $ip='90.156.240.217';
 else $ip='0.0.0.0';
 
 if ($_SERVER['HTTPS']==1) $ws='wss';
 else $ws='ws';
 
-$port=7775;
+$port=7774;
 $echoserver='SocketServer.php';
 
 //echo $_SERVER['HTTPS'].'<br>';
