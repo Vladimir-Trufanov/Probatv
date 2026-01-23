@@ -1,6 +1,10 @@
-/** Arduino, ESP32, C/C++ ************* VideoRecorderESP32-CAM-junior62.ino ***
+/** Arduino, ESP32, C/C++ *************************** ESP32-CamRecorder.ino ***
  * 
- * v1.0.0, 11.01.2026                                 Автор:      Труфанов В.Е.
+ *     Видеомагнитофон на Esp32-Cam - переделка ESP32-CAM-Video-Recorder-junior
+ *                (https://github.com/jameszah/ESP32-CAM-Video-Recorder-junior) 
+ *                                                     для умного хозяйства tve
+ *                                                     
+ * v1.0.1, 23.01.2026                                 Автор:      Труфанов В.Е.
  * Copyright © 2026 tve                               Дата создания: 11.01.2026
  * 
  * Modify by James Zahary Sep 12, 2020 - jamzah.plc@gmail.com
@@ -22,28 +26,6 @@
  * Flash Frequency:   "80MHz"
  * Flash Mode:        "QIO"
 **/
-
-/*
-  - Sep 17, 2024 arduino 1.8.19
-    esp32-arduino 3.04
-    change to soc line
-    ESP32-CAM-Video-Recorder-junior-60x.4.7soc ~ ArduinoSketch folder
-
-  - Feb 24, 2025 arduino 1.8.19
-    esp32-arduino 3.1.1
-    ESP32-CAM-Video-Recorder-junior-62
-    ota passowrd "mrpeanut"
-    ap mode password "12344321"
-    config file is now config2.txt
-
-  https://github.com/jameszah/ESP32-CAM-Video-Recorder-junior
-  jameszah/ESP32-CAM-Video-Recorder-junior is licensed under the
-  GNU General Public License v3.0
-
-  The is Arduino code, with standard setup for ESP32-CAM
-  - Board ESP32 Wrover Module or AI Thinker ESP32-CAM
-  - Partition Scheme Minimal SPIFFS with OTA
-*/
 
 #include "esp_log.h"
 #include "esp_http_server.h"
@@ -118,7 +100,9 @@ int frame_buffer_size;
 bool web_stop = false;
 
 // https://github.com/espressif/esp32-camera/issues/182
-#define fbs  1 // was 64 -- how many kb of static ram for psram -> sram buffer for sd write
+// ранее было fbs=64 - столько КБ статической оперативной памяти 
+// для psram -> буфер sram для записи на sd
+#define fbs  1 
 uint8_t fb_record_static[fbs * 1024 + 20];
 
 // CAMERA_MODEL_AI_THINKER
@@ -149,7 +133,7 @@ camera_fb_t * fb_next = NULL;
 #include "nvs_flash.h"
 #include "nvs.h"
 #include "soc/soc.h"
-#include "esp_cpu.h" //#include "soc/cpu.h"
+#include "esp_cpu.h" // #include "soc/cpu.h"
 #include "soc/rtc_cntl_reg.h"
 
 static esp_err_t cam_err;
@@ -255,7 +239,7 @@ unsigned long jpeg_size = 0;
 unsigned long idx_offset = 0;
 
 uint8_t zero_buf[4] = {0x00, 0x00, 0x00, 0x00};
-uint8_t dc_buf[4] = {0x30, 0x30, 0x64, 0x63};    // "00dc"
+uint8_t dc_buf[4] = {0x30, 0x30, 0x64, 0x63};      // "00dc"
 uint8_t dc_and_zero_buf[8] = {0x30, 0x30, 0x64, 0x63, 0x00, 0x00, 0x00, 0x00};
 
 uint8_t avi1_buf[4] = {0x41, 0x56, 0x49, 0x31};    // "AVI1"
@@ -268,6 +252,7 @@ struct frameSizeStruct
   uint8_t frameHeight[2];
 };
 
+// Здесь используются две ссылки на Git-репозитарии, которые сохранены в каталоге DownLoads приложения: 
 // data structure from here https://github.com/s60sc/ESP32-CAM_MJPEG2SD/blob/master/avi.cpp, extended for ov5640
 // must match https://github.com/espressif/esp32-camera/blob/b6a8297342ed728774036089f196d599f03ea367/driver/include/sensor.h#L87
 // which changed in Nov 2024
@@ -4046,4 +4031,4 @@ void loop() {
   }
 }
 
-// ************************************ VideoRecorderESP32-CAM-junior62.ino ***
+// ************************************************** ESP32-CamRecorder.ino ***

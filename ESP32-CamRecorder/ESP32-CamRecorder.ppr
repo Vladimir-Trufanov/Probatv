@@ -1,0 +1,61 @@
+[Config]
+Compilator.SaveAll=0
+Compilator.Capture=0
+Compilator.CompileOnBackground=0
+Compilator.ProgSaveAll=0
+Compilator.ProgRunSelection=0
+Compilator.LogType=0
+Compilator.LogEncoding=0
+DefaultDir=C:\Probatv\ESP32-CamRecorder
+DefaultCP=0
+LogtoEnd=1
+DontOpen=0
+AbsolutePath=0
+FileFormat=0
+ProjectFilesOnly=0
+Extensions=*.*
+[Project tree]
+ESP32-CamRecorder
+	+ESP32-CamRecorder
+		config.h
+		CRC32.cpp
+		CRC32.h
+		ESP32-CamRecorder.ino
+		ESP32-CamRecorder.md
+		ESP32-CamRecorder.ppr
+		ESPxWebFlMgr.cpp
+		ESPxWebFlMgr.h
+		ESPxWebFlMgrWp.h
+		ESPxWebFlMgrWpF.h
+[Open project files]
+0=ESP32-CamRecorder.ino
+1=ESPxWebFlMgrWpF.h
+2=ESPxWebFlMgr.h
+3=ESPxWebFlMgr.cpp
+4=CRC32.h
+5=CRC32.cpp
+6=ESPxWebFlMgrWp.h
+[Selected Project Files]
+Main=
+Selected=ESPxWebFlMgrWpF.h
+[ESP32-CamRecorder.ino]
+TopLine=3853
+Caret=6,3537
+[ESPxWebFlMgrWpF.h]
+TopLine=1
+Caret=1,3
+[ESPxWebFlMgr.h]
+TopLine=1
+Caret=1,4
+[ESPxWebFlMgr.cpp]
+TopLine=1
+Caret=57,3
+[CRC32.h]
+TopLine=1
+Caret=1,1
+[CRC32.cpp]
+TopLine=1
+Caret=78,1
+[ESPxWebFlMgrWp.h]
+TopLine=1
+Caret=1,5
