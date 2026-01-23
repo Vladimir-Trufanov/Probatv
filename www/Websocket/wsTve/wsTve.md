@@ -21,6 +21,8 @@ SocketServer.php:1  Failed to load resource: the server responded with a status 
 
 #### http://ittve.ru/Websocket/wsTve/
 
+> ***2026-01-23 Удачно произошла загрузка сокетсервера на ittve.ru и связь с моноблока!!!***
+
 ### "как на php проверить занят ли порт"
 
 Проверить, занят ли порт на PHP, можно с помощью функций, связанных с работой сокетов. Однако подход зависит от протокола — TCP или UDP. 
