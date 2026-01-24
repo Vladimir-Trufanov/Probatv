@@ -36,7 +36,6 @@
 #include "jpr.h"
 #include "sd.h"
 
-static const char vernum[] = "v62.34";
 char devname[30];
 
 // Определяем Московскую timezone в соответствии с:
@@ -82,14 +81,6 @@ long current_frame_time;
 long last_frame_time;
 int frame_buffer_size;
 bool web_stop = false;
-
-/*
-// https://github.com/espressif/esp32-camera/issues/182
-// ранее было fbs=64 - столько КБ статической оперативной памяти 
-// для psram -> буфер sram для записи на sd
-#define fbs  1 
-uint8_t fb_record_static[fbs * 1024 + 20];
-*/
 
 // CAMERA_MODEL_AI_THINKER
 #define PWDN_GPIO_NUM     32
@@ -320,9 +311,11 @@ static void inline print_2quartet(unsigned long i, unsigned long j, File fd) {
   size_t i1_err = fd.write(y , 8);
 }
 
+/*
 void print_mem(const char* text) {
   jpr("%s core: %d, Prio: %d, Internal Free Heap %6d of %6d, SPI Free %6d of %6d\n", text, xPortGetCoreID(), uxTaskPriorityGet(NULL), ESP.getFreeHeap(), ESP.getHeapSize(), ESP.getFreePsram(), ESP.getPsramSize() );
 }
+*/
 
 #include "lwip/sockets.h"
 #include <lwip/netdb.h>
@@ -374,34 +367,6 @@ void print_sock(int sock) {
     Serial.println("Failed to get client address.");
   }
 }
-
-/*
-//
-// if we have no camera, or sd card, then flash rear led on and off to warn the human SOS - SOS
-//
-void major_fail() {
-
-  Serial.println(" ");
-  logfile.close();
-
-  for  (int i = 0;  i < 10; i++) {                 // 10 loops or about 100 seconds then reboot
-    for (int j = 0; j < 3; j++) {
-      digitalWrite(33, LOW);   delay(150);
-      digitalWrite(33, HIGH);  delay(150);
-    }
-    delay(1000);
-
-    for (int j = 0; j < 3; j++) {
-      digitalWrite(33, LOW);  delay(500);
-      digitalWrite(33, HIGH); delay(500);
-    }
-    delay(1000);
-    Serial.print("Major Fail  "); Serial.print(i); Serial.print(" / "); Serial.println(10);
-  }
-
-  ESP.restart();
-}
-*/
 
 static void config_camera() 
 {
@@ -3523,10 +3488,9 @@ void setup()
   Serial.begin(115200);
   Serial.println("\n\n---");
   Serial.println("Arduino IDE 2.3.7 - Espressif ESP32 3.3.5");
-  delay(10000);
 
-  pinMode(33, OUTPUT);             // little red led on back of chip
-  digitalWrite(33, LOW);           // turn on the red LED on the back of chip
+  pinMode(33, OUTPUT);              // little red led on back of chip
+  digitalWrite(33, LOW);            // turn on the red LED on the back of chip
 
   pinMode(4, OUTPUT);               // Blinding Disk-Avtive Light
   digitalWrite(4, LOW);             // turn off
@@ -3534,40 +3498,26 @@ void setup()
   pinMode(12, INPUT_PULLUP);        // pull this down to stop recording
   pinMode(13, INPUT_PULLUP);        // pull this down switch wifi
 
-  // SD camera init
+  // Инициализируем SD-карту
   if (init_sdcard()) logfile = SD_MMC.open("/boot.txt", FILE_WRITE);
-  else
-  {
-    major_fail();
-    return;
-  }
+  // Если неудача, то перезагружаем контроллер
+  else major_fail();
   
-  
-  /*
-  Serial.println("Mounting the SD card ...");
-  esp_err_t card_err = init_sdcard();
-  if (card_err != ESP_OK) {
-    Serial.printf("SD Card init failed with error 0x%x", card_err);
-    major_fail();
-    return;
-  } else {
-    logfile = SD_MMC.open("/boot.txt", FILE_WRITE);
-  }
-  */
-  
-  jprln("                                    ");
+  jprln(" ");
   jprln("---------------------------------------");
-  jprln("ESP32-CAM-Video-Recorder-junior %s", vernum);
+  jprln("ESP32-CamRecorder %s", vernum);
   jprln("---------------------------------------");
 
-  print_mem("setup");
+  // Показываем состояние памяти 
+  print_mem("SETUP");
 
   esp_reset_reason_t reason = esp_reset_reason();
 
   //logfile.print("--- reboot ------ because: ");
   jpr("--- reboot ------ because: ");
 
-  switch (reason) {
+  switch (reason) 
+  {
     case ESP_RST_UNKNOWN : jprln("ESP_RST_UNKNOWN");  break;
     case ESP_RST_POWERON : jprln("ESP_RST_POWERON"); break;
     case ESP_RST_EXT : jprln("ESP_RST_EXT");  break;

@@ -12,8 +12,11 @@
 #include "FS.h"
 #include <SD_MMC.h>
 
-File logfile;
+// Объявляем дескрипторы файлов
+File logfile;  // файл информационных сообщений и сообщений об ошибках
 File avifile;
 File idxfile;
+
+static const char vernum[] = "v62.34.0";   // версия приложения
 
 // *************************************************************** inimem.h ***

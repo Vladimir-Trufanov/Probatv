@@ -18,16 +18,16 @@ Extensions=*.*
 [Project tree]
 ESP32-CamRecorder
 	+ESP32-CamRecorder
-		-DownLoads
-			DownLoads\avi.cpp
-			DownLoads\ESPxWebFlMgr-master.zip
-			DownLoads\sensor.h
-			DownLoads\v2-ESPxWebFlMgr-master.zip
+		-Info
+			Info\avi.cpp
+			Info\ESP32-CamRecorder.md
+			Info\ESPxWebFlMgr-master.zip
+			Info\sensor.h
+			Info\v2-ESPxWebFlMgr-master.zip
 		config.h
 		CRC32.cpp
 		CRC32.h
 		ESP32-CamRecorder.ino
-		ESP32-CamRecorder.md
 		ESP32-CamRecorder.ppr
 		ESPxWebFlMgr.cpp
 		ESPxWebFlMgr.h
@@ -38,21 +38,21 @@ ESP32-CamRecorder
 		sd.h
 [Open project files]
 0=ESP32-CamRecorder.ino
-1=sd.h
-2=jpr.h
-3=inimem.h
+1=inimem.h
+2=sd.h
+3=jpr.h
 [Selected Project Files]
 Main=
-Selected=ESP32-CamRecorder.ino
+Selected=jpr.h
 [ESP32-CamRecorder.ino]
-TopLine=3533
-Caret=1,3543
-[sd.h]
-TopLine=25
-Caret=1,40
-[jpr.h]
-TopLine=1
-Caret=1,58
+TopLine=3506
+Caret=19,3512
 [inimem.h]
 TopLine=1
-Caret=1,1
+Caret=1,21
+[sd.h]
+TopLine=28
+Caret=43,25
+[jpr.h]
+TopLine=52
+Caret=12,75

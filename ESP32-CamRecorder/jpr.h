@@ -30,31 +30,49 @@
     } \
   }
 
-//
-// if we have no camera, or sd card, then flash rear led on and off to warn the human SOS - SOS
-//
-void major_fail() {
-
+// ****************************************************************************
+// *      Мигать задним красным светодиодом в случае неудачного включения     *
+// *                           камеры или sd-карты                            *
+// ****************************************************************************
+void major_fail() 
+{
   Serial.println(" ");
   logfile.close();
-
-  for  (int i = 0;  i < 10; i++) {                 // 10 loops or about 100 seconds then reboot
-    for (int j = 0; j < 3; j++) {
+  // 10 loops or about 100 seconds then reboot
+  for  (int i = 0;  i < 10; i++) 
+  {                
+    for (int j = 0; j < 3; j++) 
+    {
       digitalWrite(33, LOW);   delay(150);
       digitalWrite(33, HIGH);  delay(150);
     }
     delay(1000);
-
-    for (int j = 0; j < 3; j++) {
+    for (int j = 0; j < 3; j++) 
+    {
       digitalWrite(33, LOW);  delay(500);
       digitalWrite(33, HIGH); delay(500);
     }
     delay(1000);
-    Serial.print("Major Fail  "); Serial.print(i); Serial.print(" / "); Serial.println(10);
+    Serial.print("Крупная неудача "); Serial.print(i); 
+    Serial.print("/"); Serial.println(10);
   }
-
   ESP.restart();
 }
+// ****************************************************************************
+// *              Показать состояние памяти с заданным префиксом              *
+// ****************************************************************************
 
+/**
+ * xPortGetCoreID()        - функция возвращает номер ядра, на котором выполняется текущая задача
+ * uxTaskPriorityGet(NULL) - возвращает приоритет текущей задачи (задачи, из которой была вызвана функция)
+ * ESP.getFreeHeap()       - возвращает размер свободной кучи (heap) в байтах
+ * ESP.getHeapSize()       - возвращает полный размер внутренней оперативной памяти в байтах (ОЗУ)
+ * ESP.getFreePsram()      - свободный объём внешней оперативной памяти PSRAM
+ * ESP.getPsramSize()      - полный объём внешней оперативной памяти PSRAM
+**/
+void print_mem(const char* text) 
+{
+  jpr("[%s] ядро: %d, приоритет: %d, свободная куча %6d от ОЗУ %6d, FreePSRAM %6d от FLASH %6d\n", text, xPortGetCoreID(), uxTaskPriorityGet(NULL), ESP.getFreeHeap(), ESP.getHeapSize(), ESP.getFreePsram(), ESP.getPsramSize() );
+}
 
 // ****************************************************************** jpr.h ***
