@@ -180,7 +180,7 @@ file.write(framebuffer_static, fb->len);
 
 ### Рабочие материалы по форматам видео
 
-Здесь используются две ссылки на Git-репозитарии, которые сохранены в каталоге ***DownLoads*** приложения: 
+Здесь используются две ссылки на Git-репозитарии, которые сохранены в каталоге ***Info*** приложения: 
 [avi.cpp](https://github.com/s60sc/ESP32-CAM_MJPEG2SD/blob/master/avi.cpp), 
 [sensor.h](https://github.com/espressif/esp32-camera/blob/b6a8297342ed728774036089f196d599f03ea367/driver/include/sensor.h#L87)
 

@@ -32,25 +32,9 @@
 #include "esp_camera.h"
 #include "sensor.h"
 
-#define jpr(format, ...) \
-  { \
-    char buffer[256]; \
-    snprintf(buffer, sizeof(buffer), format, ##__VA_ARGS__); \
-    Serial.print(buffer); \
-    if (logfile) { \
-      logfile.print(buffer); \
-    } \
-  }
-
-#define jprln(format, ...) \
-  { \
-    char buffer[256]; \
-    snprintf(buffer, sizeof(buffer), format, ##__VA_ARGS__); \
-    Serial.println(buffer); \
-    if (logfile) { \
-      logfile.println(buffer); \
-    } \
-  }
+#include "inimem.h"
+#include "jpr.h"
+#include "sd.h"
 
 static const char vernum[] = "v62.34";
 char devname[30];
@@ -99,11 +83,13 @@ long last_frame_time;
 int frame_buffer_size;
 bool web_stop = false;
 
+/*
 // https://github.com/espressif/esp32-camera/issues/182
 // ранее было fbs=64 - столько КБ статической оперативной памяти 
 // для psram -> буфер sram для записи на sd
 #define fbs  1 
 uint8_t fb_record_static[fbs * 1024 + 20];
+*/
 
 // CAMERA_MODEL_AI_THINKER
 #define PWDN_GPIO_NUM     32
@@ -201,10 +187,6 @@ int  gmdelay;
 #include "esp_vfs_fat.h"
 #include "FS.h"
 #include <SD_MMC.h>
-
-File logfile;
-File avifile;
-File idxfile;
 
 char avi_file_name[100];
 char file_to_edit[50] = "/JamCam0481.0007.avi"; //61.3
@@ -393,6 +375,7 @@ void print_sock(int sock) {
   }
 }
 
+/*
 //
 // if we have no camera, or sd card, then flash rear led on and off to warn the human SOS - SOS
 //
@@ -418,7 +401,7 @@ void major_fail() {
 
   ESP.restart();
 }
-
+*/
 
 static void config_camera() 
 {
@@ -521,7 +504,7 @@ static void config_camera()
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 //
 
-
+/*
 static esp_err_t init_sdcard()
 {
 
@@ -552,6 +535,7 @@ static esp_err_t init_sdcard()
 
   return ESP_OK;
 }
+*/
 
 #include "config.h"
 
@@ -3551,6 +3535,15 @@ void setup()
   pinMode(13, INPUT_PULLUP);        // pull this down switch wifi
 
   // SD camera init
+  if (init_sdcard()) logfile = SD_MMC.open("/boot.txt", FILE_WRITE);
+  else
+  {
+    major_fail();
+    return;
+  }
+  
+  
+  /*
   Serial.println("Mounting the SD card ...");
   esp_err_t card_err = init_sdcard();
   if (card_err != ESP_OK) {
@@ -3560,7 +3553,8 @@ void setup()
   } else {
     logfile = SD_MMC.open("/boot.txt", FILE_WRITE);
   }
-
+  */
+  
   jprln("                                    ");
   jprln("---------------------------------------");
   jprln("ESP32-CAM-Video-Recorder-junior %s", vernum);

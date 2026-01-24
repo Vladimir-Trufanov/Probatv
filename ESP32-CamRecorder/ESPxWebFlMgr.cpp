@@ -1,5 +1,5 @@
 // mods by James Zahary Dec 28, 2021 https://github.com/jameszah/ESPxWebFlMgr
-//                      Jan 12, 2022 - adds dates/times to display
+// рус                     Jan 12, 2022 - adds dates/times to display
 // based on https://github.com/holgerlembke/ESPxWebFlMgr
 
 #include <Arduino.h>

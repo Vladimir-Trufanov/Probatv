@@ -1,6 +1,6 @@
 // mods by James Zahary Dec 28, 2021 https://github.com/jameszah/ESPxWebFlMgr
 // based on https://github.com/holgerlembke/ESPxWebFlMgr
-
+// рус
 // inline guard. Still broken by design?
 #ifndef ESPxWebFlMgrWpF_h
 #define ESPxWebFlMgrWpF_h

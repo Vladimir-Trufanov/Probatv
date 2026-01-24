@@ -1,6 +1,6 @@
 #include <pgmspace.h>
 
-//61.3
+// рус 61.3
 ///////////////////////////////
 const char edit_html[] PROGMEM = R"===(
 <!doctype html>

@@ -1,7 +1,7 @@
 // mods by James Zahary Dec 28, 2021 https://github.com/jameszah/ESPxWebFlMgr
 // based on https://github.com/holgerlembke/ESPxWebFlMgr
 
-//
+// рус
 // Copyright (c) 2013 Christopher Baker <https://christopherbaker.net>
 //
 // SPDX-License-Identifier:	MIT
