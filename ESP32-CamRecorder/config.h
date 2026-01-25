@@ -1,7 +1,26 @@
+/** Arduino, ESP32, C/C++ **************************************** config.h ***
+ * 
+ *                             Обеспечить выборку параметров из "config2.txt" и 
+ *                                                    управление ими через html
+ *                                                     
+ * v1.0.0, 25.01.2026                                 Автор:      Труфанов В.Е.
+ * Copyright © 2026 tve                               Дата создания: 25.01.2026
+ * 
+**/
+
+#include "driver/sdmmc_host.h"
+#include "driver/sdmmc_defs.h"
+#include "sdmmc_cmd.h"
+#include "esp_vfs_fat.h"
+#include "FS.h"
+#include <SD_MMC.h>
+
+#include "inimem.h"
+#include "jpr.h"
+
+#include "eprom.h"
 #include <pgmspace.h>
 
-// рус 61.3
-///////////////////////////////
 const char edit_html[] PROGMEM = R"===(
 <!doctype html>
 <html>
@@ -231,23 +250,24 @@ reindexButton.onclick = () => {
 </html>
 )===";
 
-////////////////////////////////
-
-//61.3
+// ****************************************************************************
+// *         Сформировать умалчиваемую версию файла "config2.txt" [61.3]      *
+// ****************************************************************************
 const char config_txt[] PROGMEM = 
-R"==x==(desklens  // camera name
-13  // framesize  13=hd
-1800  // length of video in seconds
-0  // interval - ms between recording frames 
-1  // speedup - multiply framerate 
-0  // streamdelay - ms between streaming frames
-GMT  // timezone
-ssid  // ssid #1 wifi name
-12344321  // ssid password
-ssid  // ssid $2 wifi name
-12344321  // ssid password
-ssid  // AP ssid wifi name - switch to camaera name if it is ssid
-12344321  // ssid password
+R"==x==(
+desklens          // название камеры
+13                // размер кадра = 13, для hd
+1800              // размер видео в секундах
+0                 // интервал между записями кадров в миллисекундах (ms) 
+1                 // speedup - частота кадров
+0                 // streamdelay - интервал между потоковыми кадрами (ms)
+GMT               // timezone
+ssid#             // ssid #1 wifi name (например, может быть "OPPO A9 2020")
+12344321#         // ssid password
+ssid              // ssid $2 wifi name
+12344321          // ssid password
+ssid              // AP ssid wifi name - switch to camaera name if it is ssid
+12344321          // ssid password
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Above lines - 1 item per line followed by 2 spaces
 
@@ -280,7 +300,7 @@ GMT - timezone for dates and times on your files
   - central europe: CET-1CEST-2,M3.5.0/02:00:00,M10.5.0/03:00:00
   - Ulaanbaatar, Mongolia: ULAT-8ULAST,M3.5.0/2,M9.5.0/2 
   - find timezone here: 
-     https://sites.google.com/a/usapiens.com/opnode/time-zones
+    https://sites.google.com/a/usapiens.com/opnode/time-zones
 ssid - your wifi ssid username
  - defualt ap written on serial monitor name_CC, where name is
    your camera name, and CC is last 2 digits of MAC address
@@ -291,3 +311,105 @@ One-Click Installer: https://jameszah.github.io/ESP32-CAM-VideoCam/
 James Zahary - Dec 1, 2024
 
 )==x==";
+
+// ****************************************************************************
+// *                    Выбрать параметры из "config2.txt"                    *
+// ****************************************************************************
+void read_config_file() 
+{
+  // Если есть config2.txt, в приложении используются его значения и
+  // и значения по умолчанию, иначе используются только значения по умолчанию.
+  // Для изменения умалчиваемых значений снаружи следует создать config2.txt
+  // на SD-карте по следующим правилам:
+  // по одному параметру в строке, в правильном порядке, минимум двумя пробелами перед любыми комментариями
+
+  String junk;            // считаный фрагмент строки (как правило, комментарий)
+  String cname;           // название камеры
+  int cframesize;         // размер кадра
+  int clength;            // размер видео в секундах
+  int cinterval;          // интервал между записями кадров в миллисекундах (ms) 
+  int cspeedup;           // частота кадров
+  int cstreamdelay;       // интервал между потоковыми кадрами (ms)
+  int cquality = 12;      // качество по умолчанию
+  int cbuffersconfig = 4;
+  String czone;           // timezone
+
+  delay(1000);
+  File config_file = SD_MMC.open("/config2.txt", "r");
+  if (config_file) 
+  {
+    jpr("Открывается config2.txt на SD");
+  } 
+  else 
+  {
+    jpr("Ошибка открытия config2.txt - принимаются значения по умолчанию");
+    // На основе текста символов "config_txt" создаём конфигурационны файл 
+    File new_simple = SD_MMC.open("/config2.txt", "w");
+    new_simple.print(config_txt);
+    new_simple.close();
+    file_group = 1;
+    file_number = 1;
+    do_eprom_write();
+    config_file = SD_MMC.open("/config2.txt", "r");
+  }
+
+  jpr("Читается config2.txt\n");
+  cname = config_file.readStringUntil(' ');  // название камеры
+  junk = config_file.readStringUntil('\n');
+  cframesize = config_file.parseInt();       // размер кадра
+  junk = config_file.readStringUntil('\n');
+  clength = config_file.parseInt();          // размер видео в секундах
+  junk = config_file.readStringUntil('\n');
+  cinterval = config_file.parseInt();        // интервал между записями кадров в миллисекундах (ms) 
+  junk = config_file.readStringUntil('\n');
+  cspeedup = config_file.parseInt();         // частота кадров
+  junk = config_file.readStringUntil('\n');
+  cstreamdelay = config_file.parseInt();     // интервал между потоковыми кадрами (ms)
+  junk = config_file.readStringUntil('\n');
+  czone = config_file.readStringUntil(' ');  // timezone
+  junk = config_file.readStringUntil('\n');
+  cssid1 = config_file.readStringUntil('#');
+  junk = config_file.readStringUntil('\n');
+  cpass1 = config_file.readStringUntil('#');
+  junk = config_file.readStringUntil('\n');
+  cssid2 = config_file.readStringUntil(' ');
+  junk = config_file.readStringUntil('\n');
+  cpass2 = config_file.readStringUntil(' ');
+  junk = config_file.readStringUntil('\n');
+  cssid3 = config_file.readStringUntil(' ');
+  junk = config_file.readStringUntil('\n');
+  cpass3 = config_file.readStringUntil(' ');
+  junk = config_file.readStringUntil('\n');
+  config_file.close();
+
+  jpr("=========   Данные, считанные из config2.txt и по умолчанию  =========\n");
+  jpr("Название камеры %s\n",                      cname);
+  jpr("Размер кадра %d\n",                         cframesize);
+  jpr("Качество %d\n",                             cquality);
+  jpr("Buffers config %d\n",                       cbuffersconfig);
+  jpr("Размер видео в секундах %d\n",              clength);
+  jpr("Интервал между записями кадров (ms) %d\n",  cinterval);
+  jpr("Частота кадров %d\n",                       cspeedup);
+  jpr("Интервал между кадрами в потоке (ms) %d\n", cstreamdelay);
+  jpr("TIMEZONE %d, %s\n",                         czone.length(), czone.c_str());
+  jpr("ssid1 %s\n", cssid1);
+  //jpr("pass1 %s\n", cpass1);
+  jpr("ssid2 %s\n", cssid2);
+  //jpr("pass2 %s\n", cpass2);
+  jpr("ssid3 %s\n", cssid3);
+  jpr("pass3 %s\n", cpass3);
+
+  // Назначаем считанные значения файла конфигурации
+  framesize = cframesize;
+  quality = cquality;
+  buffersconfig = cbuffersconfig;
+  avi_length = clength;
+  frame_interval = cinterval;
+  speed_up_factor = cspeedup;
+  stream_delay = cstreamdelay;
+  configfile = true;
+  TIMEZONE = czone;
+  cname.toCharArray(devname, cname.length() + 1);
+}
+
+// *************************************************************** config.h ***

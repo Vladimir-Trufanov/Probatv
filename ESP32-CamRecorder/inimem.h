@@ -19,4 +19,28 @@ File idxfile;
 
 static const char vernum[] = "v62.34.0";   // версия приложения
 
+#define Lots_of_Stats 1
+#define blinking 0
+
+char devname[30];           // название камеры
+int framesize;              // размер кадра
+int quality;                // качество изображения
+int avi_length ;            // сколько длится фильм в секундах -- 1800 sec = 30 min
+int frame_interval ;        // интервал между записями кадров в миллисекундах (ms) 
+int speed_up_factor ;       // воспроизведение в режиме реального времени (частота кадров)
+int stream_delay ;          // задержка между кадрами не менее 500 мс (интервал между потоковыми кадрами - ms)
+bool configfile = false;    // true - считан файл config2.txt
+
+// Московская timezone в соответствии с:
+// https://www.gnu.org/software/libc/manual/html_node/Proleptic-TZ.html
+// String TIMEZONE = "GMT0BST,M3.5.0/01,M10.5.0/02";
+String TIMEZONE = "MSK+00";
+
+String cssid1, cssid2, cssid3;
+String cpass1, cpass2, cpass3;
+
+int framesizeconfig;
+int qualityconfig;
+int buffersconfig;
+
 // *************************************************************** inimem.h ***

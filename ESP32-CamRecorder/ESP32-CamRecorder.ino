@@ -4,7 +4,7 @@
  *                (https://github.com/jameszah/ESP32-CAM-Video-Recorder-junior) 
  *                                                     для умного хозяйства tve
  *                                                     
- * v1.0.1, 23.01.2026                                 Автор:      Труфанов В.Е.
+ * v1.0.2, 25.01.2026                                 Автор:      Труфанов В.Е.
  * Copyright © 2026 tve                               Дата создания: 11.01.2026
  * 
  * Modify by James Zahary Sep 12, 2020 - jamzah.plc@gmail.com
@@ -36,7 +36,10 @@
 #include "jpr.h"
 #include "sd.h"
 #include "eprom.h"
+#include "config.h"
 
+
+/*
 char devname[30];
 
 // Определяем Московскую timezone в соответствии с:
@@ -56,13 +59,14 @@ int avi_length ;            // сколько длится фильм в сек�
 int frame_interval ;        // запись на полной скорости
 int speed_up_factor ;       // воспроизведение в режиме реального времени
 int stream_delay ;          // задержка между кадрами не менее 500 мс
+*/
 
-bool configfile = false;
+//bool configfile = false;
 bool InternetOff = true;
 bool reboot_now = false;
 bool restart_now = false;
-String cssid1, cssid2, cssid3;
-String cpass1, cpass2, cpass3;
+//String cssid1, cssid2, cssid3;
+//String cpass1, cpass2, cpass3;
 
 String czone;
 //char apssid[30];
@@ -456,6 +460,7 @@ static void config_camera()
   print_mem("End of camera setup");
 }
 
+/*
 #include "config.h"
 
 void read_config_file() {
@@ -562,7 +567,7 @@ void read_config_file() {
   cname.toCharArray(devname, cname.length() + 1);
 
 }
-
+*/
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 //
@@ -3488,8 +3493,7 @@ void setup()
   // (или инициируем новую нумерацию)
   do_eprom_read();
 
-  jprln("Try to get parameters from config2.txt ...");
-
+  jprln("Выбираются параметры из config2.txt ...");
   read_config_file();
 
   jprln("Setting up the camera ...");
