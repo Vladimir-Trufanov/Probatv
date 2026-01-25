@@ -35,6 +35,7 @@
 #include "inimem.h"
 #include "jpr.h"
 #include "sd.h"
+#include "eprom.h"
 
 char devname[30];
 
@@ -55,8 +56,6 @@ int avi_length ;            // сколько длится фильм в сек�
 int frame_interval ;        // запись на полной скорости
 int speed_up_factor ;       // воспроизведение в режиме реального времени
 int stream_delay ;          // задержка между кадрами не менее 500 мс
-
-int MagicNumber = 12;       // изменить этот номер, чтобы сбросить номера файлов в eprom вашего esp32
 
 bool configfile = false;
 bool InternetOff = true;
@@ -194,8 +193,6 @@ int bad_jpg = 0;
 int extend_jpg = 0;
 int normal_jpg = 0;
 
-int file_number = 0;
-int file_group = 0;
 long boot_time = 0;
 
 long totalp;
@@ -310,12 +307,6 @@ static void inline print_2quartet(unsigned long i, unsigned long j, File fd) {
   y[7] = (j >> 24) % 0x100;
   size_t i1_err = fd.write(y , 8);
 }
-
-/*
-void print_mem(const char* text) {
-  jpr("%s core: %d, Prio: %d, Internal Free Heap %6d of %6d, SPI Free %6d of %6d\n", text, xPortGetCoreID(), uxTaskPriorityGet(NULL), ESP.getFreeHeap(), ESP.getHeapSize(), ESP.getFreePsram(), ESP.getPsramSize() );
-}
-*/
 
 #include "lwip/sockets.h"
 #include <lwip/netdb.h>
@@ -464,43 +455,6 @@ static void config_camera()
   jpr("Buffer size for %d is %d\n", x, frame_buffer_size);
   print_mem("End of camera setup");
 }
-
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-//
-
-/*
-static esp_err_t init_sdcard()
-{
-
-  int succ = SD_MMC.begin("/sdcard", true, false, BOARD_MAX_SDMMC_FREQ, 7);
-  if (succ) {
-    Serial.printf("SD_MMC Begin: %d\n", succ);
-    uint8_t cardType = SD_MMC.cardType();
-    Serial.print("SD_MMC Card Type: ");
-    if (cardType == CARD_MMC) {
-      Serial.println("MMC");
-    } else if (cardType == CARD_SD) {
-      Serial.println("SDSC");
-    } else if (cardType == CARD_SDHC) {
-      Serial.println("SDHC");
-    } else {
-      Serial.println("UNKNOWN");
-    }
-
-    uint64_t cardSize = SD_MMC.cardSize() / (1024 * 1024);
-    Serial.printf("SD_MMC Card Size: %lluMB\n", cardSize);
-
-  } else {
-    Serial.printf("Failed to mount SD card VFAT filesystem. \n");
-    Serial.println("Do you have an SD Card installed?");
-    Serial.println("Check pin 12 and 13, not grounded, or grounded with 10k resistors!\n\n");
-    major_fail();
-  }
-
-  return ESP_OK;
-}
-*/
 
 #include "config.h"
 
@@ -840,6 +794,7 @@ camera_fb_t *  get_good_jpeg() {
   return fb;
 }
 
+/*
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 //
 //  eprom functions  - increment the file_group, so files are always unique
@@ -885,7 +840,7 @@ void do_eprom_write() {
   EEPROM.commit();
   EEPROM.end();
 }
-
+*/
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 //
 // Make the avi functions
@@ -3510,12 +3465,10 @@ void setup()
 
   // Показываем состояние памяти 
   print_mem("SETUP");
-
+  // Определяем и показываем причину последнего сброса (reset reason). 
   esp_reset_reason_t reason = esp_reset_reason();
-
-  //logfile.print("--- reboot ------ because: ");
-  jpr("--- reboot ------ because: ");
-
+  logfile.print("--- reboot --- because: ");
+  jpr("--- reboot --- because: ");
   switch (reason) 
   {
     case ESP_RST_UNKNOWN : jprln("ESP_RST_UNKNOWN");  break;
@@ -3531,7 +3484,8 @@ void setup()
     case ESP_RST_SDIO : jprln("ESP_RST_SDIO");  break;
     default  : jprln("Reset resaon"); break;
   }
-
+  // Запускаем продолжение нумерации файлов avi 
+  // (или инициируем новую нумерацию)
   do_eprom_read();
 
   jprln("Try to get parameters from config2.txt ...");
