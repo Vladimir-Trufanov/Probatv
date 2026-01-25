@@ -37,29 +37,7 @@
 #include "sd.h"
 #include "eprom.h"
 #include "config.h"
-
-
-/*
-char devname[30];
-
-// Определяем Московскую timezone в соответствии с:
-// https://www.gnu.org/software/libc/manual/html_node/Proleptic-TZ.html
-// String TIMEZONE = "GMT0BST,M3.5.0/01,M10.5.0/02";
-String TIMEZONE = "MSK+00";
-
-#define Lots_of_Stats 1
-#define blinking 0
-
-int framesize;
-int quality ;
-int framesizeconfig ;
-int qualityconfig ;
-int buffersconfig ;
-int avi_length ;            // сколько длится фильм в секундах -- 1800 sec = 30 min
-int frame_interval ;        // запись на полной скорости
-int speed_up_factor ;       // воспроизведение в режиме реального времени
-int stream_delay ;          // задержка между кадрами не менее 500 мс
-*/
+#include "camera.h"
 
 //bool configfile = false;
 bool InternetOff = true;
@@ -82,9 +60,9 @@ SemaphoreHandle_t baton;
 
 long current_frame_time;
 long last_frame_time;
-int frame_buffer_size;
 bool web_stop = false;
 
+/*
 // CAMERA_MODEL_AI_THINKER
 #define PWDN_GPIO_NUM     32
 #define RESET_GPIO_NUM    -1
@@ -102,6 +80,7 @@ bool web_stop = false;
 #define VSYNC_GPIO_NUM    25
 #define HREF_GPIO_NUM     23
 #define PCLK_GPIO_NUM     22
+*/
 
 camera_fb_t * fb_curr = NULL;
 camera_fb_t * fb_next = NULL;
@@ -363,6 +342,7 @@ void print_sock(int sock) {
   }
 }
 
+/*
 static void config_camera() 
 {
 
@@ -458,114 +438,6 @@ static void config_camera()
 
   jpr("Buffer size for %d is %d\n", x, frame_buffer_size);
   print_mem("End of camera setup");
-}
-
-/*
-#include "config.h"
-
-void read_config_file() {
-
-  // if there is a config.txt, use it plus defaults
-  // else use defaults, and create a config.txt
-
-  // put a file "config.txt" onto SD card, to set parameters different from your hardcoded parameters
-  // it should look like this - one paramter per line, in the correct order, followed by 2 spaces, and any comments you choose
-
-  String junk;
-
-  String cname ;
-  int cframesize ;
-  int cquality = 12 ;
-  int cbuffersconfig = 4;
-  int clength ;
-  int cinterval ;
-  int cspeedup ;
-  int cstreamdelay ;
-  String czone ;
-
-  delay(1000);
-
-  File config_file = SD_MMC.open("/config2.txt", "r");
-
-  if (config_file) {
-    jpr("Opened config2.txt from SD");
-  } else {
-    jpr("Failed to open config2.txt - writing a default");
-
-    // lets make a simple.txt config file
-    File new_simple = SD_MMC.open("/config2.txt", "w");
-    new_simple.print(config_txt);
-    new_simple.close();
-
-    file_group = 1;
-    file_number = 1;
-
-    do_eprom_write();
-
-    config_file = SD_MMC.open("/config2.txt", "r");
-  }
-
-  jpr("Reading config2.txt\n");
-  cname = config_file.readStringUntil(' ');
-  junk = config_file.readStringUntil('\n');
-  cframesize = config_file.parseInt();
-  junk = config_file.readStringUntil('\n');
-
-  clength = config_file.parseInt();
-  junk = config_file.readStringUntil('\n');
-  cinterval = config_file.parseInt();
-  junk = config_file.readStringUntil('\n');
-  cspeedup = config_file.parseInt();
-  junk = config_file.readStringUntil('\n');
-  cstreamdelay = config_file.parseInt();
-  junk = config_file.readStringUntil('\n');
-  czone = config_file.readStringUntil(' ');
-  junk = config_file.readStringUntil('\n');
-  cssid1 = config_file.readStringUntil('#');
-  junk = config_file.readStringUntil('\n');
-  cpass1 = config_file.readStringUntil('#');
-  junk = config_file.readStringUntil('\n');
-  cssid2 = config_file.readStringUntil(' ');
-  junk = config_file.readStringUntil('\n');
-  cpass2 = config_file.readStringUntil(' ');
-  junk = config_file.readStringUntil('\n');
-  cssid3 = config_file.readStringUntil(' ');
-  junk = config_file.readStringUntil('\n');
-  cpass3 = config_file.readStringUntil(' ');
-  junk = config_file.readStringUntil('\n');
-  config_file.close();
-
-  jpr("=========   Data from config2.txt and defaults  =========\n");
-  jpr("Name %s\n", cname);
-  jpr("Framesize %d\n", cframesize);
-  jpr("Quality %d\n", cquality);
-  jpr("Buffers config %d\n", cbuffersconfig);
-  jpr("Length %d\n", clength);
-  jpr("Interval %d\n", cinterval);
-  jpr("Speedup %d\n", cspeedup);
-  jpr("Streamdelay %d\n", cstreamdelay);
-
-  jpr("Zone len %d, %s\n", czone.length(), czone.c_str());
-  jpr("ssid1 %s\n", cssid1);
-  //jpr("pass1 %s\n", cpass1);
-  jpr("ssid2 %s\n", cssid2);
-  //jpr("pass2 %s\n", cpass2);
-  jpr("ssid3 %s\n", cssid3);
-  jpr("pass3 %s\n", cpass3);
-
-
-  framesize = cframesize;
-  quality = cquality;
-  buffersconfig = cbuffersconfig;
-  avi_length = clength;
-  frame_interval = cinterval;
-  speed_up_factor = cspeedup;
-  stream_delay = cstreamdelay;
-  configfile = true;
-  TIMEZONE = czone;
-
-  cname.toCharArray(devname, cname.length() + 1);
-
 }
 */
 
@@ -3496,7 +3368,7 @@ void setup()
   jprln("Выбираются параметры из config2.txt ...");
   read_config_file();
 
-  jprln("Setting up the camera ...");
+  jprln("Устанавливаются параметры камеры ...");
   config_camera();
 
   //fb_record = (uint8_t*)ps_malloc(512 * 1024); // buffer to store a jpg in motion // needs to be larger for big frames from ov5640

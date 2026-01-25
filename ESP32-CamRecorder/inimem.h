@@ -41,6 +41,8 @@ String cpass1, cpass2, cpass3;
 
 int framesizeconfig;
 int qualityconfig;
-int buffersconfig;
+int buffersconfig;          // количество отдельных буферов для кадров
+
+int frame_buffer_size;      //
 
 // *************************************************************** inimem.h ***

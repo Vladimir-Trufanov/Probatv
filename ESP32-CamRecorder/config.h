@@ -331,7 +331,7 @@ void read_config_file()
   int cspeedup;           // частота кадров
   int cstreamdelay;       // интервал между потоковыми кадрами (ms)
   int cquality = 12;      // качество по умолчанию
-  int cbuffersconfig = 4;
+  int cbuffersconfig = 4; // количество отдельных буферов для кадров
   String czone;           // timezone
 
   delay(1000);
@@ -402,7 +402,7 @@ void read_config_file()
   // Назначаем считанные значения файла конфигурации
   framesize = cframesize;
   quality = cquality;
-  buffersconfig = cbuffersconfig;
+  buffersconfig = cbuffersconfig;  // количество отдельных буферов для кадров
   avi_length = clength;
   frame_interval = cinterval;
   speed_up_factor = cspeedup;
