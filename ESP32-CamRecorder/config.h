@@ -266,7 +266,7 @@ ssid#             // ssid #1 wifi name (например, может быть "O
 12344321#         // ssid password
 ssid              // ssid $2 wifi name
 12344321          // ssid password
-ssid              // AP ssid wifi name - switch to camaera name if it is ssid
+ssid              // ssid $3: здесь будет имя камеры, если при загрузке указано "ssid"
 12344321          // ssid password
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Above lines - 1 item per line followed by 2 spaces

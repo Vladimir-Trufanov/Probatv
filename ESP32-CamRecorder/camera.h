@@ -71,7 +71,7 @@ static void config_camera()
   // https://github.com/espressif/esp32-camera/issues/357#issuecomment-1047086477
   config.grab_mode = CAMERA_GRAB_LATEST; // 61.92
   // Показываем состояние памяти
-  if (Lots_of_Stats) print_mem("MEM - Перед инициированием камеры");
+  if (Lots_of_Stats) print_mem("MEM - перед инициированием камеры              ");
   // Задаём 5 попыток инициации камеры
   esp_err_t cam_err = ESP_FAIL;
   int attempt = 5;
@@ -89,7 +89,7 @@ static void config_camera()
       attempt--;
     }
   }
-  if (Lots_of_Stats) print_mem("MEM - После инициирования камеры");
+  if (Lots_of_Stats) print_mem("MEM - после инициирования камеры               ");
   // Если неудачное инициирование камеры, то перезагружаем контроллер
   if (cam_err != ESP_OK) major_fail();
   // Получаем указатель (дескриптор) на структуру данных сенсора (камеры)
@@ -145,7 +145,7 @@ static void config_camera()
   frame_buffer_size  = (( (x * 4) / (16 * 1024) ) + 1) * 16 * 1024  ;
   // 4 times buffer size, rounded up to 16kb
   jprln("Размер буфера изображений для %d равен %d", x, frame_buffer_size);
-  print_mem("MEM - После завершеия инициирования камеры");
+  print_mem("MEM - после завершения инициирования камеры    ");
 }
 
 // *************************************************************** camera.h ***

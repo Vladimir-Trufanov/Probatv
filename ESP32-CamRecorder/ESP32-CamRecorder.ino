@@ -40,11 +40,8 @@
 #include "camera.h"
 
 //bool configfile = false;
-bool InternetOff = true;
 bool reboot_now = false;
 bool restart_now = false;
-//String cssid1, cssid2, cssid3;
-//String cpass1, cpass2, cpass3;
 
 String czone;
 //char apssid[30];
@@ -1005,16 +1002,30 @@ WiFiEventId_t eventID;
 #include "esp_wifi.h"
 bool found_router = false;
 
-bool init_wifi() {
-
+// ****************************************************************************
+// *                        Подключить один из трех WiFi                      *
+// ****************************************************************************
+bool init_wifi() 
+{
+  // Инициируем нулевую попытку подключения
   int connAttempts = 0;
 
   //uint32_t brown_reg_temp = READ_PERI_REG(RTC_CNTL_BROWN_OUT_REG);
   //Serial.printf("Brownout was %d\n", brown_reg_temp);
   //WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0);
-
   //WiFi.disconnect(true, true);
 
+  // Настраиваем имя, которое клиент DHCP использует для идентификации устройства
+  // (в типичной сетевой настройке это имя отображается в списке устройств маршрутизатора Wi-Fi.
+  // По умолчанию имя ESP32 — «espressif». С помощью этой функции можно изменить стандартное имя, 
+  // например, для дифференциации устройств в режиме мягкого доступа к точке доступа. 
+  // Аргумент - это строка, которая содержит новое имя. Она должна быть не длиннее 
+  // 32 символов, содержать только буквы, цифры и символ «-»). 
+
+  // Важно: функцию нужно вызвать до начала Wi-Fi с помощью WiFi.begin(), WiFi.softAP(), 
+  // WiFi.mode() или WiFi.run(). Чтобы изменить имя, можно сбросить Wi-Fi с помощью WiFi.mode(WIFI_MODE_NULL), 
+  // затем вызвать WiFi.setHostname() и перезагрузить Wi-Fi с нуля. 
+  // Если hostname не указан, будет назначено стандартное имя на основе типа чипа и MAC-адреса. 
   WiFi.setHostname(devname);
   WiFi.mode(WIFI_STA);
   WiFi.setHostname(devname);
@@ -1026,7 +1037,8 @@ bool init_wifi() {
   char ssidch3[20];
   char passch3[20];
 
-  if (cssid3 == "ssid") {
+  if (cssid3 == "ssid") 
+  {
     cssid3 = String(devname);
   }
 
@@ -1038,29 +1050,30 @@ bool init_wifi() {
   cssid3.toCharArray(ssidota, cssid3.length() + 1);
   cpass3.toCharArray(passch3, cpass3.length() + 1);
 
-
   jpr("\n>>>>>>>>>>>>>>>>>>>>>%s<\n", ssidch1);
   jpr(">>>>>>>>>>>>>>>>>>>>>%s<\n", ssidch2);
   jpr(">>>>>>>>>>>>>>>>>>>>>%s< / >%s<\n", ssidch3, passch3);
 
-  if (String(cssid1) != "ssid") {
+  if (String(cssid1) != "ssid") 
+  {
     found_router = true;
     jMulti.addAP(ssidch1, passch1);
   }
-  if (String(cssid2) != "ssid") {
+  if (String(cssid2) != "ssid") 
+  {
     found_router = true;
     jMulti.addAP(ssidch2, passch2);
   }
-  if (found_router) {
+  if (found_router) 
+  {
     jMulti.run();
   }
   String wifiMacString = WiFi.macAddress();
-  Serial.println(wifiMacString);
+  Serial.println("wifiMacString = "+wifiMacString);
   String idfver = esp_get_idf_version();
-  Serial.println(esp_get_idf_version());
+  Serial.println("idfver        = "+idfver);
 
-  jpr("Setting AP (Access Point)вЂ¦");
-
+  jpr("Setting AP (Access Point)…");
   WiFi.softAP(ssidch3, passch3);
 
   IPAddress IP = WiFi.softAPIP();
@@ -3242,7 +3255,7 @@ void setup()
   jprln("---------------------------------------");
 
   // Показываем состояние памяти 
-  print_mem("MEM - В начале SETUP");
+  print_mem("MEM - В начале SETUP                           ");
   // Определяем и показываем причину последнего сброса (reset reason). 
   esp_reset_reason_t reason = esp_reset_reason();
   jpr("Причина перезагрузки: ");
@@ -3311,14 +3324,13 @@ void setup()
     //vTaskDelete( xHandle );
     Serial.printf("do_the_steaming_task failed to start! %d\n", the_streaming_loop_task);
   }
-
-
-  if (InternetOff) {
-    print_mem("Starting the wifi ...");
+  
+  // Подключаем один из трех WiFi
+  if (InternetOff) 
+  {
+    print_mem("MEM - перед подключением WiFi                  ");
     init_wifi();
-    print_mem("Starting the fileman ...");
-
-    jprln("");
+    print_mem("MEM - перед запуском Filemanager               ");
     filemgr.begin();
     filemgr.setBackGroundColor("Gray");
     jpr("Open Filemanager with http://");
@@ -3328,13 +3340,13 @@ void setup()
     Serial.print(WiFi.localIP()); logfile.print(WiFi.localIP());
     jprln(":%d/", filemanagerport);
 
-    print_mem("Starting Web Services ...");
+    print_mem("MEM - перед запуском Web-сервисов              ");
     startCameraServer();
     start_Stream_81_server();
     start_Stream_82_server();
 
     InternetOff = false;
-    print_mem("After the WiFi");
+    print_mem("МЕМ - после запуска WiFi                       ");
   }
 
   jprln("Checking SD for available space ...");
@@ -3600,8 +3612,8 @@ void loop() {
     print_mem("---------- 10 Minute Internet Check -----------\n");
     time(&now);
     jpr("Local time: "); jpr(ctime(&now));
-    if (!InternetOff ) {
-
+    if (!InternetOff ) 
+    {
       esp_err_t client_err;
       struct sockaddr_in *client_list;
       size_t clients = 10;

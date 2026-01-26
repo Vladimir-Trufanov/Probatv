@@ -43,6 +43,8 @@ int framesizeconfig;        //
 int qualityconfig;          //
 int buffersconfig;          // количество отдельных буферов для кадров
 
+bool InternetOff = true;    // true - WiFi не подключен
+
 // Буфер для 4 кадров, в соответствии с [config.h].cbuffersconfig = 4,
 // первоначально сформированный и загруженный при инициировании камеры
 int frame_buffer_size; 
