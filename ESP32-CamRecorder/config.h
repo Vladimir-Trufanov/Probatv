@@ -338,11 +338,11 @@ void read_config_file()
   File config_file = SD_MMC.open("/config2.txt", "r");
   if (config_file) 
   {
-    jpr("Открывается config2.txt на SD");
+    jprln("Открывается config2.txt на SD");
   } 
   else 
   {
-    jpr("Ошибка открытия config2.txt - принимаются значения по умолчанию");
+    jprln("Ошибка открытия config2.txt - принимаются значения по умолчанию");
     // На основе текста символов "config_txt" создаём конфигурационны файл 
     File new_simple = SD_MMC.open("/config2.txt", "w");
     new_simple.print(config_txt);
@@ -353,7 +353,7 @@ void read_config_file()
     config_file = SD_MMC.open("/config2.txt", "r");
   }
 
-  jpr("Читается config2.txt\n");
+  jprln("Читается config2.txt");
   cname = config_file.readStringUntil(' ');  // название камеры
   junk = config_file.readStringUntil('\n');
   cframesize = config_file.parseInt();       // размер кадра
@@ -383,21 +383,21 @@ void read_config_file()
   config_file.close();
 
   jpr("=========   Данные, считанные из config2.txt и по умолчанию  =========\n");
-  jpr("Название камеры %s\n",                      cname);
-  jpr("Размер кадра %d\n",                         cframesize);
-  jpr("Качество %d\n",                             cquality);
-  jpr("Buffers config %d\n",                       cbuffersconfig);
-  jpr("Размер видео в секундах %d\n",              clength);
-  jpr("Интервал между записями кадров (ms) %d\n",  cinterval);
-  jpr("Частота кадров %d\n",                       cspeedup);
-  jpr("Интервал между кадрами в потоке (ms) %d\n", cstreamdelay);
-  jpr("TIMEZONE %d, %s\n",                         czone.length(), czone.c_str());
-  jpr("ssid1 %s\n", cssid1);
+  jpr("Название камеры                      %s\n",      cname);
+  jpr("Размер кадра                         %d\n",      cframesize);
+  jpr("Качество                             %d\n",      cquality);
+  jpr("Количество буферов для кадров        %d\n",      cbuffersconfig);
+  jpr("Размер видео в секундах              %d\n",      clength);
+  jpr("Интервал между записями кадров (ms)  %d\n",      cinterval);
+  jpr("Частота кадров                       %d\n",      cspeedup);
+  jpr("Интервал между кадрами в потоке (ms) %d\n",      cstreamdelay);
+  jpr("TIMEZONE                             %d, %s\n",  czone.length(), czone.c_str());
+  jpr("ssid1                                %s\n",      cssid1);
   //jpr("pass1 %s\n", cpass1);
-  jpr("ssid2 %s\n", cssid2);
+  jpr("ssid2                                %s\n",      cssid2);
   //jpr("pass2 %s\n", cpass2);
-  jpr("ssid3 %s\n", cssid3);
-  jpr("pass3 %s\n", cpass3);
+  jpr("ssid3                                %s\n",      cssid3);
+  jpr("pass3                                %s\n",      cpass3);
 
   // Назначаем считанные значения файла конфигурации
   framesize = cframesize;

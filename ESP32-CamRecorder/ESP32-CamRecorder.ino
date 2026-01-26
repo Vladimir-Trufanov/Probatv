@@ -4,7 +4,7 @@
  *                (https://github.com/jameszah/ESP32-CAM-Video-Recorder-junior) 
  *                                                     для умного хозяйства tve
  *                                                     
- * v1.0.2, 25.01.2026                                 Автор:      Труфанов В.Е.
+ * v1.0.3, 26.01.2026                                 Автор:      Труфанов В.Е.
  * Copyright © 2026 tve                               Дата создания: 11.01.2026
  * 
  * Modify by James Zahary Sep 12, 2020 - jamzah.plc@gmail.com
@@ -341,105 +341,6 @@ void print_sock(int sock) {
     Serial.println("Failed to get client address.");
   }
 }
-
-/*
-static void config_camera() 
-{
-
-  camera_config_t config;
-
-  //Serial.println("config camera");
-
-  config.ledc_channel = LEDC_CHANNEL_0;
-  config.ledc_timer = LEDC_TIMER_0;
-  config.pin_d0 = Y2_GPIO_NUM;
-  config.pin_d1 = Y3_GPIO_NUM;
-  config.pin_d2 = Y4_GPIO_NUM;
-  config.pin_d3 = Y5_GPIO_NUM;
-  config.pin_d4 = Y6_GPIO_NUM;
-  config.pin_d5 = Y7_GPIO_NUM;
-  config.pin_d6 = Y8_GPIO_NUM;
-  config.pin_d7 = Y9_GPIO_NUM;
-  config.pin_xclk = XCLK_GPIO_NUM;
-  config.pin_pclk = PCLK_GPIO_NUM;
-  config.pin_vsync = VSYNC_GPIO_NUM;
-  config.pin_href = HREF_GPIO_NUM;
-  config.pin_sscb_sda = SIOD_GPIO_NUM;
-  config.pin_sscb_scl = SIOC_GPIO_NUM;
-  config.pin_pwdn = PWDN_GPIO_NUM;
-  config.pin_reset = RESET_GPIO_NUM;
-
-  config.xclk_freq_hz = 20000000;
-
-  config.pixel_format = PIXFORMAT_JPEG;
-
-  jpr("Frame config %d, quality config %d, buffers config %d\n", framesizeconfig, qualityconfig, buffersconfig);
-
-  config.frame_size =  (framesize_t)framesize;
-  config.jpeg_quality = quality;
-  config.fb_count = buffersconfig;
-
-  // https://github.com/espressif/esp32-camera/issues/357#issuecomment-1047086477
-  config.grab_mode      = CAMERA_GRAB_LATEST; //61.92
-
-  if (Lots_of_Stats) {
-    print_mem("Before camera config ... ");
-  }
-  esp_err_t cam_err = ESP_FAIL;
-  int attempt = 5;
-  while (attempt && cam_err != ESP_OK) {
-    cam_err = esp_camera_init(&config);
-    if (cam_err != ESP_OK) {
-      jpr("Camera init failed with error 0x%x\n", cam_err);
-      digitalWrite(PWDN_GPIO_NUM, 1);
-      delay(500);
-      digitalWrite(PWDN_GPIO_NUM, 0); // power cycle the camera (OV2640)
-      attempt--;
-    }
-  }
-
-  if (Lots_of_Stats) {
-    print_mem("After  camera config ... ");
-  }
-
-  if (cam_err != ESP_OK) {
-    major_fail();
-  }
-
-  sensor_t * ss = esp_camera_sensor_get();
-
-  jpr("\nCamera started correctly, Type is %x (hex) of 9650, 7725, 2640, 3660, 5640\n\n", ss->id.PID);
-
-  if (ss->id.PID == OV5640_PID ) {
-    //Serial.println("56 - going mirror");
-    ss->set_hmirror(ss, 1);        // 0 = disable , 1 = enable
-  } else {
-    ss->set_hmirror(ss, 0);        // 0 = disable , 1 = enable
-  }
-
-  ss->set_brightness(ss, 1);  //up the blightness just a bit
-  ss->set_saturation(ss, -2); //lower the saturation
-
-  int x = 0;
-  delay(500);
-  for (int j = 0; j < 30; j++) {
-    camera_fb_t * fb = esp_camera_fb_get(); // get_good_jpeg();
-    if (!fb) {
-      Serial.println("Camera Capture Failed");
-    } else {
-      if (j < 3 || j > 27) jpr("Pic %2d, len=%7d, at mem %X\n", j, fb->len, (long)fb->buf);
-      x = fb->len;
-      esp_camera_fb_return(fb);
-      delay(30);
-    }
-  }
-  frame_buffer_size  = (( (x * 4) / (16 * 1024) ) + 1) * 16 * 1024  ;
-  // 4 times buffer size, rounded up to 16kb
-
-  jpr("Buffer size for %d is %d\n", x, frame_buffer_size);
-  print_mem("End of camera setup");
-}
-*/
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 //
@@ -3341,11 +3242,10 @@ void setup()
   jprln("---------------------------------------");
 
   // Показываем состояние памяти 
-  print_mem("SETUP");
+  print_mem("MEM - В начале SETUP");
   // Определяем и показываем причину последнего сброса (reset reason). 
   esp_reset_reason_t reason = esp_reset_reason();
-  logfile.print("--- reboot --- because: ");
-  jpr("--- reboot --- because: ");
+  jpr("Причина перезагрузки: ");
   switch (reason) 
   {
     case ESP_RST_UNKNOWN : jprln("ESP_RST_UNKNOWN");  break;
@@ -3371,26 +3271,43 @@ void setup()
   jprln("Устанавливаются параметры камеры ...");
   config_camera();
 
-  //fb_record = (uint8_t*)ps_malloc(512 * 1024); // buffer to store a jpg in motion // needs to be larger for big frames from ov5640
-
-  // frame_buffer_size set by config_camera
-  fb_record = (uint8_t*)ps_malloc(frame_buffer_size); // buffer to store a jpg in motion // needs to be larger for big frames from ov5640
+  // Выделяем память под рабочие буферы для хранения jpg в движении 
+  // (должны быть больше больших кадров с ov5640),
+  // размер устанавливаем от ранее сформированного и расчитанного config_camera
+  // fb_record = (uint8_t*)ps_malloc(512 * 1024); 
+  fb_record =          (uint8_t*)ps_malloc(frame_buffer_size); 
   fb_curr_record_buf = (uint8_t*)ps_malloc(frame_buffer_size);
-  fb_streaming = (uint8_t*)ps_malloc(frame_buffer_size); // buffer to store a jpg in motion // needs to be larger for big frames from ov5640
-  fb_capture = (uint8_t*)ps_malloc(frame_buffer_size); // buffer to store a jpg in motion // needs to be larger for big frames from ov5640
+  fb_streaming =       (uint8_t*)ps_malloc(frame_buffer_size); 
+  fb_capture =         (uint8_t*)ps_malloc(frame_buffer_size); 
+  // Показываем состояние памяти 
+  print_mem("MEM - после выделения памяти для jpg в движении");
 
-  print_mem("setup - after malloc");
-
-  jprln("Creating the_camera_loop_task");
-
+  // Объявляем мьютекс между задачами
   baton = xSemaphoreCreateMutex();
 
-
-  xTaskCreatePinnedToCore( the_camera_loop, "the_camera_loop", 5000, NULL, 4, &the_camera_loop_task, 0); //soc14
+  jprln("Создаётся задача the_camera_loop на 0 ядре");
+  xTaskCreatePinnedToCore(
+    the_camera_loop,       // TaskFunction_t pvTaskCode          - имя функции, которая содержит код
+    "the_camera_loop",     // const char * const pcName          - имя задачи
+    5000,                  // const uint32_t usStackDepth        - количество байт, выделенное для стека задачи
+    NULL,                  // void * const pvParameters          - указатель на параметры для задачи
+    4,                     // UBaseType_t uxPriority             - приоритет задачи
+    &the_camera_loop_task, // TaskHandle_t * const pxCreatedTask - указатель на задачу, который можно использовать для ссылки на задачу позже (например, для её завершения)
+    0                      // const BaseType_t xCoreID           - ядро процессора, на которое нужно назначить задачу (0 для ядра 0, 1 для 1 или tskNO_AFFINITY - на обоих ядрах
+  ); //soc14
   delay(100);
 
-  xTaskCreate( the_streaming_loop, "the_streaming_loop", 8000, NULL, 2, &the_streaming_loop_task);
-  if ( the_streaming_loop_task == NULL ) {
+  jprln("Создаётся задача the_streaming_loop");
+  xTaskCreate(
+    the_streaming_loop,    // TaskFunction_t pvTaskCode          - имя функции, которая содержит код
+    "the_streaming_loop",  // const char * const pcName          - имя задачи
+    8000,                  // const uint32_t usStackDepth        - количество байт, выделенное для стека задачи
+    NULL,                  // void * const pvParameters          - указатель на параметры для задачи 
+    2,                     // UBaseType_t uxPriority             - приоритет задачи
+    &the_streaming_loop_task
+  );
+  if (the_streaming_loop_task == NULL ) 
+  {
     //vTaskDelete( xHandle );
     Serial.printf("do_the_steaming_task failed to start! %d\n", the_streaming_loop_task);
   }

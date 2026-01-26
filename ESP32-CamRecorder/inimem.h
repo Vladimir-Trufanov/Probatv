@@ -2,7 +2,7 @@
  * 
  *                      Объявить/проинициализировать общепрограммные переменные
  *                                                     
- * v1.0.0, 24.01.2026                                 Автор:      Труфанов В.Е.
+ * v1.0.1, 26.01.2026                                 Автор:      Труфанов В.Е.
  * Copyright © 2026 tve                               Дата создания: 24.01.2026
 **/
 
@@ -19,7 +19,7 @@ File idxfile;
 
 static const char vernum[] = "v62.34.0";   // версия приложения
 
-#define Lots_of_Stats 1
+#define Lots_of_Stats true  // true - выводить статистику состояний
 #define blinking 0
 
 char devname[30];           // название камеры
@@ -39,10 +39,12 @@ String TIMEZONE = "MSK+00";
 String cssid1, cssid2, cssid3;
 String cpass1, cpass2, cpass3;
 
-int framesizeconfig;
-int qualityconfig;
+int framesizeconfig;        //
+int qualityconfig;          //
 int buffersconfig;          // количество отдельных буферов для кадров
 
-int frame_buffer_size;      //
+// Буфер для 4 кадров, в соответствии с [config.h].cbuffersconfig = 4,
+// первоначально сформированный и загруженный при инициировании камеры
+int frame_buffer_size; 
 
 // *************************************************************** inimem.h ***

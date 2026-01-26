@@ -19,6 +19,8 @@ Extensions=*.*
 ESP32-CamRecorder
 	+ESP32-CamRecorder
 		-Info
+			-multiple_fb_count
+				Info\multiple_fb_count\multiple_fb_count.ino
 			Info\avi.cpp
 			Info\ESP32-CamRecorder.md
 			Info\ESPxWebFlMgr-master.zip
@@ -42,31 +44,27 @@ ESP32-CamRecorder
 0=ESP32-CamRecorder.ino
 1=inimem.h
 2=camera.h
-3=eprom.h
-4=config.h
-5=jpr.h
-6=sd.h
+3=config.h
+4=Info\ESP32-CamRecorder.md
+5=sd.h
 [Selected Project Files]
 Main=
-Selected=camera.h
+Selected=ESP32-CamRecorder.ino
 [ESP32-CamRecorder.ino]
-TopLine=369
-Caret=27,383
+TopLine=3287
+Caret=6,3295
 [inimem.h]
-TopLine=10
-Caret=1,47
+TopLine=12
+Caret=14,5
 [camera.h]
-TopLine=63
-Caret=45,74
-[eprom.h]
-TopLine=25
-Caret=1,50
+TopLine=113
+Caret=14,5
 [config.h]
-TopLine=366
-Caret=78,405
-[jpr.h]
-TopLine=35
-Caret=1,1
+TopLine=317
+Caret=21,334
+[Info\ESP32-CamRecorder.md]
+TopLine=45
+Caret=26,59
 [sd.h]
-TopLine=1
+TopLine=21
 Caret=1,1

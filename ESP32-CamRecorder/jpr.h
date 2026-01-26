@@ -72,7 +72,7 @@ void major_fail()
 **/
 void print_mem(const char* text) 
 {
-  jpr("[%s] ядро: %d, приоритет: %d, свободная куча %6d от ОЗУ %6d, FreePSRAM %6d от FLASH %6d\n", text, xPortGetCoreID(), uxTaskPriorityGet(NULL), ESP.getFreeHeap(), ESP.getHeapSize(), ESP.getFreePsram(), ESP.getPsramSize() );
+  jprln("[%s] ядро: %d, приоритет: %d, свободная куча %6d от ОЗУ %6d, FreePSRAM %6d от FLASH %6d", text, xPortGetCoreID(), uxTaskPriorityGet(NULL), ESP.getFreeHeap(), ESP.getHeapSize(), ESP.getFreePsram(), ESP.getPsramSize() );
 }
 
 // ****************************************************************** jpr.h ***
