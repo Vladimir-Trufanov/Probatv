@@ -1007,9 +1007,6 @@ bool found_router = false;
 // ****************************************************************************
 bool init_wifi() 
 {
-  // Инициируем нулевую попытку подключения
-  int connAttempts = 0;
-
   //uint32_t brown_reg_temp = READ_PERI_REG(RTC_CNTL_BROWN_OUT_REG);
   //Serial.printf("Brownout was %d\n", brown_reg_temp);
   //WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0);
@@ -1026,7 +1023,19 @@ bool init_wifi()
   // WiFi.mode() или WiFi.run(). Чтобы изменить имя, можно сбросить Wi-Fi с помощью WiFi.mode(WIFI_MODE_NULL), 
   // затем вызвать WiFi.setHostname() и перезагрузить Wi-Fi с нуля. 
   // Если hostname не указан, будет назначено стандартное имя на основе типа чипа и MAC-адреса. 
-  WiFi.setHostname(devname);
+  //WiFi.setHostname(devname);
+  // 
+  // Устанавливаем режим работы WiFi, как станции (STA). В этом режиме контроллер 
+  // не создаёт собственную сеть, а подключается к уже существующей сети WiFi, 
+  // например, к локальной сети (роутеру или иному «раздающему» устройству). 
+  //
+  // В режиме STA ESP32 действует как другое клиентское устройство в сети (например, ноутбук или смартфон). 
+  // Его основная цель — обнаружить и подключиться к точке доступа (AP) с помощью SSID (имени сети) и пароля (обычно Pre-Shared Key или PSK). 
+  // После подключения ESP32 получает IP-адрес от AP (обычно через DHCP от роутера) 
+  // и может общаться с другими устройствами в локальной сети и, если AP предоставляет это, получать доступ в интернет.
+  //
+  // Важно: подключение к Wi-Fi не является мгновенным, поэтому необходимо регулярно проверять статус соединения 
+  // с помощью функции WiFi.status(). После успешного подключения функция возвращает WL_CONNECTED. 
   WiFi.mode(WIFI_STA);
   WiFi.setHostname(devname);
 
@@ -1051,15 +1060,15 @@ bool init_wifi()
   cpass3.toCharArray(passch3, cpass3.length() + 1);
 
   jpr("\n>>>>>>>>>>>>>>>>>>>>>%s<\n", ssidch1);
-  jpr(">>>>>>>>>>>>>>>>>>>>>%s<\n", ssidch2);
-  jpr(">>>>>>>>>>>>>>>>>>>>>%s< / >%s<\n", ssidch3, passch3);
+  jpr  (">>>>>>>>>>>>>>>>>>>>>%s<\n", ssidch2);
+  jpr  (">>>>>>>>>>>>>>>>>>>>>%s</>%s<\n", ssidch3, passch3);
 
-  if (String(cssid1) != "ssid") 
+  if (String(cssid1)!="ssid") 
   {
     found_router = true;
     jMulti.addAP(ssidch1, passch1);
   }
-  if (String(cssid2) != "ssid") 
+  if (String(cssid2)!="ssid") 
   {
     found_router = true;
     jMulti.addAP(ssidch2, passch2);
@@ -1068,40 +1077,79 @@ bool init_wifi()
   {
     jMulti.run();
   }
+  // Выбираем и показываем Mac-адрес WiFi
   String wifiMacString = WiFi.macAddress();
-  Serial.println("wifiMacString = "+wifiMacString);
+  Serial.println("Mac-адрес точки доступа: "+wifiMacString);
+  // Выбираем и показываем версию ESP-IDF
   String idfver = esp_get_idf_version();
-  Serial.println("idfver        = "+idfver);
+  Serial.println("Версия компилятора ESP:  "+idfver);
 
-  jpr("Setting AP (Access Point)…");
+  // Задаем режим программной точки доступа (soft-AP) для установления Wi-Fi-сети. 
+  // (то есть создаём собственную сеть Wi-Fi, а другие устройства (станции) могут 
+  // подсоединяться к ней без необходимости соединения с маршрутизатором. 
+
+  // Простая версия функции — WiFi.softAP(ssid) — используется для настройки открытой 
+  // Wi-Fi-сети. Чтобы задать сеть, защищённую паролем, или настроить дополнительные 
+  // параметры сети, используется вариант WiFi.softAP(ssid, password, channel, hidden). 
+  // Первый параметр обязателен: ssid — символьная строка, содержащая SSID сети (не более 63 символов);
+  // password — опциональная символьная строка для пароля. Для сети WPA-PSK её размер 
+  // должен быть не более 8 символов; channel — параметр для настройки WiFi-канала (от «1» до «13»). 
+  // Канал по умолчанию — «1»; hidden = true спрячет SSID.
+  
+  // По умолчанию IP-адресом настроенной программной точки доступа будет «192.168.4.1». 
+  // Его можно поменять при помощи функции softAPConfig. 
+  jprln("Устанавливается программная точка доступа …");
   WiFi.softAP(ssidch3, passch3);
-
+  
+  Serial.print("ssidch3: "); Serial.print(ssidch3); Serial.print("->"); Serial.println(passch3); 
+  
+  
+  
+  //WiFi.begin(ssid, password);
+ 
+  
+  
+  // Выбираем IP-адрес сетевого интерфейса точки доступа (soft-AP). 
   IPAddress IP = WiFi.softAPIP();
-  Serial.print("AP IP address: ");
-  Serial.println(IP);
+  Serial.print("Назначен IP-адрес точки доступа: "); Serial.println(IP);
 
   sprintf(localip, "%s", WiFi.softAPIP().toString().c_str());
-  Serial.print("AP IP: "); Serial.println(localip); Serial.println(" ");
+  Serial.print("AP 11 IP: "); Serial.println(localip); Serial.println(" ");
 
-  /*
-    while (WiFi.status() != WL_CONNECTED ) {
-      delay(1000);
-      Serial.print(".");
-      if (connAttempts++ == 5) break;     // try for 15 seconds to get internet, then give up
-    }
-  */
+  sprintf(localip, "%s", IP.toString().c_str());
+  Serial.print("AP 22 IP: "); Serial.println(localip); 
+  
+
+  // Инициируем нулевую попытку подключения
+  int connAttempts = 0;
+  Serial.println("-- ");
+  while (WiFi.status() != WL_CONNECTED ) 
+  {
+    delay(1000);
+    Serial.print(".");
+    if (connAttempts++ == 5) break;     // try for 15 seconds to get internet, then give up
+  }
+  Serial.println("++ ");
+
+
+  sprintf(localip, "%s", WiFi.localIP().toString().c_str());
+  Serial.print("уже верный IP: "); Serial.println(localip); Serial.println(" ");
+
+
+
+
+
+
+  jprln("Определяется локальное время доступа …");
   configTime(0, 0, "pool.ntp.org");
-
   char tzchar[60];
   TIMEZONE.toCharArray(tzchar, TIMEZONE.length() + 1);        // name of your camera for mDNS, Router, and filenames
-
   Serial.printf("Char >%s<\n", tzchar);
   setenv("TZ", tzchar, 1);  // mountain time zone from #define at top
   tzset();
-
   time(&now);
-
-  while (now < 5) {        // try for 15 seconds to get the time, then give up - 10 seconds after boot
+  while (now < 5) 
+  {        // try for 15 seconds to get the time, then give up - 10 seconds after boot
     delay(1000);
     Serial.print("o");
     time(&now);
@@ -1111,10 +1159,13 @@ bool init_wifi()
   sprintf(localip, "%s", WiFi.localIP().toString().c_str());
   Serial.print("IP: "); Serial.println(localip); Serial.println(" ");
 
-  if (!MDNS.begin(devname)) {
-    jpr("Error setting up MDNS responder!");
-  } else {
-    jpr("mDNS responder started '%s'\n", devname);
+  if (!MDNS.begin(devname)) 
+  {
+    jpr("----- Error setting up MDNS responder!");
+  } 
+  else 
+  {
+    jpr("----- mDNS responder started '%s'\n", devname);
   }
 
   eventID = WiFi.onEvent([](WiFiEvent_t event, WiFiEventInfo_t info) {
@@ -1815,7 +1866,8 @@ static esp_err_t stream_81_handler(httpd_req_t *req) {
 //
 
 
-void the_streaming_loop (void* pvParameter) {
+void the_streaming_loop (void* pvParameter) 
+{
 
   camera_fb_t * fb = NULL;
   esp_err_t res = ESP_OK;
@@ -1825,35 +1877,43 @@ void the_streaming_loop (void* pvParameter) {
 
   long start = millis();
 
-  print_mem("the_streaming_loop");
+  print_mem("MEM - стартовала задача the_streaming_loop     ");
 
-  jprln("Starting the streaming");
+  while (true) 
+  {
 
-  while (true) {
-
-    if (!stream_81 && !stream_82) {
+    if (!stream_81 && !stream_82) 
+    {
       delay(5);
-    } else {
+    } 
+    else 
+    {
       if (stream_81) stream_81_frames++;
       if (stream_82) stream_82_frames++;
 
       xSemaphoreTake( baton, portMAX_DELAY );
 
-      if (fb_record_time > (millis() - 500)) {
+      if (fb_record_time > (millis() - 500)) 
+      {
         //Serial.printf("*");
         fb_streaming_len = fb_record_len;
         fb_streaming_time = fb_record_time;
         memcpy(fb_streaming, fb_record,  fb_record_len);  // v59.5
         xSemaphoreGive( baton );
-      } else {
+      } 
+      else 
+      {
         xSemaphoreGive( baton );
         fb = esp_camera_fb_get(); //get_good_jpeg();
         //Serial.println("loop take");
         //Serial.printf("millis %d, fb1 %d, fb2 %d\n", millis(), fb_record_time, fb_streaming_time);
-        if (!fb) {
+        if (!fb) 
+        {
           Serial.println("Photos - Camera Capture Failed");  // i guess we stream the previous contents of fb_streaming //34
           //start_streaming = false;
-        } else {
+        } 
+        else 
+        {
           //34 xSemaphoreTake( baton, portMAX_DELAY );
           fb_streaming_len = fb->len;
           fb_streaming_time = millis();
@@ -1874,14 +1934,17 @@ void the_streaming_loop (void* pvParameter) {
 
       if (stream_82) {
         res = httpd_resp_send_chunk(req_82, (const char *)part_buf, hlen);
-        if (res != ESP_OK) {
+        if (res != ESP_OK) 
+        {
           stream_82 = false;
           Serial.printf("Stream error - 82/1st %d\n", res);
         }
       }
-      if (stream_81) {
+      if (stream_81) 
+      {
         res = httpd_resp_send_chunk(req_81, (const char *)part_buf, hlen);
-        if (res != ESP_OK) {
+        if (res != ESP_OK) 
+        {
           stream_81 = false;
           Serial.printf("Stream error - 81/1st %d\n", res);
         }
@@ -1889,16 +1952,20 @@ void the_streaming_loop (void* pvParameter) {
 
       xx = millis();
 
-      if (stream_82) {
+      if (stream_82) 
+      {
         res = httpd_resp_send_chunk(req_82, (const char *)_jpg_buf, _jpg_buf_len);
-        if (res != ESP_OK) {
+        if (res != ESP_OK) 
+        {
           stream_82 = false;
           Serial.printf("Stream error - 82/2nd %d\n", res);
         }
       }
-      if (stream_81) {
+      if (stream_81) 
+      {
         res = httpd_resp_send_chunk(req_81, (const char *)_jpg_buf, _jpg_buf_len);
-        if (res != ESP_OK) {
+        if (res != ESP_OK) 
+        {
           stream_81 = false;
           Serial.printf("Stream error - 81/2nd %d\n", res);
         }
@@ -1906,23 +1973,29 @@ void the_streaming_loop (void* pvParameter) {
 
       xx = millis();
 
-      if (stream_82) {
+      if (stream_82) 
+      {
         res = httpd_resp_send_chunk(req_82, _STREAM_BOUNDARY, strlen(_STREAM_BOUNDARY));
-        if (res != ESP_OK) {
+        if (res != ESP_OK) 
+        {
           stream_82 = false;
           Serial.printf("Stream error - 82/3rd %d\n", res);
         }
       }
-      if (stream_81) {
+      if (stream_81) 
+      {
         res = httpd_resp_send_chunk(req_81, _STREAM_BOUNDARY, strlen(_STREAM_BOUNDARY));
-        if (res != ESP_OK) {
+        if (res != ESP_OK) 
+        {
           stream_81 = false;
           Serial.printf("Stream error - 81/3rd %d\n", res);
         }
       }
 
-      if (stream_81_frames % 100 == 10) {
-        if (Lots_of_Stats) {
+      if (stream_81_frames % 100 == 10) 
+      {
+        if (Lots_of_Stats) 
+        {
           jpr("Stream 81 at %3.3f fps\n", (float)1000 * stream_81_frames / (millis() - stream_81_start));
         }
       }
@@ -1934,12 +2007,14 @@ void the_streaming_loop (void* pvParameter) {
 
       int new_delay = stream_delay - (millis() - send_time);
       //Serial.printf(", streamdelay %5d, send_time %5d, newdelay %5d\n", stream_delay, millis() - send_time, new_delay);
-      if (millis() - send_time > 5000) {
+      if (millis() - send_time > 5000) 
+      {
         new_delay = 1000;
         Serial.printf("wifi slow %d - take a 1s break\n", millis() - send_time);
       }
 
-      if (new_delay < 10) {
+      if (new_delay < 10) 
+      {
         new_delay = 10;
       }
 
@@ -3402,9 +3477,9 @@ void setup()
 // the_camera_loop()
 int delete_old_stuff_flag = 0;
 
-void the_camera_loop (void* pvParameter) {
-
-  print_mem("the_camera_loop");
+void the_camera_loop (void* pvParameter) 
+{
+  print_mem("MEM - стартовала задача the_camera_loop        ");
 
   frame_cnt = 0;
   start_record_2nd_opinion = digitalRead(12);
@@ -3413,7 +3488,8 @@ void the_camera_loop (void* pvParameter) {
 
   delay(1000);
 
-  while (1) {
+  while (1) 
+  {
     delay(1);
 
     // if (frame_cnt == 0 && start_record == 0)  // do nothing
@@ -3425,6 +3501,7 @@ void the_camera_loop (void* pvParameter) {
     if ( (frame_cnt == 0 && start_record == 0)) {
 
       // Serial.println("Do nothing");
+      // !!! 2026-01-27 здесь, наверное, ip-адрес не равен http://192.168.1.100/start
       if (we_are_already_stopped == 0) jpr("\n\nDisconnect Pin 12 from GND to start recording or http://192.168.1.100/start \n\n");
       we_are_already_stopped = 1;
       delay(100);
