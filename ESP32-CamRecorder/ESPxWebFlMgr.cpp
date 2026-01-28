@@ -57,7 +57,8 @@ ESPxWebFlMgr::~ESPxWebFlMgr() {
 }
 
 //*****************************************************************************************************
-void ESPxWebFlMgr::begin() {
+void ESPxWebFlMgr::begin() 
+{
 
   Serial.print("fm begin, core ");  Serial.print(xPortGetCoreID());
   Serial.print(", priority = "); Serial.println(uxTaskPriorityGet(NULL));

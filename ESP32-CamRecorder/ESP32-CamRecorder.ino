@@ -1112,7 +1112,7 @@ bool init_wifi()
   sprintf(localip,"%s",WiFi.localIP().toString().c_str());
   Serial.print(_localIP); Serial.println(localip); Serial.println(" ");
 
-  jprln("Определяется локальное время доступа …");
+  jprln("Определяется локальное время …");
   configTime(0, 0, "pool.ntp.org");
   char tzchar[60];
   TIMEZONE.toCharArray(tzchar, TIMEZONE.length() + 1);        // name of your camera for mDNS, Router, and filenames
@@ -1127,34 +1127,71 @@ bool init_wifi()
     Serial.print("o");
     time(&now);
   }
-  Serial.print("\nLocal time: "); Serial.print(ctime(&now));
+  Serial.print("Локальное время: "); Serial.print(ctime(&now));
 
+  // Запускаем службу multicast DNS (mDNS). Это позволяет использовать имя хоста 
+  // в веб-браузере вместо IP-адреса при доступе к ESP32 с компьютера. 
+  // Особенности работы: динамическая обработка IP-адресов — даже если IP-адрес 
+  // устройства изменится, mDNS автоматически преобразует новый IP-адрес в то же имя хоста;
+  // нулевая настройка — дополнительная настройка DNS не требуется, поскольку mDNS 
+  // работает автономно в локальных сетях; автоматическое добавление суффикса — 
+  // если имя хоста уже существует в локальной сети, библиотека автоматически добавляет суффикс. 
+  // Например, если esp32.local уже существует, она переименовывает его в esp32-2.local. 
+  //
+  // В коде ESP32 функция MDNS.begin() вызывается в функции setup() после подключения к сети. 
+  // В качестве аргумента метода передаётся желаемое имя хоста. Например, если IP-адрес устройства
+  // — 192.168.4.1, можно получить доступ к нему с помощью «esp32.local в веб-браузере. 
+  // Важно: имя хоста не должно быть длиннее 63 символов. 
+  // 
+  // Некоторые ошибки, которые могут возникать при использовании функции MDNS.begin, и способы их решения:
+  // а) mDNS не запущен в коде — если MDNS.begin() не вызван или помещён перед подключением к Wi-Fi, сервис не будет рекламироваться. 
+  // Решение: инициализировать mDNS после успешного подключения, поместив MDNS.begin("esp32") 
+  // внутри события подключения к Wi-Fi;
+  // б) Firewall или антивирус блокируют mDNS — в системах без встроенной поддержки mDNS 
+  // (Linux, Windows) правила брандмауэра могут препятствовать входящим ответам mDNS 
+  // на порт 5353. Решение: проверить правила брандмауэра и, если нужно, изменить их;
+  // в) сеть не позволяет многоадресный трафик — некоторые режимы AP, горячие точки или
+  // гостевые сети Wi-Fi изолируют клиентов и блокируют многоадресный трафик, включая mDNS. 
+  // Решение: проверить политики сети и, если нужно, изменить их.
   if (!MDNS.begin(devname)) 
   {
-    jpr("----- Error setting up MDNS responder!");
+    jprln("Ошибка при запуске multicast DNS (mDNS)");
   } 
   else 
   {
-    jpr("----- mDNS responder started '%s'\n", devname);
+    jprln("multicast DNS (mDNS) стартовал с именем '%s'", devname);
   }
 
-  eventID = WiFi.onEvent([](WiFiEvent_t event, WiFiEventInfo_t info) {
+  eventID = WiFi.onEvent([](WiFiEvent_t event, WiFiEventInfo_t info) 
+  {
     //  info.disconnected.reason ==>  info.wifi_sta_disconnected.reason - update with esp32_arduino 2.00 v58
-    if (info.wifi_sta_disconnected.reason != 201) {
+    if (info.wifi_sta_disconnected.reason != 201) 
+    {
       jpr( "\nframe_cnt: %8d, WiFi event Reason: %d , Status: %d\n", frame_cnt, info.wifi_sta_disconnected.reason, WiFi.status());
     }
   });
 
-
+  // Отключаем режим энергосбережения: 
+  // esp_wifi_get_ps — функция из API драйвера Wi-Fi для платы ESP32, которая получает 
+  // режим энергосбережения (sleep mode) Wi-Fi. 
+  // Функция входит в класс WiFi и возвращает значение типа wifi_ps_type_t. 
+  // Режим энергосбережения WiFi влияет на скорость соединения. Можно установить один из трёх режимов: 
+  // WIFI_PS_NONE — режим отключён; WIFI_PS_MIN_MODEM — минимальное энергосбережение; WIFI_PS_MAX_MODEM — максимальное энергосбережение.
+  // Функция позволяет системе автоматически просыпаться из сна, когда это требуется драйвером Wi-Fi, 
+  // и поддерживать соединение с точкой доступа (AP). 
+  // Функция esp_wifi_get_ps вызывается в коде приложения, когда нужно получить текущий 
+  // режим энергосбережения Wi-Fi. Например, в функции, которая управляет работой Wi-Fi, 
+  // можно вызвать WiFi.getSleep() — она вернёт значение типа wifi_ps_type_t.
+  // Важно: режим энергосбережения влияет на то, как драйвер Wi-Fi обрабатывает 
+  // пакеты данных — при включённом режиме энергосбережения полученные данные могут 
+  // быть задержаны на период, указанный в настройках DTIM. 
   wifi_ps_type_t the_type;
   esp_err_t get_ps = esp_wifi_get_ps(&the_type);
-  //Serial.printf("The power save was : %d\n", the_type);
+  Serial.printf("Начальный режим энергосбережения: %d\n", the_type);
   esp_err_t set_ps = esp_wifi_set_ps(WIFI_PS_NONE);
   esp_err_t new_ps = esp_wifi_get_ps(&the_type);
-  //Serial.printf("The power save is : %d\n", the_type);
-
+  Serial.printf("-Текущий- режим энергосбережения: %d\n", the_type);
   //WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, brown_reg_temp);
-
   return true;
 }
 

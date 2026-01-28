@@ -47,12 +47,15 @@ ESP32-CamRecorder
 2=camera.h
 3=config.h
 4=sd.h
+5=ESPxWebFlMgr.cpp
+6=ESPxWebFlMgr.h
+7=ESPxWebFlMgrWp.h
 [Selected Project Files]
 Main=
-Selected=ESP32-CamRecorder.ino
+Selected=ESPxWebFlMgrWp.h
 [ESP32-CamRecorder.ino]
-TopLine=1096
-Caret=2,1116
+TopLine=3407
+Caret=5,3416
 [inimem.h]
 TopLine=16
 Caret=6,24
@@ -65,3 +68,12 @@ Caret=14,6
 [sd.h]
 TopLine=21
 Caret=1,1
+[ESPxWebFlMgr.cpp]
+TopLine=185
+Caret=1,247
+[ESPxWebFlMgr.h]
+TopLine=63
+Caret=5,78
+[ESPxWebFlMgrWp.h]
+TopLine=1
+Caret=19,43
