@@ -17,7 +17,11 @@ File logfile;  // файл информационных сообщений и с
 File avifile;
 File idxfile;
 
-static const char vernum[] = "v62.34.0";   // версия приложения
+static const char vernum[]   = "v62.34.0"; // версия приложения
+static const char _soft_IP[] = "IP контроллера: ";
+static const char _localIP[] = "  локальный IP: ";
+
+char localip[20];           // IP-адрес локальной сети
 
 #define Lots_of_Stats true  // true - выводить статистику состояний
 #define blinking 0

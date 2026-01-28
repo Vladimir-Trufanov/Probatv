@@ -4,7 +4,7 @@
  *                (https://github.com/jameszah/ESP32-CAM-Video-Recorder-junior) 
  *                                                     для умного хозяйства tve
  *                                                     
- * v1.0.3, 26.01.2026                                 Автор:      Труфанов В.Е.
+ * v1.0.4, 28.01.2026                                 Автор:      Труфанов В.Е.
  * Copyright © 2026 tve                               Дата создания: 11.01.2026
  * 
  * Modify by James Zahary Sep 12, 2020 - jamzah.plc@gmail.com
@@ -997,13 +997,12 @@ ESPxWebFlMgr filemgr(filemanagerport); // we want a different port than the webs
 
 time_t now;
 struct tm timeinfo;
-char localip[20];
 WiFiEventId_t eventID;
 #include "esp_wifi.h"
 bool found_router = false;
 
 // ****************************************************************************
-// *                        Подключить один из трех WiFi                      *
+// *       Подключить локальные WiFi и создать одну свою от контроллера       *
 // ****************************************************************************
 bool init_wifi() 
 {
@@ -1012,19 +1011,6 @@ bool init_wifi()
   //WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0);
   //WiFi.disconnect(true, true);
 
-  // Настраиваем имя, которое клиент DHCP использует для идентификации устройства
-  // (в типичной сетевой настройке это имя отображается в списке устройств маршрутизатора Wi-Fi.
-  // По умолчанию имя ESP32 — «espressif». С помощью этой функции можно изменить стандартное имя, 
-  // например, для дифференциации устройств в режиме мягкого доступа к точке доступа. 
-  // Аргумент - это строка, которая содержит новое имя. Она должна быть не длиннее 
-  // 32 символов, содержать только буквы, цифры и символ «-»). 
-
-  // Важно: функцию нужно вызвать до начала Wi-Fi с помощью WiFi.begin(), WiFi.softAP(), 
-  // WiFi.mode() или WiFi.run(). Чтобы изменить имя, можно сбросить Wi-Fi с помощью WiFi.mode(WIFI_MODE_NULL), 
-  // затем вызвать WiFi.setHostname() и перезагрузить Wi-Fi с нуля. 
-  // Если hostname не указан, будет назначено стандартное имя на основе типа чипа и MAC-адреса. 
-  //WiFi.setHostname(devname);
-  // 
   // Устанавливаем режим работы WiFi, как станции (STA). В этом режиме контроллер 
   // не создаёт собственную сеть, а подключается к уже существующей сети WiFi, 
   // например, к локальной сети (роутеру или иному «раздающему» устройству). 
@@ -1037,32 +1023,38 @@ bool init_wifi()
   // Важно: подключение к Wi-Fi не является мгновенным, поэтому необходимо регулярно проверять статус соединения 
   // с помощью функции WiFi.status(). После успешного подключения функция возвращает WL_CONNECTED. 
   WiFi.mode(WIFI_STA);
+  
+  // Настраиваем имя, которое клиент DHCP использует для идентификации устройства
+  // (в типичной сетевой настройке это имя отображается в списке устройств маршрутизатора Wi-Fi.
+  // По умолчанию имя ESP32 — «espressif». С помощью этой функции можно изменить стандартное имя, 
+  // например, для дифференциации устройств в режиме мягкого доступа к точке доступа. 
+  // Аргумент - это строка, которая содержит новое имя. Она должна быть не длиннее 
+  // 32 символов, содержать только буквы, цифры и символ «-»). 
+
+  // Важно: функцию нужно вызвать до начала Wi-Fi с помощью WiFi.begin(), WiFi.softAP(), 
+  // WiFi.mode() или WiFi.run(). Чтобы изменить имя, можно сбросить Wi-Fi с помощью WiFi.mode(WIFI_MODE_NULL), 
+  // затем вызвать WiFi.setHostname() и перезагрузить Wi-Fi с нуля. 
+  // Если hostname не указан, будет назначено стандартное имя на основе типа чипа и MAC-адреса. 
   WiFi.setHostname(devname);
-
-  char ssidch1[20];
-  char passch1[20];
-  char ssidch2[20];
-  char passch2[20];
-  char ssidch3[20];
-  char passch3[20];
-
-  if (cssid3 == "ssid") 
-  {
-    cssid3 = String(devname);
-  }
-
+  // Резервируем место для параметров входа первой локальной сети
+  char ssidch1[20]; char passch1[20];
+  // Резервируем место для параметров входа второй локальной сети
+  char ssidch2[20]; char passch2[20];
+  // Резервируем место для параметров входа собственной сети контроллера
+  char ssidch3[20]; char passch3[20];
+  // Заполняем параметры для WiFi сетей и показываем их
   cssid1.toCharArray(ssidch1, cssid1.length() + 1);
   cpass1.toCharArray(passch1, cpass1.length() + 1);
   cssid2.toCharArray(ssidch2, cssid2.length() + 1);
   cpass2.toCharArray(passch2, cpass2.length() + 1);
+  if (cssid3 == "ssid") cssid3 = String(devname);
   cssid3.toCharArray(ssidch3, cssid3.length() + 1);
   cssid3.toCharArray(ssidota, cssid3.length() + 1);
   cpass3.toCharArray(passch3, cpass3.length() + 1);
-
   jpr("\n>>>>>>>>>>>>>>>>>>>>>%s<\n", ssidch1);
   jpr  (">>>>>>>>>>>>>>>>>>>>>%s<\n", ssidch2);
   jpr  (">>>>>>>>>>>>>>>>>>>>>%s</>%s<\n", ssidch3, passch3);
-
+  // Подключаемся к локальным сетям
   if (String(cssid1)!="ssid") 
   {
     found_router = true;
@@ -1098,47 +1090,27 @@ bool init_wifi()
   
   // По умолчанию IP-адресом настроенной программной точки доступа будет «192.168.4.1». 
   // Его можно поменять при помощи функции softAPConfig. 
-  jprln("Устанавливается программная точка доступа …");
+  jprln("Контроллер устанавливает собственная точка доступа …");
   WiFi.softAP(ssidch3, passch3);
-  
-  Serial.print("ssidch3: "); Serial.print(ssidch3); Serial.print("->"); Serial.println(passch3); 
-  
-  
-  
-  //WiFi.begin(ssid, password);
- 
-  
-  
-  // Выбираем IP-адрес сетевого интерфейса точки доступа (soft-AP). 
+  /*
   IPAddress IP = WiFi.softAPIP();
-  Serial.print("Назначен IP-адрес точки доступа: "); Serial.println(IP);
-
+  Serial.print("AP IP address: ");
+  Serial.println(IP);
+  */
   sprintf(localip, "%s", WiFi.softAPIP().toString().c_str());
-  Serial.print("AP 11 IP: "); Serial.println(localip); Serial.println(" ");
-
-  sprintf(localip, "%s", IP.toString().c_str());
-  Serial.print("AP 22 IP: "); Serial.println(localip); 
-  
-
+  Serial.print(_soft_IP); Serial.println(localip); 
+  jprln("Контроллер подключается к локальной точке доступа …");
   // Инициируем нулевую попытку подключения
   int connAttempts = 0;
-  Serial.println("-- ");
+  Serial.println(" ");
   while (WiFi.status() != WL_CONNECTED ) 
   {
     delay(1000);
     Serial.print(".");
-    if (connAttempts++ == 5) break;     // try for 15 seconds to get internet, then give up
+    if (connAttempts++ == 15) break;   
   }
-  Serial.println("++ ");
-
-
-  sprintf(localip, "%s", WiFi.localIP().toString().c_str());
-  Serial.print("уже верный IP: "); Serial.println(localip); Serial.println(" ");
-
-
-
-
-
+  sprintf(localip,"%s",WiFi.localIP().toString().c_str());
+  Serial.print(_localIP); Serial.println(localip); Serial.println(" ");
 
   jprln("Определяется локальное время доступа …");
   configTime(0, 0, "pool.ntp.org");
@@ -1148,16 +1120,14 @@ bool init_wifi()
   setenv("TZ", tzchar, 1);  // mountain time zone from #define at top
   tzset();
   time(&now);
+  // try for 15 seconds to get the time, then give up - 10 seconds after boot
   while (now < 5) 
-  {        // try for 15 seconds to get the time, then give up - 10 seconds after boot
+  {        
     delay(1000);
     Serial.print("o");
     time(&now);
   }
-
   Serial.print("\nLocal time: "); Serial.print(ctime(&now));
-  sprintf(localip, "%s", WiFi.localIP().toString().c_str());
-  Serial.print("IP: "); Serial.println(localip); Serial.println(" ");
 
   if (!MDNS.begin(devname)) 
   {
@@ -3400,18 +3370,18 @@ void setup()
     Serial.printf("do_the_steaming_task failed to start! %d\n", the_streaming_loop_task);
   }
   
-  // Подключаем один из трех WiFi
   if (InternetOff) 
   {
     print_mem("MEM - перед подключением WiFi                  ");
+    // Подключаем локальные WiFi и создаём одну свою от контроллера
     init_wifi();
     print_mem("MEM - перед запуском Filemanager               ");
     filemgr.begin();
     filemgr.setBackGroundColor("Gray");
-    jpr("Open Filemanager with http://");
+    jpr("Filemanager в своей сети     - http://");
     Serial.print(WiFi.softAPIP()); logfile.print(WiFi.softAPIP());
     jprln(":%d/", filemanagerport);
-    jpr("Open Filemanager with http://");
+    jpr("Filemanager в локальной сети - http://");
     Serial.print(WiFi.localIP()); logfile.print(WiFi.localIP());
     jprln(":%d/", filemanagerport);
 
@@ -3737,6 +3707,7 @@ void loop() {
           WiFi.reconnect();
           delay(8000);
           if (WiFi.status() != WL_CONNECTED) {
+            // Подключаем локальные WiFi и создаём одну свою от контроллера
             jprln("***** WiFi restart *****");
             init_wifi();
           }
@@ -3760,21 +3731,25 @@ void loop() {
         delay(1000);
 
 
-        if (WiFi.status() != WL_CONNECTED) {
-
+        if (WiFi.status() != WL_CONNECTED) 
+        {
           jprln("***** WiFi reconnect *****");
           WiFi.reconnect();
           delay(8000);
 
-          if (WiFi.status() != WL_CONNECTED) {
+          if (WiFi.status() != WL_CONNECTED) 
+          {
+            // Подключаем локальные WiFi и создаём одну свою от контроллера
             jprln("***** WiFi restart *****");
             init_wifi();
           }
         }
       }
 
-      Serial.println(WiFi.softAPIP());  logfile.println(WiFi.softAPIP());
-      Serial.println(WiFi.localIP()); logfile.println(WiFi.localIP());
+      Serial.print(_soft_IP); Serial.println(WiFi.softAPIP());  
+      logfile.println(_soft_IP+WiFi.softAPIP());
+      Serial.print(_localIP); Serial.println(WiFi.localIP());   
+      logfile.println(_localIP+WiFi.localIP());
 
       if (!MDNS.begin(devname)) {
         jprln("Error setting up MDNS responder!");
