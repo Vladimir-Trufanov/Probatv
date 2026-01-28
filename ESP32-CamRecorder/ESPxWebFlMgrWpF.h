@@ -1,7 +1,18 @@
-// mods by James Zahary Dec 28, 2021 https://github.com/jameszah/ESPxWebFlMgr
-// based on https://github.com/holgerlembke/ESPxWebFlMgr
-// рус
-// inline guard. Still broken by design?
+/** Arduino, ESP32, C/C++ ******************************* ESPxWebFlMgrWpF.h ***
+ * 
+ *                                                   Файловый менеджер на Esp32
+ * mods by James Zahary Dec 28, 2021   https://github.com/jameszah/ESPxWebFlMgr
+ * based on                        https://github.com/holgerlembke/ESPxWebFlMgr
+ * 
+ *      Управление файлами с помощью простого веб-интерфейса. Поддержка Arduino 
+ *           ESP8266 и Arduino ESP32. Локальное редактирование, переименование, 
+ *                                                           загрузка и сжатие.
+ * 
+ *                                                   Модификация: Труфанов В.Е.
+ * v3.0.0, 28.01.2026                                Дата начальная: 28.01.2026
+ * 
+**/
+
 #ifndef ESPxWebFlMgrWpF_h
 #define ESPxWebFlMgrWpF_h
 
@@ -59,3 +70,6 @@ R"==x==(');" >Save</button>&nbsp;<button title="Abort editing" onclick="abed2();
 #endif
 
 //<script id="info">document.getElementById('o3').innerHTML = "File:";</script>
+
+// ****************************************************** ESPxWebFlMgrWpF.h ***
+

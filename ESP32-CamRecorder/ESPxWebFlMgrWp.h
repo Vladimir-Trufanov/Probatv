@@ -1,12 +1,20 @@
-// mods by James Zahary Dec 28, 2021 https://github.com/jameszah/ESPxWebFlMgr
-//                      Jan 12, 2022 - adds dates/times to display
-// based on https://github.com/holgerlembke/ESPxWebFlMgr
-// рус           
-// inline guard. Did I mention that c/c++ is broken by design?
+/** Arduino, ESP32, C/C++ ******************************** ESPxWebFlMgrWp.h ***
+ * 
+ *                                                   Файловый менеджер на Esp32
+ * mods by James Zahary Dec 28, 2021   https://github.com/jameszah/ESPxWebFlMgr
+ * based on                        https://github.com/holgerlembke/ESPxWebFlMgr
+ * 
+ *      Управление файлами с помощью простого веб-интерфейса. Поддержка Arduino 
+ *           ESP8266 и Arduino ESP32. Локальное редактирование, переименование, 
+ *                                                           загрузка и сжатие.
+ * 
+ *                                                   Модификация: Труфанов В.Е.
+ * v3.0.0, 28.01.2026                                Дата начальная: 28.01.2026
+ * 
+**/
+
 #ifndef ESPxWebFlMgrWp_h
 #define ESPxWebFlMgrWp_h
-
-// this file has been created by makeESPxWebFlMgrWp\do.cmd
 
 //*****************************************************************************************************
 static const char ESPxWebFlMgrWpindexpage[] PROGMEM = R"==x==(
@@ -582,3 +590,5 @@ div {
 
 
 #endif
+
+// ******************************************************* ESPxWebFlMgrWp.h ***
