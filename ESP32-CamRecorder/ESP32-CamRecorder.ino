@@ -38,15 +38,17 @@
 #include "eprom.h"
 #include "config.h"
 #include "camera.h"
+#include "CameraServer.h"
 
 //bool configfile = false;
-bool reboot_now = false;
-bool restart_now = false;
+//bool reboot_now = false;
+//bool restart_now = false;
 
-String czone;
+//String czone;
 //char apssid[30];
 //char appass[14];
 
+/*
 TaskHandle_t the_camera_loop_task;
 TaskHandle_t the_sd_loop_task;
 TaskHandle_t the_streaming_loop_task;
@@ -58,6 +60,7 @@ SemaphoreHandle_t baton;
 long current_frame_time;
 long last_frame_time;
 bool web_stop = false;
+*/
 
 /*
 // CAMERA_MODEL_AI_THINKER
@@ -93,9 +96,10 @@ camera_fb_t * fb_next = NULL;
 #include "soc/rtc_cntl_reg.h"
 
 static esp_err_t cam_err;
-float most_recent_fps = 0;
-int most_recent_avg_framesize = 0;
+//float most_recent_fps = 0;
+//int most_recent_avg_framesize = 0;
 
+/*
 uint8_t* fb_record;
 uint8_t* fb_curr_record_buf;
 uint8_t* fb_streaming;
@@ -120,11 +124,15 @@ long loop_total = 0;
 long total_frame_data = 0;
 long last_frame_length = 0;
 int done = 0;
+*/
+
+/*
 long avi_start_time = 0;
 long avi_end_time = 0;
 int start_record = 0;
 int start_record_2nd_opinion = -2;
 int start_record_1st_opinion = -1;
+*/
 
 int we_are_already_stopped = 0;
 long total_delay = 0;
@@ -136,13 +144,13 @@ long time_in_camera = 0;
 long time_in_sd = 0;
 long time_in_good = 0;
 long time_total = 0;
-long time_in_web1 = 0;
-long time_in_web2 = 0;
+//long time_in_web1 = 0;
+//long time_in_web2 = 0;
 long delay_wait_for_sd = 0;
 long wait_for_cam = 0;
 int very_high = 0;
 
-bool do_the_ota = false;
+//bool do_the_ota = false;
 
 int do_it_now = 0;
 int gframe_cnt;
@@ -158,11 +166,11 @@ int  gmdelay;
 #include "FS.h"
 #include <SD_MMC.h>
 
-char avi_file_name[100];
-char file_to_edit[50] = "/JamCam0481.0007.avi"; //61.3
+//char avi_file_name[100];
+//char file_to_edit[50] = "/JamCam0481.0007.avi"; //61.3
 
 static int i = 0;
-uint16_t frame_cnt = 0;
+//uint16_t frame_cnt = 0;
 uint16_t remnant = 0;
 uint32_t length = 0;
 uint32_t startms;
@@ -290,8 +298,9 @@ static void inline print_2quartet(unsigned long i, unsigned long j, File fd) {
 
 #include "lwip/sockets.h"
 #include <lwip/netdb.h>
-
-void print_sock(int sock) {
+/*
+void print_sock(int sock) 
+{
 
   sockaddr_in6 clientAddr;
   socklen_t addrLen = sizeof(clientAddr);
@@ -338,7 +347,7 @@ void print_sock(int sock) {
     Serial.println("Failed to get client address.");
   }
 }
-
+*/
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 //
 //  delete_old_stuff() - delete oldest files to free diskspace
@@ -987,16 +996,17 @@ static void end_avi() {
 #include <WiFiMulti.h>
 WiFiMulti jMulti;
 #include <ArduinoOTA.h>
-char ssidota[20];
+//char ssidota[20];
 #include "ESPmDNS.h"
 
 #include "ESPxWebFlMgr.h"          //v56
-const word filemanagerport = 8080;
+//const word filemanagerport = 8080;
 ESPxWebFlMgr filemgr(filemanagerport); // we want a different port than the webserver
 
-
+/*
 time_t now;
 struct tm timeinfo;
+*/
 WiFiEventId_t eventID;
 #include "esp_wifi.h"
 bool found_router = false;
@@ -1200,6 +1210,7 @@ bool init_wifi()
 //
 #include <HTTPClient.h>
 
+/*
 httpd_handle_t camera_httpd = NULL;
 httpd_handle_t stream81_httpd = NULL;
 httpd_handle_t stream82_httpd = NULL;
@@ -1211,8 +1222,13 @@ int captures = 0;
 int total_captures = 0;
 int skips = 0;
 int extras = 0;
+*/
+
 #include "lwip/sockets.h"
-static esp_err_t capture_handler(httpd_req_t *req) {
+
+/*
+static esp_err_t capture_handler(httpd_req_t *req) 
+{
 
   long start = millis();
 
@@ -1294,8 +1310,8 @@ static esp_err_t capture_handler(httpd_req_t *req) {
 
   return res;
 }
-
-
+*/
+/*
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 //
 //
@@ -1314,14 +1330,14 @@ static esp_err_t index_handler(httpd_req_t *req) {
   }
 
   //sprintf(localip, "%s", buf);
-  /*
+  / *
     buf_len = httpd_req_get_url_query_len(req) + 1;
     if (buf_len > 1) {
       if (httpd_req_get_url_query_str(req, buf, buf_len) == ESP_OK) {
         Serial.printf("Found URL query => %s", buf);
       }
     }
-  */
+  * /
   print_mem("index_handler");
 
   const char the_message[] = "Status";
@@ -1422,11 +1438,14 @@ James Zahary - Dec 8, 2024 -- May 18, 2022<br>
   time_in_web1 += (millis() - start);
   return ESP_OK;
 }
-
+*/
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 //
 //
-static esp_err_t time_handler(httpd_req_t *req) {
+
+/*
+static esp_err_t time_handler(httpd_req_t *req) 
+{
   esp_err_t res = ESP_OK;
 
   char  buf[120];
@@ -1459,13 +1478,13 @@ static esp_err_t time_handler(httpd_req_t *req) {
 
         //time(&now);
         //Serial.print("\nLocal time: "); Serial.println(ctime(&now));
-        /*
+        / *
                 time_t rawtime;
                 struct tm * ptm;
                 time ( &rawtime );
                 ptm = gmtime ( &rawtime );
                 Serial.printf ("GMT: %2d:%02d\n", (ptm->tm_hour) % 24, ptm->tm_min);
-        */
+        * /
       }
     }
   }
@@ -1497,11 +1516,14 @@ static esp_err_t time_handler(httpd_req_t *req) {
 
   return ESP_OK;
 }
+*/
 
+/*
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 //
 //
-static esp_err_t photos_handler(httpd_req_t *req) {
+static esp_err_t photos_handler(httpd_req_t *req) 
+{
 
   long start = millis();
 
@@ -1558,8 +1580,10 @@ document.addEventListener('DOMContentLoaded', function() {
   time_in_web1 += (millis() - start);
   return ESP_OK;
 }
-
-static esp_err_t fphotos_handler(httpd_req_t *req) {
+*/
+/*
+static esp_err_t fphotos_handler(httpd_req_t *req) 
+{
 
   long start = millis();
 
@@ -1616,8 +1640,11 @@ document.addEventListener('DOMContentLoaded', function() {
   time_in_web1 += (millis() - start);
   return ESP_OK;
 }
+*/
 
-static esp_err_t sphotos_handler(httpd_req_t *req) {
+/*
+static esp_err_t sphotos_handler(httpd_req_t *req) 
+{
 
   long start = millis();
 
@@ -1674,12 +1701,15 @@ document.addEventListener('DOMContentLoaded', function() {
   time_in_web1 += (millis() - start);
   return ESP_OK;
 }
+*/
 
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 //
 //
-static esp_err_t reboot_handler(httpd_req_t *req) {
+/*
+static esp_err_t reboot_handler(httpd_req_t *req) 
+{
 
   long start = millis();
 
@@ -1718,8 +1748,11 @@ static esp_err_t reboot_handler(httpd_req_t *req) {
 
   return ESP_OK;
 }
+*/
 
-static esp_err_t restart_handler(httpd_req_t *req) {
+/*
+static esp_err_t restart_handler(httpd_req_t *req) 
+{
 
   long start = millis();
 
@@ -1755,7 +1788,9 @@ static esp_err_t restart_handler(httpd_req_t *req) {
 
   return ESP_OK;
 }
+*/
 
+/*
 static esp_err_t start_handler(httpd_req_t *req) {
 
   web_stop = false;
@@ -1774,7 +1809,7 @@ static esp_err_t stop_handler(httpd_req_t *req) {
   return ESP_OK;
 
 }
-
+*/
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 //
@@ -2078,6 +2113,7 @@ void start_Stream_82_server() {
 }
 
 
+/*
 //////////////////////////////
 //61.3 oneframe find_a_frame (char * avi_file_name, int frame_pct) ; // from avi.cpp file
 
@@ -2087,11 +2123,14 @@ struct oneframe {
   long the_frame_number;
   long the_frame_total;
 };
+*/
 
+/*
 //
 // Reads an uint32_t in Big Endian at current file position
 //
-int read_quartet( File fd) {
+int read_quartet( File fd) 
+{
 
   uint8_t y[4];
   size_t i1_err = fd.read(y , 4);
@@ -2099,6 +2138,7 @@ int read_quartet( File fd) {
   //Serial.printf("read_quartet %d %d %d %d, %d\n", y[0], y[1], y[2], y[3], value);
   return value;
 }
+*/
 //
 // Writes an uint32_t in Big Endian at current file position
 //
@@ -2117,7 +2157,10 @@ static void inline print_dc_quartet(unsigned long i, File fd) {
   size_t i1_err = fd.write(y , 8);
 }
 
-oneframe find_a_frame (char * avi_file_name, long frame_num) {
+/*
+
+oneframe find_a_frame (char * avi_file_name, long frame_num) 
+{
   File findfile;
 
   oneframe x;
@@ -2285,17 +2328,21 @@ oneframe find_a_frame (char * avi_file_name, long frame_num) {
 
   } // else yes to no avi file
 }
-char file_to_read[50];
-char file_to_write[50];
+*/
+
+//char file_to_read[50];
+//char file_to_write[50];
 //int newstart;
 //int newend;
 //int newskip;
 //bool do_the_reparse = false;
-bool do_the_reindex = false;
+//bool do_the_reindex = false;
 //bool done_the_reparse = false;
-bool done_the_reindex = false;
+//bool done_the_reindex = false;
 
-static esp_err_t reindex_handler(httpd_req_t *req) {
+/*
+static esp_err_t reindex_handler(httpd_req_t *req) 
+{
   esp_err_t res = ESP_OK;
 
   print_mem("reindex_handler");
@@ -2329,7 +2376,7 @@ static esp_err_t reindex_handler(httpd_req_t *req) {
 
   return res;
 }
-
+*/
 void re_index( char * avi_file_name, char * out_file_name) {
 
   //once++;
@@ -2902,9 +2949,10 @@ void re_index_bad( char * avi_file_name) {
   }
 }
 
-
+/*
 //61.3up
-static esp_err_t status_handler(httpd_req_t *req) {
+static esp_err_t status_handler(httpd_req_t *req) 
+{
   esp_err_t res = ESP_OK;
   print_mem("status_handler");
 
@@ -2958,8 +3006,10 @@ static esp_err_t status_handler(httpd_req_t *req) {
   httpd_resp_send(req, str,  strlen(str));
   return res;
 }
-
-static esp_err_t find_handler(httpd_req_t *req) {
+*/
+/*
+static esp_err_t find_handler(httpd_req_t *req) 
+{
   esp_err_t res = ESP_OK;
   char  buf[120];
   size_t buf_len;
@@ -3039,6 +3089,9 @@ static esp_err_t find_handler(httpd_req_t *req) {
   }
   return res;;
 }
+*/
+
+/*
 static esp_err_t edit_handler(httpd_req_t *req) {
   esp_err_t res = ESP_OK;
   char  buf[120];
@@ -3143,6 +3196,8 @@ Do the ota, or reboot ...
 
   return ESP_OK;
 }
+*/
+
 
 /*static esp_err_t delete_handler(httpd_req_t *req) {
   esp_err_t res = ESP_OK;
@@ -3157,6 +3212,8 @@ Do the ota, or reboot ...
   return res;;
   }
 */
+
+/*
 //61.3 up
 ////////////////////////////////
 
@@ -3254,14 +3311,14 @@ void startCameraServer() {
     .handler   = status_handler,
     .user_ctx  = NULL
   };
-  /*61.3
+  / *61.3
      httpd_uri_t delete_uri = {
       .uri       = "/delete",
       .method    = HTTP_GET,
       .handler   = delete_handler,
       .user_ctx  = NULL
     };
-    61.3 */
+    61.3 * /
   httpd_uri_t edit_uri = {
     .uri       = "/edit",
     .method    = HTTP_GET,
@@ -3280,7 +3337,9 @@ void startCameraServer() {
     .handler   = ota_handler,
     .user_ctx  = NULL
   };
-  if (httpd_start(&camera_httpd, &config) == ESP_OK) {
+  
+  if (httpd_start(&camera_httpd, &config) == ESP_OK) 
+  {
     httpd_register_uri_handler(camera_httpd, &index_uri);
     httpd_register_uri_handler(camera_httpd, &capture_uri);
     httpd_register_uri_handler(camera_httpd, &photos_uri);
@@ -3301,9 +3360,11 @@ void startCameraServer() {
   Serial.println("Camera http started");
 }
 
-void stopCameraServer() {
+void stopCameraServer() 
+{
   httpd_stop(camera_httpd);
 }
+*/
 
 void the_camera_loop (void* pvParameter);
 void the_sd_loop (void* pvParameter);

@@ -8,6 +8,7 @@
 
 #pragma once     
 
+#include "time.h"
 #include "esp_log.h"
 #include "FS.h"
 #include <SD_MMC.h>
@@ -21,7 +22,29 @@ static const char vernum[]   = "v62.34.0"; // версия приложения
 static const char _soft_IP[] = "IP контроллера: ";
 static const char _localIP[] = "  локальный IP: ";
 
+const word filemanagerport = 8080;
+
 char localip[20];           // IP-адрес локальной сети
+
+time_t now;
+struct tm timeinfo;
+
+TaskHandle_t the_camera_loop_task;
+TaskHandle_t the_sd_loop_task;
+TaskHandle_t the_streaming_loop_task;
+
+static SemaphoreHandle_t wait_for_sd;
+static SemaphoreHandle_t sd_go;
+SemaphoreHandle_t baton;
+
+long current_frame_time;
+long last_frame_time;
+bool web_stop = false;
+
+bool reboot_now = false;
+bool restart_now = false;
+String czone;
+
 
 #define Lots_of_Stats true  // true - выводить статистику состояний
 #define blinking 0
@@ -52,5 +75,13 @@ bool InternetOff = true;    // true - WiFi не подключен
 // Буфер для 4 кадров, в соответствии с [config.h].cbuffersconfig = 4,
 // первоначально сформированный и загруженный при инициировании камеры
 int frame_buffer_size; 
+
+bool do_the_reindex = false;
+//bool done_the_reparse = false;
+bool done_the_reindex = false;
+
+char file_to_edit[50] = "/JamCam0481.0007.avi"; //61.3
+
+
 
 // *************************************************************** inimem.h ***

@@ -34,6 +34,34 @@
 #define HREF_GPIO_NUM     23
 #define PCLK_GPIO_NUM     22
 
+float most_recent_fps = 0;
+int most_recent_avg_framesize = 0;
+
+uint8_t* fb_record;
+uint8_t* fb_curr_record_buf;
+uint8_t* fb_streaming;
+uint8_t* fb_capture;
+
+int fb_record_len;
+int fb_curr_record_len;
+int fb_streaming_len;
+int fb_capture_len;
+long fb_record_time = 0;
+long fb_curr_record_time = 0;
+long fb_streaming_time = 0;
+long fb_capture_time = 0;
+
+int first = 1;
+long frame_start = 0;
+long frame_end = 0;
+long frame_total = 0;
+long frame_average = 0;
+long loop_average = 0;
+long loop_total = 0;
+long total_frame_data = 0;
+long last_frame_length = 0;
+int done = 0;
+
 // ****************************************************************************
 // *                      Установить параметры камеры                         *
 // ****************************************************************************
