@@ -77,11 +77,8 @@ long time_in_web2 = 0;
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 //
-
-
 void print_sock(int sock) 
 {
-
   sockaddr_in6 clientAddr;
   socklen_t addrLen = sizeof(clientAddr);
 
