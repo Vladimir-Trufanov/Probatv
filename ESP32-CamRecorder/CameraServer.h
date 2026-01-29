@@ -30,6 +30,11 @@
 char ssidota[20];
 bool do_the_ota = false;
 
+// Определяем экземпляры HTTP-серверов. 
+// Тип httpd_handle_t используется для создания и управления веб-серверами и
+// возвращается функцией httpd_start(). Она создаёт экземпляр HTTP-сервера, 
+// выделяет память и ресурсы в зависимости от указанной конфигурации и 
+// возвращает указатель на экземпляр. 
 httpd_handle_t camera_httpd = NULL;
 httpd_handle_t stream81_httpd = NULL;
 httpd_handle_t stream82_httpd = NULL;
@@ -49,6 +54,7 @@ char file_to_write[50];
 void startCameraServer();
 void stopCameraServer();
 void print_sock(int sock); 
+//static esp_err_t delete_handler(httpd_req_t *req); 
 static esp_err_t reindex_handler(httpd_req_t *req); 
 static esp_err_t edit_handler(httpd_req_t *req); 
 static esp_err_t ota_handler(httpd_req_t *req);
@@ -74,6 +80,23 @@ int start_record_1st_opinion = -1;
 
 long time_in_web1 = 0;
 long time_in_web2 = 0;
+
+
+/*static esp_err_t delete_handler(httpd_req_t *req) 
+{
+  esp_err_t res = ESP_OK;
+
+  Serial.print("delete_handler, core ");  Serial.print(xPortGetCoreID());
+  Serial.print(", priority = "); Serial.println(uxTaskPriorityGet(NULL));
+
+
+  httpd_resp_send(req, page_html, strlen(page_html));
+  delay(100);
+  delete_all_files = 1;
+  return res;;
+  }
+*/
+
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 //
@@ -960,12 +983,14 @@ James Zahary - Dec 8, 2024 -- May 18, 2022<br>
 </html>)rawliteral";
 
   int time_left = (- millis() +  (avi_start_time + avi_length * 1000)) / 1000;
-  if (start_record == 0) {
+  if (start_record == 0) 
+  {
     time_left = 0;
   }
 
   String stopstart = "Stopped";
-  if (start_record) {
+  if (start_record) 
+  {
     stopstart = "Recording";
   }
 
@@ -987,10 +1012,54 @@ James Zahary - Dec 8, 2024 -- May 18, 2022<br>
 
 void startCameraServer() 
 {
+  // Конфигурируем CameraServer 
+  //   (httpd_config_t — структура в ESP32, которая используется для конфигурации HTTP-сервера.
+  // Эта структура инициализирует сервер, позволяет настраивать приоритет задачи, 
+  // размер стека, порты для данных и управления и другие параметры. 
+  //   Структура httpd_config_t передаётся в вызов httpd_start — функцию, которая 
+  // создаёт экземпляр HTTP-сервера, выделяет ему память и ресурсы в зависимости 
+  // от заданной конфигурации. 
+  //   Некоторые особенности использования: 
+  // - настройка приоритета задачи и размера стека во время создания экземпляра сервера;
+  // - указание портов для данных и управления (контрольный порт используется для внутренней сигнализации);
+  // - настройка очереди ожидающих соединений (параметр backlog_conn) — помогает 
+  // справляться с кратковременными всплесками запросов, не теряя соединения.
+  //   Функциональность сервера строится на регистрации URI-обработчиков (httpd_uri_t), 
+  // которые сопоставляют конкретные URI и методы HTTP с функциями. Функции-обработчики 
+  // получают объект httpd_req_t для доступа к деталям запроса и используют 
+  // httpd_resp_send() для отправки ответов. 
+  
+  // Пример: в этом примере сервер по умолчанию слушает на порту 80 и регистрирует обработчик URI, 
+  // который отправляет «Hello, world!» в ответ на запрос GET по пути /hello.
+  /*
+  void start_server() 
+  {
+    httpd_handle_t server = NULL; 
+    httpd_config_t config = HTTPD_DEFAULT_CONFIG(); 
+    httpd_uri_t hello_uri = 
+    { 
+      .uri      = "/hello", 
+      .method   = HTTP_GET, 
+      .handler  = hello_get_handler, 
+      .user_ctx = NULL
+    };
+    if (httpd_start(&server, &config) == ESP_OK) 
+    { 
+      httpd_register_uri_handler(server, &hello_uri);  
+    }  
+  } 
+  
+  static esp_err_t hello_get_handler(httpd_req_t *req) 
+  {
+    const char* resp_str = (const char*) "Hello, world!";
+    httpd_resp_send(req, resp_str, strlen(resp_str));
+    return ESP_OK;
+  }
+  */
   httpd_config_t config = HTTPD_DEFAULT_CONFIG();
   config.max_uri_handlers = 17; //61.3 from 12
   config.stack_size = 4096 + 1024 + 1024 + 1024;
-  config.lru_purge_enable = true;
+  
   //61 config.enable_so_linger = true;
   //61 config.linger_timeout = 1;
   //61 config.keep_alive_enable = true;
@@ -999,108 +1068,122 @@ void startCameraServer()
   //61 config.backlog_conn       = 10; //from def of 5
   //61 config.core_id = 0; // from tskNO_AFFINITY
 
+  // Включаем опцию очистки наименее использующихся соединений (LRU), 
+  // если достигается максимальное количество одновременных подключений 
+  // клиентов (max_open_sockets). 
+  config.lru_purge_enable = true;
+
   Serial.print("http task prio: "); Serial.println(config.task_priority);
 
-  httpd_uri_t index_uri = {
+  httpd_uri_t index_uri = 
+  {
     .uri       = "/",
     .method    = HTTP_GET,
     .handler   = index_handler,
     .user_ctx  = NULL
   };
-  httpd_uri_t capture_uri = {
+  httpd_uri_t capture_uri = 
+  {
     .uri       = "/capture",
     .method    = HTTP_GET,
     .handler   = capture_handler,
     .user_ctx  = NULL
   };
-
-  httpd_uri_t photos_uri = {
+  httpd_uri_t photos_uri = 
+  {
     .uri       = "/photos",
     .method    = HTTP_GET,
     .handler   = photos_handler,
     .user_ctx  = NULL
   };
-
-  httpd_uri_t fphotos_uri = {
+  httpd_uri_t fphotos_uri = 
+  {
     .uri       = "/fphotos",
     .method    = HTTP_GET,
     .handler   = fphotos_handler,
     .user_ctx  = NULL
   };
-
-  httpd_uri_t sphotos_uri = {
+  httpd_uri_t sphotos_uri = 
+  {
     .uri       = "/sphotos",
     .method    = HTTP_GET,
     .handler   = sphotos_handler,
     .user_ctx  = NULL
   };
-
-  httpd_uri_t reboot_uri = {
+  httpd_uri_t reboot_uri = 
+  {
     .uri       = "/reboot",
     .method    = HTTP_GET,
     .handler   = reboot_handler,
     .user_ctx  = NULL
   };
-
-  httpd_uri_t restart_uri = {
+  httpd_uri_t restart_uri = 
+  {
     .uri       = "/restart",
     .method    = HTTP_GET,
     .handler   = restart_handler,
     .user_ctx  = NULL
   };
-
-  httpd_uri_t time_uri = {
+  httpd_uri_t time_uri = 
+  {
     .uri       = "/time",
     .method    = HTTP_GET,
     .handler   = time_handler,
     .user_ctx  = NULL
   };
-
-  httpd_uri_t start_uri = {
+  httpd_uri_t start_uri = 
+  {
     .uri       = "/start",
     .method    = HTTP_GET,
     .handler   = start_handler,
     .user_ctx  = NULL
   };
-  httpd_uri_t stop_uri = {
+  httpd_uri_t stop_uri = 
+  {
     .uri       = "/stop",
     .method    = HTTP_GET,
     .handler   = stop_handler,
     .user_ctx  = NULL
   };
-  httpd_uri_t find_uri = {
+  httpd_uri_t find_uri = 
+  {
     .uri       = "/find",
     .method    = HTTP_GET,
     .handler   = find_handler,
     .user_ctx  = NULL
   };
-  httpd_uri_t status_uri = {
+  httpd_uri_t status_uri = 
+  {
     .uri       = "/status",
     .method    = HTTP_GET,
     .handler   = status_handler,
     .user_ctx  = NULL
   };
   /*61.3
-     httpd_uri_t delete_uri = {
-      .uri       = "/delete",
-      .method    = HTTP_GET,
-      .handler   = delete_handler,
-      .user_ctx  = NULL
-    };
-    61.3 */
-  httpd_uri_t edit_uri = {
+  httpd_uri_t delete_uri = 
+  {
+    .uri       = "/delete",
+    .method    = HTTP_GET,
+    .handler   = delete_handler,
+    .user_ctx  = NULL
+  };
+  61.3 */
+  httpd_uri_t edit_uri = 
+  {
     .uri       = "/edit",
     .method    = HTTP_GET,
     .handler   = edit_handler,
     .user_ctx  = NULL
   };
-  httpd_uri_t reindex_uri = {
+  httpd_uri_t reindex_uri = 
+  {
     .uri       = "/reindex",
     .method    = HTTP_GET,
     .handler   = reindex_handler,
     .user_ctx  = NULL
   };
-  httpd_uri_t ota_uri = {
+  httpd_uri_t ota_uri = 
+  {
     .uri       = "/ota",
     .method    = HTTP_GET,
     .handler   = ota_handler,
@@ -1124,7 +1207,6 @@ void startCameraServer()
     httpd_register_uri_handler(camera_httpd, &reindex_uri);
     httpd_register_uri_handler(camera_httpd, &ota_uri);
   }
-
   Serial.println("Camera http started");
 }
 

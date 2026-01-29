@@ -18,6 +18,8 @@ Extensions=*.*
 [Project tree]
 ESP32-CamRecorder
 	+ESP32-CamRecorder
+		+CameraServer
+			CameraServer\index.html
 		-Info
 			-multiple_fb_count
 				Info\multiple_fb_count\multiple_fb_count.ino
@@ -38,6 +40,7 @@ ESP32-CamRecorder
 		ESPxWebFlMgr.h
 		ESPxWebFlMgrWp.h
 		ESPxWebFlMgrWpF.h
+		fil.txt
 		inimem.h
 		jpr.h
 		sd.h
@@ -48,15 +51,17 @@ ESP32-CamRecorder
 3=camera.h
 4=inimem.h
 5=sd.h
+6=CameraServer\index.html
+7=Info\ESP32-CamRecorder.md
 [Selected Project Files]
 Main=
-Selected=ESP32-CamRecorder.ino
+Selected=CameraServer.h
 [ESP32-CamRecorder.ino]
-TopLine=2087
-Caret=1,2111
+TopLine=2065
+Caret=6,2103
 [CameraServer.h]
-TopLine=1099
-Caret=22,1131
+TopLine=1190
+Caret=16,38
 [fil.txt]
 TopLine=1
 Caret=1,1
@@ -64,8 +69,14 @@ Caret=1,1
 TopLine=31
 Caret=1,1
 [inimem.h]
-TopLine=49
-Caret=1,83
+TopLine=27
+Caret=1,36
 [sd.h]
 TopLine=215
 Caret=1,254
+[CameraServer\index.html]
+TopLine=27
+Caret=1,66
+[Info\ESP32-CamRecorder.md]
+TopLine=119
+Caret=17,134

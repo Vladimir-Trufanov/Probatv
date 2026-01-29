@@ -2094,21 +2094,6 @@ void re_index_bad( char * avi_file_name) {
   }
 }
 
-/*static esp_err_t delete_handler(httpd_req_t *req) {
-  esp_err_t res = ESP_OK;
-
-  Serial.print("delete_handler, core ");  Serial.print(xPortGetCoreID());
-  Serial.print(", priority = "); Serial.println(uxTaskPriorityGet(NULL));
-
-
-  httpd_resp_send(req, page_html, strlen(page_html));
-  delay(100);
-  delete_all_files = 1;
-  return res;;
-  }
-*/
-
-
 void the_camera_loop (void* pvParameter);
 void the_sd_loop (void* pvParameter);
 void delete_old_stuff();
