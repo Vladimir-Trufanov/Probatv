@@ -2,7 +2,7 @@
  * 
  *                                           Обслужить Html-server видео-камеры
  *                                                     
- * v1.0.0, 29.01.2026                                 Автор:      Труфанов В.Е.
+ * v1.0.1, 30.01.2026                                 Автор:      Труфанов В.Е.
  * Copyright © 2026 tve                               Дата создания: 29.01.2026
  * 
 **/
@@ -70,7 +70,6 @@ static esp_err_t fphotos_handler(httpd_req_t *req);
 static esp_err_t photos_handler(httpd_req_t *req); 
 static esp_err_t capture_handler(httpd_req_t *req); 
 static esp_err_t index_handler(httpd_req_t *req); 
-
 
 long avi_start_time = 0;
 long avi_end_time = 0;
@@ -876,111 +875,138 @@ static esp_err_t capture_handler(httpd_req_t *req)
 
   return res;
 }
-
-
-//
+// ****************************************************************************
+// *              Сформировать главную страницу CameraServer                  *
+// ****************************************************************************
 static esp_err_t index_handler(httpd_req_t *req) 
 {
-
+  // Начать отсчет времени с начала страницы
   long start = millis();
+  
+  int  buf_len;
+  char buf[120];
+  int  hdr_len ;
 
-  int buf_len;
-  char  buf[120];
-  int hdr_len ;
-
+  //   Функцией httpd_req_get_hdr_value_len определяем длину поля "Host" заголовка 
+  // запроса. Она используется в контексте HTTP-сервера, где функция обработчика URI 
+  // получает указатель на структуру httpd_req_t, которая содержит информацию о входящем запросе. 
+  //   Узнавание длины заголовка в запросе нужно для выделения буфера, в который 
+  // будет скопировано значение поля. Если поле не найдено, функция вернет 0. 
+  //   Параметры: req — [in] запрос, для которого предоставляется ответ; field, 
+  // в нашем случае "Host" - [in] поле, которое нужно найти в заголовке; val — 
+  // [out] указатель на буфер, в который будет скопировано значение, если поле найдено;
+  // val_size — [in] размер буфера val.
+  //   Функция httpd_req_get_hdr_value_len может возвращать следующие значения: 
+  // ESP_OK — поле найдено в заголовке запроса и строка значения скопирована;
+  // ESP_ERR_NOT_FOUND — поле не найдено;
+  // ESP_ERR_INVALID_ARG — нулевые аргументы;
+  // ESP_ERR_HTTPD_INVALID_REQ — недопустимый указатель на HTTP-запрос.
+  //   Если размер вывода больше, чем вход, значение обрезается, что сопровождается 
+  // ошибкой обрезания в возвращаемом значении.
+  //   Важно: функция должна быть вызвана только из контекста обработчика URI, 
+  // где указатель на запрос httpd_req_t* действителен. Если возвращается ошибка, 
+  // обработчик URI должен дополнительно вернуть ошибку, чтобы обеспечить закрытие 
+  // и очистку ошибочного сокета веб-сервером. 
   buf_len = httpd_req_get_hdr_value_len(req, "Host") + 1;
-
-  if (httpd_req_get_hdr_value_str(req, "Host", localip, buf_len) == ESP_OK) {
-    //Serial.printf( "Found header => Host: %s\n", localip);
+  
+  // Получаем строку значения поля из заголовков запроса
+  // 2026-01-30 - убедились, что поле "Host" в заголовке присутствовало:
+  // 09:53:44.673 -> -----
+  // 09:53:44.673 -> Found header => Host: 10.120.175.2
+  // 09:53:44.673 -> -----
+  /*
+  if (httpd_req_get_hdr_value_str(req, "Host", localip, buf_len) == ESP_OK) 
+  {
+    Serial.println("-----"); 
+    Serial.printf("Found header => Host: %s\n", localip);
+    Serial.println("-----"); 
   }
-
+  */
   //sprintf(localip, "%s", buf);
   /*
     buf_len = httpd_req_get_url_query_len(req) + 1;
-    if (buf_len > 1) {
-      if (httpd_req_get_url_query_str(req, buf, buf_len) == ESP_OK) {
+    if (buf_len > 1) 
+    {
+      if (httpd_req_get_url_query_str(req, buf, buf_len) == ESP_OK) 
+      {
         Serial.printf("Found URL query => %s", buf);
       }
     }
   */
-  print_mem("index_handler");
-
+  print_mem("MEM - в начале обработчика index_handler        ");
   const char the_message[] = "Status";
-
   time(&now);
   const char *strdate = ctime(&now);
-
-  int tot = SD_MMC.totalBytes() / (1024 * 1024);
-  int use = SD_MMC.usedBytes() / (1024 * 1024);
-  long rssi = WiFi.RSSI();
+  int tot = SD_MMC.totalBytes() / (1024 * 1024);  // общее количество доступных байтов на SD-карте
+  int use = SD_MMC.usedBytes() / (1024 * 1024);   // количество используемых байтов на карте SD/SDIO/MMC
+  long rssi = WiFi.RSSI();                        // уровень сигнала Wi-Fi сети
 
   //const query = `${baseHost}:8080/e?edit=config.txt`
 
-  const char msg[] PROGMEM = R"rawliteral(<!doctype html>
-<html>
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>%s ESP32-CAM Video Recorder Junior</title>
-<script>
-function initialize() {
-   var baseHost = document.location.origin
-   const query = `${baseHost}/time?time=`
-   const x = new Date();
-   var timing = x.getTime() / 1000;
-   const query2 = query + String(timing)
-   fetch(query2)
-      .then(response => {
-         console.log(`request to ${query2} finished, status: ${response.status}`)
-      })
-}   
-   </script>
-      </head>
-       <body onload="initialize()" style="background-color: white">
-        
-</head>
-<body>
-<h1>%s<br>ESP32-CAM Video Recorder Junior %s <br><font color="red">%s</font></h1><br>
+  const char msg[] PROGMEM = R"rawliteral(
+  
+  <!doctype html>
+  <html>
+  <head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>%s ESP32-CamRecorder</title>
 
- Used / Total SD Space <font color="red"> %d MB / %d MB</font>, Rssi %d<br>
+  <script>
+  function initialize() 
+  {
+    var baseHost = document.location.origin;
+    const query = `${baseHost}/time?time=`;
+    const x = new Date();
+    var timing = x.getTime() / 1000;
+    const query2 = query + String(timing)
+    fetch(query2).then(response => 
+    {
+      console.log(`request to ${query2} finished, status: ${response.status}`)
+    })
+  }   
+  </script>
+  </head>
+  
+  <body onload="initialize()" style="background-color: white">
+  <h1>%s<br>ESP32-CamRecorder %s <br><font color="red">%s</font></h1><br>
+  Used / Total SD Space <font color="red"> %d MB / %d MB</font>, Rssi %d<br>
 
- Filename: %s <br>
- Framesize %d, Quality %d, Frame %d <br>
- Record Interval %dms, Stream Interval %dms <br>
- Avg framesize %d, fps %.1f <br>
- Time left in current video %d seconds<br>
+  Filename: %s <br>
+  Framesize %d, Quality %d, Frame %d <br>
+  Record Interval %dms, Stream Interval %dms <br>
+  Avg framesize %d, fps %.1f <br>
+  Time left in current video %d seconds<br>
 
- <h3><a href="http://%s/">http://%s/</a></h3>
- Current Frame:<br>
- <img src="http://%s/capture"/> <br>
- First Frame of Current Recording: (see more in File Management section)<br>
- <img src="http://%s/find?f=/%s&n=0"> <br>
- <h3>Streaming</h3>
- <a href="http://%s:81/stream"><button>Stream 81</button></a>
- <a href="http://%s:82/stream"><button>Stream 82</button></a>
- <h3>Series of pictures</h3>
- <a href="http://%s/photos"><button>10 x 3 sec</button> </a>
- <a href="http://%s/fphotos"><button>10 x 1 sec</button></a>
- <a href="http://%s/sphotos"><button>120 x 15 sec</button></a> 
- <h3>Recording is <font color="red"> %s </font> - overrides hardware pin 12 stop/start</h3>
- <a href="http://%s/start"><button>start</button> </a>
- <a href="http://%s/stop"><button>stop</button></a> 
- <h3>File Management</h3>
- <h4>
- <a href="http://%s:%d/e?edit=config2.txt"><button>edit config2.txt </button></a>
- <a href="http://%s:%d"><button>File Manager - download, delete, view videos </button></a> </h4>
+  <h3><a href="http://%s/">http://%s/</a></h3>
+  Current Frame:<br>
+  <img src="http://%s/capture"/> <br>
+  First Frame of Current Recording: (see more in File Management section)<br>
+  <img src="http://%s/find?f=/%s&n=0"> <br>
+  <h3>Streaming</h3>
+  <a href="http://%s:81/stream"><button>Stream 81</button></a>
+  <a href="http://%s:82/stream"><button>Stream 82</button></a>
+  <h3>Series of pictures</h3>
+  <a href="http://%s/photos"><button>10 x 3 sec</button> </a>
+  <a href="http://%s/fphotos"><button>10 x 1 sec</button></a>
+  <a href="http://%s/sphotos"><button>120 x 15 sec</button></a> 
+  <h3>Recording is <font color="red"> %s </font> - overrides hardware pin 12 stop/start</h3>
+  <a href="http://%s/start"><button>start</button> </a>
+  <a href="http://%s/stop"><button>stop</button></a> 
+  <h3>File Management</h3>
+  <h4>
+  <a href="http://%s:%d/e?edit=config2.txt"><button>edit config2.txt </button></a>
+  <a href="http://%s:%d"><button>File Manager - download, delete, view videos </button></a> </h4>
 
- <h4><a href="http://%s/restart"><button>End recording, and start new video (write the index) </button></a></h4>
- <h4><a href="http://%s/reboot"><button>End recording, and reboot (using new settings)</button> </a></h4>
- <br>
-SourceCode:  https://github.com/jameszah/ESP32-CAM-Video-Recorder-junior/<br>
-One-Click Installer: https://jameszah.github.io/ESP32-CAM-VideoCam/<br>
-James Zahary - Dec 8, 2024 -- May 18, 2022<br>
-<a href="https://ko-fi.com/jameszah">Free coffee (not AP mode)</a>
-
-<br>
-</body>
-</html>)rawliteral";
+  <h4><a href="http://%s/restart"><button>End recording, and start new video (write the index) </button></a></h4>
+  <h4><a href="http://%s/reboot"><button>End recording, and reboot (using new settings)</button> </a></h4>
+  <br>
+  James Zahary - Dec 8, 2024 -- May 18, 2022<br>
+  <br>
+  </body>
+  </html>
+  
+  )rawliteral";
 
   int time_left = (- millis() +  (avi_start_time + avi_length * 1000)) / 1000;
   if (start_record == 0) 
@@ -994,14 +1020,41 @@ James Zahary - Dec 8, 2024 -- May 18, 2022<br>
     stopstart = "Recording";
   }
 
-  sprintf(the_page, msg, devname, devname, vernum, strdate, use, tot, rssi, avi_file_name,
-          framesize, quality, frame_cnt, frame_interval, stream_delay,
-          most_recent_avg_framesize, most_recent_fps, time_left, localip,  localip,  localip,  localip, avi_file_name,
-          localip, localip, localip, localip, localip, stopstart.c_str(), localip, localip, localip, filemanagerport, localip, filemanagerport,
-          localip, localip,  localip  );
-
+  sprintf
+  (
+    the_page, msg, devname, devname, vernum, strdate, use, tot, rssi, avi_file_name,
+    framesize, quality, frame_cnt, frame_interval, stream_delay,
+    most_recent_avg_framesize, most_recent_fps, time_left, localip,  localip,  localip,  localip, avi_file_name,
+    localip, localip, localip, localip, localip, stopstart.c_str(), localip, localip, localip, filemanagerport, localip, filemanagerport,
+    localip, localip,  localip  
+  );  
+  
+  /*        
+  Serial.println("====="); logfile.print("=====");
+  Serial.println(the_page); logfile.print(the_page);
+  Serial.println("====="); logfile.print("=====");
+  */
+  
+  //   Функцией httpd_resp_send отправляем данные в качестве HTTP-ответа на запрос. 
+  // Подразумевается, что полный готовый ответ находится в одном буфере. 
+  // Если код статуса и тип содержимого не были заданы, по умолчанию будет отправлен 
+  // код статуса 200 OK и тип содержимого как text/html. Перед вызовом функции можно 
+  // вызвать другие функции для настройки заголовков ответа: 
+  // httpd_resp_set_status() — для установки строки статуса HTTP, 
+  // httpd_resp_set_type() — для установки типа содержимого, 
+  // httpd_resp_set_hdr() — для добавления любых дополнительных значений полей в заголовок ответа.
+  //   Функция вызывается только из контекста URI-обработчика, где указатель запроса httpd_req_t* достоверный.
+  // После вызова функции на запрос выдаётся ответ, никаких дополнительных данных 
+  // не может быть отправлено для запроса. После вызова функции все заголовки запроса 
+  // выпиливаются, поэтому их необходимо предварительно копировать в отдельные буферы, 
+  // если они позже могут понадобиться.
+  //   Параметры: req — запрос, на который формируется ответ; the_page — буфер, откуда 
+  // вычитывается полный пакет, сконструированный пользователем; strlen(the_page) — 
+  // длина буфера. Можно указать HTTPD_RESP_USE_STRLEN, который автоматически рассчитывает 
+  // длину для строк, заканчивающихся нулём.
+  //   Важно: когда завершены отправка всех фрагментов ответа на запрос, 
+  // необходимо вызвать функцию, где в параметре buf_len указан 0. 
   httpd_resp_send(req, the_page, strlen(the_page));
-
   time_in_web1 += (millis() - start);
   return ESP_OK;
 }

@@ -1,66 +1,60 @@
+<!doctype html>
 <html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>%s ESP32-CAM Video Recorder Junior</title>
+<title>desklens ESP32-CAM Video Recorder Junior</title>
+
 <script>
-function initialize() {
-   var baseHost = document.location.origin
-   const query = `${baseHost}/time?time=`
-   const x = new Date();
-   var timing = x.getTime() / 1000;
-   const query2 = query + String(timing)
-   fetch(query2)
-      .then(response => {
-         console.log(`request to ${query2} finished, status: ${response.status}`)
-      })
+function initialize() 
+{
+  var baseHost = document.location.origin
+  const query = `${baseHost}/time?time=`
+  const x = new Date();
+  var timing = x.getTime() / 1000;
+  const query2 = query + String(timing)
+  fetch(query2).then(response => 
+  {
+    console.log(`request to ${query2} finished, status: ${response.status}`)
+  })
 }   
-   </script>
-      </head>
-       <body onload="initialize()" style="background-color: white">
-        
+</script>
 </head>
-<body>
-<h1>%s<br>ESP32-CAM Video Recorder Junior %s <br><font color="red">%s</font></h1><br>
 
- Used / Total SD Space <font color="red"> %d MB / %d MB</font>, Rssi %d<br>
+<body onload="initialize()" style="background-color: white">
+<h1>desklens<br>ESP32-CAM Video Recorder Junior v62.34.0 <br><font color="red"></font></h1><br>
+Used / Total SD Space <font color="red"> 1143 MB / 15095 MB</font>, Rssi -48<br>
+ 
+Filename: /desklens136/desklens136.001.avi <br>
+Framesize 13, Quality 12, Frame 429 <br>
+Record Interval 0ms, Stream Interval 0ms <br>
+Avg framesize 26093, fps 12.6 <br>
+Time left in current video 1765 seconds<br>
+<h3><a href="http://10.120.175.2/">http://10.120.175.2/</a></h3>
+Current Frame:<br>
+<img src="http://10.120.175.2/capture"/> <br>
+First Frame of Current Recording: (see more in File Management section)<br>
+<img src="http://10.120.175.2/find?f=//desklens136/desklens136.001.avi&n=0"> <br>
 
- Filename: %s <br>
- Framesize %d, Quality %d, Frame %d <br>
- Record Interval %dms, Stream Interval %dms <br>
- Avg framesize %d, fps %.1f <br>
- Time left in current video %d seconds<br>
-
- <h3><a href="http://%s/">http://%s/</a></h3>
- Current Frame:<br>
- <img src="http://%s/capture"/> <br>
- First Frame of Current Recording: (see more in File Management section)<br>
- <img src="http://%s/find?f=/%s&n=0"> <br>
- <h3>Streaming</h3>
- <a href="http://%s:81/stream"><button>Stream 81</button></a>
- <a href="http://%s:82/stream"><button>Stream 82</button></a>
- <h3>Series of pictures</h3>
- <a href="http://%s/photos"><button>10 x 3 sec</button> </a>
- <a href="http://%s/fphotos"><button>10 x 1 sec</button></a>
- <a href="http://%s/sphotos"><button>120 x 15 sec</button></a> 
- <h3>Recording is <font color="red"> %s </font> - overrides hardware pin 12 stop/start</h3>
- <a href="http://%s/start"><button>start</button> </a>
- <a href="http://%s/stop"><button>stop</button></a> 
- <h3>File Management</h3>
- <h4>
- <a href="http://%s:%d/e?edit=config2.txt"><button>edit config2.txt </button></a>
- <a href="http://%s:%d"><button>File Manager - download, delete, view videos </button></a> </h4>
-
- <h4><a href="http://%s/restart"><button>End recording, and start new video (write the index) </button></a></h4>
- <h4><a href="http://%s/reboot"><button>End recording, and reboot (using new settings)</button> </a></h4>
- <br>
-SourceCode:  https://github.com/jameszah/ESP32-CAM-Video-Recorder-junior/<br>
-One-Click Installer: https://jameszah.github.io/ESP32-CAM-VideoCam/<br>
+<h3>Streaming</h3>
+<a href="http://10.120.175.2:81/stream"><button>Stream 81</button></a>
+<a href="http://10.120.175.2:82/stream"><button>Stream 82</button></a>
+<h3>Series of pictures</h3>
+<a href="http://10.120.175.2/photos"><button>10 x 3 sec</button> </a>
+<a href="http://10.120.175.2/fphotos"><button>10 x 1 sec</button></a>
+<a href="http://10.120.175.2/sphotos"><button>120 x 15 sec</button></a> 
+<h3>Recording is <font color="red"> Recording </font> - overrides hardware pin 12 stop/start</h3>
+<a href="http://10.120.175.2/start"><button>start</button> </a>
+<a href="http://10.120.175.2/stop"><button>stop</button></a> 
+<h3>File Management</h3>
+<h4>
+  <a href="http://10.120.175.2:8080/e?edit=config2.txt"><button>edit config2.txt </button></a>
+  <a href="http://10.120.175.2:8080"><button>File Manager - download, delete, view videos </button></a> 
+</h4>
+<h4><a href="http://10.120.175.2/restart"><button>End recording, and start new video (write the index) </button></a></h4>
+<h4><a href="http://10.120.175.2/reboot"><button>End recording, and reboot (using new settings)</button> </a></h4>
+<br>
 James Zahary - Dec 8, 2024 -- May 18, 2022<br>
-<a href="https://ko-fi.com/jameszah">Free coffee (not AP mode)</a>
-
 <br>
 </body>
 </html>
-
-
