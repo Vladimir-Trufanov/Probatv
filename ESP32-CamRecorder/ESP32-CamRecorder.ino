@@ -38,6 +38,7 @@
 #include "eprom.h"
 #include "config.h"
 #include "camera.h"
+#include "stream32.h"
 #include "CameraServer.h"
 
 //bool configfile = false;
@@ -47,43 +48,6 @@
 //String czone;
 //char apssid[30];
 //char appass[14];
-
-/*
-TaskHandle_t the_camera_loop_task;
-TaskHandle_t the_sd_loop_task;
-TaskHandle_t the_streaming_loop_task;
-
-static SemaphoreHandle_t wait_for_sd;
-static SemaphoreHandle_t sd_go;
-SemaphoreHandle_t baton;
-
-long current_frame_time;
-long last_frame_time;
-bool web_stop = false;
-*/
-
-/*
-// CAMERA_MODEL_AI_THINKER
-#define PWDN_GPIO_NUM     32
-#define RESET_GPIO_NUM    -1
-#define XCLK_GPIO_NUM      0
-#define SIOD_GPIO_NUM     26
-#define SIOC_GPIO_NUM     27
-#define Y9_GPIO_NUM       35
-#define Y8_GPIO_NUM       34
-#define Y7_GPIO_NUM       39
-#define Y6_GPIO_NUM       36
-#define Y5_GPIO_NUM       21
-#define Y4_GPIO_NUM       19
-#define Y3_GPIO_NUM       18
-#define Y2_GPIO_NUM        5
-#define VSYNC_GPIO_NUM    25
-#define HREF_GPIO_NUM     23
-#define PCLK_GPIO_NUM     22
-*/
-
-camera_fb_t * fb_curr = NULL;
-camera_fb_t * fb_next = NULL;
 
 #include <stdio.h>
 #include "freertos/FreeRTOS.h"
@@ -127,36 +91,15 @@ int done = 0;
 */
 
 /*
-long avi_start_time = 0;
-long avi_end_time = 0;
 int start_record = 0;
 int start_record_2nd_opinion = -2;
 int start_record_1st_opinion = -1;
 */
 
-int we_are_already_stopped = 0;
-long total_delay = 0;
-long bytes_before_last_100_frames = 0;
-long time_before_last_100_frames = 0;
-
-long time_in_loop = 0;
-long time_in_camera = 0;
-long time_in_sd = 0;
-long time_in_good = 0;
-long time_total = 0;
 //long time_in_web1 = 0;
 //long time_in_web2 = 0;
-long delay_wait_for_sd = 0;
-long wait_for_cam = 0;
-int very_high = 0;
 
 //bool do_the_ota = false;
-
-int do_it_now = 0;
-int gframe_cnt;
-int gfblen;
-int gj;
-int  gmdelay;
 
 // MicroSD
 #include "driver/sdmmc_host.h"
@@ -171,113 +114,11 @@ int  gmdelay;
 
 static int i = 0;
 //uint16_t frame_cnt = 0;
-uint16_t remnant = 0;
-uint32_t length = 0;
-uint32_t startms;
-uint32_t elapsedms;
-uint32_t uVideoLen = 0;
-
-int bad_jpg = 0;
-int extend_jpg = 0;
-int normal_jpg = 0;
 
 long boot_time = 0;
 
-long totalp;
-long totalw;
 
-#define BUFFSIZE 512
-
-uint8_t buf[BUFFSIZE];
-
-#define AVIOFFSET 240 // AVI main header length
-
-unsigned long movi_size = 0;
-unsigned long jpeg_size = 0;
-unsigned long idx_offset = 0;
-
-uint8_t zero_buf[4] = {0x00, 0x00, 0x00, 0x00};
-uint8_t dc_buf[4] = {0x30, 0x30, 0x64, 0x63};      // "00dc"
-uint8_t dc_and_zero_buf[8] = {0x30, 0x30, 0x64, 0x63, 0x00, 0x00, 0x00, 0x00};
-
-uint8_t avi1_buf[4] = {0x41, 0x56, 0x49, 0x31};    // "AVI1"
-uint8_t idx1_buf[4] = {0x69, 0x64, 0x78, 0x31};    // "idx1"
-
-
-struct frameSizeStruct 
-{
-  uint8_t frameWidth[2];
-  uint8_t frameHeight[2];
-};
-
-// Здесь используются две ссылки на Git-репозитарии, которые сохранены в каталоге DownLoads приложения: 
-// data structure from here https://github.com/s60sc/ESP32-CAM_MJPEG2SD/blob/master/avi.cpp, extended for ov5640
-// must match https://github.com/espressif/esp32-camera/blob/b6a8297342ed728774036089f196d599f03ea367/driver/include/sensor.h#L87
-// which changed in Nov 2024
-static const frameSizeStruct frameSizeData[] = 
-{
-  {{0x60, 0x00}, {0x60, 0x00}}, // FRAMESIZE_96X96,    // 96x96    0 framesize
-  {{0xA0, 0x00}, {0x78, 0x00}}, // FRAMESIZE_QQVGA,    // 160x120  1
-  {{0x60, 0x00}, {0x60, 0x00}}, // FRAMESIZE_128X128   // 128x128  2
-  {{0xB0, 0x00}, {0x90, 0x00}}, // FRAMESIZE_QCIF,     // 176x144  3
-  {{0xF0, 0x00}, {0xB0, 0x00}}, // FRAMESIZE_HQVGA,    // 240x176  4
-  {{0xF0, 0x00}, {0xF0, 0x00}}, // FRAMESIZE_240X240,  // 240x240  5
-  {{0x40, 0x01}, {0xF0, 0x00}}, // FRAMESIZE_QVGA,     // 320x240  6
-  {{0x40, 0x01}, {0xF0, 0x00}}, // FRAMESIZE_320X320,  // 320x320  7
-  {{0x90, 0x01}, {0x28, 0x01}}, // FRAMESIZE_CIF,      // 400x296  8
-  {{0xE0, 0x01}, {0x40, 0x01}}, // FRAMESIZE_HVGA,     // 480x320  9
-  {{0x80, 0x02}, {0xE0, 0x01}}, // FRAMESIZE_VGA,      // 640x480  10
-  //               38,400    61,440    153,600
-  {{0x20, 0x03}, {0x58, 0x02}}, // FRAMESIZE_SVGA,     // 800x600   11
-  {{0x00, 0x04}, {0x00, 0x03}}, // FRAMESIZE_XGA,      // 1024x768  12
-  {{0x00, 0x05}, {0xD0, 0x02}}, // FRAMESIZE_HD,       // 1280x720  13
-  {{0x00, 0x05}, {0x00, 0x04}}, // FRAMESIZE_SXGA,     // 1280x1024 14
-  {{0x40, 0x06}, {0xB0, 0x04}}, // FRAMESIZE_UXGA,     // 1600x1200 15
-  // 3MP Sensors
-  {{0x80, 0x07}, {0x38, 0x04}}, // FRAMESIZE_FHD,      // 1920x1080 16
-  {{0xD0, 0x02}, {0x00, 0x05}}, // FRAMESIZE_P_HD,     //  720x1280 17
-  {{0x60, 0x03}, {0x00, 0x06}}, // FRAMESIZE_P_3MP,    //  864x1536 18
-  {{0x00, 0x08}, {0x00, 0x06}}, // FRAMESIZE_QXGA,     // 2048x1536 19
-  // 5MP Sensors
-  {{0x00, 0x0A}, {0xA0, 0x05}}, // FRAMESIZE_QHD,      // 2560x1440 20
-  {{0x00, 0x0A}, {0x40, 0x06}}, // FRAMESIZE_WQXGA,    // 2560x1600 21
-  {{0x38, 0x04}, {0x80, 0x07}}, // FRAMESIZE_P_FHD,    // 1080x1920 22
-  {{0x00, 0x0A}, {0x80, 0x07}}  // FRAMESIZE_QSXGA,    // 2560x1920 23
-
-};
-
-const int avi_header[AVIOFFSET] PROGMEM = 
-{
-  0x52, 0x49, 0x46, 0x46, 0xD8, 0x01, 0x0E, 0x00, 0x41, 0x56, 0x49, 0x20, 0x4C, 0x49, 0x53, 0x54,
-  0xD0, 0x00, 0x00, 0x00, 0x68, 0x64, 0x72, 0x6C, 0x61, 0x76, 0x69, 0x68, 0x38, 0x00, 0x00, 0x00,
-  0xA0, 0x86, 0x01, 0x00, 0x80, 0x66, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x10, 0x00, 0x00, 0x00,
-  0x64, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-  0x80, 0x02, 0x00, 0x00, 0xe0, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x4C, 0x49, 0x53, 0x54, 0x84, 0x00, 0x00, 0x00,
-  0x73, 0x74, 0x72, 0x6C, 0x73, 0x74, 0x72, 0x68, 0x30, 0x00, 0x00, 0x00, 0x76, 0x69, 0x64, 0x73,
-  0x4D, 0x4A, 0x50, 0x47, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-  0x01, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0A, 0x00, 0x00, 0x00,
-  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x73, 0x74, 0x72, 0x66,
-  0x28, 0x00, 0x00, 0x00, 0x28, 0x00, 0x00, 0x00, 0x80, 0x02, 0x00, 0x00, 0xe0, 0x01, 0x00, 0x00,
-  0x01, 0x00, 0x18, 0x00, 0x4D, 0x4A, 0x50, 0x47, 0x00, 0x84, 0x03, 0x00, 0x00, 0x00, 0x00, 0x00,
-  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x49, 0x4E, 0x46, 0x4F,
-  0x10, 0x00, 0x00, 0x00, 0x6A, 0x61, 0x6D, 0x65, 0x73, 0x7A, 0x61, 0x68, 0x61, 0x72, 0x79, 0x20,
-  0x76, 0x36, 0x32, 0x20, 0x4C, 0x49, 0x53, 0x54, 0x00, 0x01, 0x0E, 0x00, 0x6D, 0x6F, 0x76, 0x69,
-};
-
-
-//
-// Writes an uint32_t in Big Endian at current file position
-//
-static void inline print_quartet(unsigned long i, File fd) {
-
-  uint8_t y[4];
-  y[0] = i % 0x100;
-  y[1] = (i >> 8) % 0x100;
-  y[2] = (i >> 16) % 0x100;
-  y[3] = (i >> 24) % 0x100;
-  size_t i1_err = fd.write(y , 4);
-}
+/*
 
 //
 // Writes 2 uint32_t in Big Endian at current file position
@@ -295,6 +136,7 @@ static void inline print_2quartet(unsigned long i, unsigned long j, File fd) {
   y[7] = (j >> 24) % 0x100;
   size_t i1_err = fd.write(y , 8);
 }
+*/
 
 #include "lwip/sockets.h"
 #include <lwip/netdb.h>
@@ -434,6 +276,7 @@ void deleteFolderOrFile(const char * val) {
     }
   }
 }
+/*
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 //
@@ -528,6 +371,7 @@ camera_fb_t *  get_good_jpeg() {
   }
   return fb;
 }
+*/
 
 /*
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -583,7 +427,7 @@ void do_eprom_write() {
 //   start_avi() - open the file and write headers
 //   another_pic_avi() - write one more frame of movie
 //   end_avi() - write the final parameters and close the file
-
+/*
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 //
@@ -684,6 +528,10 @@ static void start_avi() {
   avifile.flush();
 
 } // end of start avi
+
+*/
+
+/*
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 //
@@ -807,136 +655,8 @@ static void another_save_avi(uint8_t* fb_buf, int fblen ) {
 
 } // end of another_pic_avi
 
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-//
-//  end_avi writes the index, and closes the files
-//
+*/
 
-static void end_avi() {
-
-  long start = millis();
-
-  unsigned long current_end = avifile.position();
-
-  jpr("End of avi - closing the files");
-
-  if (frame_cnt <  5 ) {
-    jpr("Recording screwed up, less than 5 frames, forget index\n");
-    idxfile.close();
-    avifile.close();
-    int xx = remove("/idx.tmp");
-    int yy = remove(avi_file_name);
-
-  } else {
-
-    elapsedms = millis() - startms;
-
-    float fRealFPS = (1000.0f * (float)frame_cnt) / ((float)elapsedms) * speed_up_factor;
-
-    float fmicroseconds_per_frame = 1000000.0f / fRealFPS;
-    uint8_t iAttainedFPS = round(fRealFPS) ;
-    uint32_t us_per_frame = round(fmicroseconds_per_frame);
-
-    //Modify the MJPEG header from the beginning of the file, overwriting various placeholders
-
-    avifile.seek( 4 , SeekSet);
-    print_quartet(movi_size + 240 + 16 * frame_cnt + 8 * frame_cnt, avifile);
-
-    avifile.seek( 0x20 , SeekSet);
-    print_quartet(us_per_frame, avifile);
-
-    unsigned long max_bytes_per_sec = (1.0f * movi_size * iAttainedFPS) / frame_cnt;
-
-    avifile.seek( 0x24 , SeekSet);
-    print_quartet(max_bytes_per_sec, avifile);
-
-    avifile.seek( 0x30 , SeekSet);
-    print_quartet(frame_cnt, avifile);
-
-    avifile.seek( 0x8c , SeekSet);
-    print_quartet(frame_cnt, avifile);
-
-    avifile.seek( 0x84 , SeekSet);
-    print_quartet((int)iAttainedFPS, avifile);
-
-    avifile.seek( 0xe8 , SeekSet);
-    print_quartet(movi_size + frame_cnt * 8 + 4, avifile);
-
-    jpr("\n*** Video recorded and saved ***\n");
-
-    jpr("Recorded %5d frames in %5d seconds\n", frame_cnt, elapsedms / 1000);
-    jpr("File size is %u bytes\n", movi_size + 12 * frame_cnt + 4);
-    jpr("Adjusted FPS is %5.2f\n", fRealFPS);
-    jpr("Max data rate is %lu bytes/s\n", max_bytes_per_sec);
-    jpr("Frame duration is %d us\n", us_per_frame);
-    jpr("Average frame length is %d bytes\n", uVideoLen / frame_cnt);
-    jpr("Average picture time (ms) %f\n", 1.0 * totalp / frame_cnt);
-    jpr("Average write time (ms)  %f\n", 1.0 * totalw / frame_cnt );
-    jpr("Normal jpg % %3.1f\n", 100.0 * normal_jpg / frame_cnt );
-    jpr("Extend jpg % %3.1f\n", 100.0 * extend_jpg / frame_cnt );
-    jpr("Bad    jpg % %6.5f\n", 100.0 * bad_jpg / frame_cnt);
-    jpr("Slow sd writes %d, %5.3f %% \n", very_high, 100.0 * very_high / frame_cnt, 5 );
-
-    jpr("Writng the index, %d frames\n", frame_cnt);
-
-    avifile.seek( current_end , SeekSet);
-
-    idxfile.close();
-
-    size_t i1_err = avifile.write(idx1_buf, 4);
-
-    print_quartet(frame_cnt * 16, avifile);
-
-    idxfile = SD_MMC.open("/idx.tmp", "r");
-
-    if (idxfile)  {
-      //Serial.printf("File open: %s\n", "//idx.tmp");
-      //logfile.printf("File open: %s\n", "/idx.tmp");
-    }  else  {
-      jpr("Could not open index file");
-      major_fail();
-    }
-
-    char * AteBytes;
-    AteBytes = (char*) malloc (8);
-
-    for (int i = 0; i < frame_cnt; i++) {
-      size_t res = idxfile.readBytes( AteBytes, 8);
-      size_t i1_err = avifile.write(dc_buf, 4);
-      size_t i2_err = avifile.write(zero_buf, 4);
-      size_t i3_err = avifile.write((uint8_t *)AteBytes, 8);
-    }
-
-    free(AteBytes);
-
-    idxfile.close();
-    avifile.close();
-
-    //    int resss = SD_MMC.mkdir(the_directory);
-    //    Serial.printf("remake the foler ?? %d\n",resss);
-    int xx = SD_MMC.remove("/idx.tmp");
-  }
-
-  jpr("---\n");
-
-  time_in_sd += (millis() - start);
-
-  //Serial.println("");
-  time_total = millis() - startms;
-  jpr("waiting for cam %10dms, %4.1f%%\n", wait_for_cam , 100.0 * wait_for_cam  / time_total);
-  jpr("Time in camera  %10dms, %4.1f%%\n", time_in_camera, 100.0 * time_in_camera / time_total);
-  jpr("waiting for sd  %10dms, %4.1f%%\n", delay_wait_for_sd , 100.0 * delay_wait_for_sd  / time_total);
-  jpr("Time in sd      %10dms, %4.1f%%\n", time_in_sd    , 100.0 * time_in_sd     / time_total);
-  jpr("web (core 1)    %10dms, %4.1f%%\n", time_in_web1  , 100.0 * time_in_web1   / time_total);
-  jpr("web (core 0)    %10dms, %4.1f%%\n", time_in_web2  , 100.0 * time_in_web2   / time_total);
-  jpr("time total      %10dms, %4.1f%%\n", time_total    , 100.0 * time_total     / time_total);
-
-  logfile.flush();
-
-  if (file_number == 100) {
-    reboot_now = true;
-  }
-}
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -2268,179 +1988,6 @@ void setup()
   }
   }
 */
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// the_camera_loop()
-int delete_old_stuff_flag = 0;
-
-void the_camera_loop (void* pvParameter) 
-{
-  print_mem("MEM - стартовала задача the_camera_loop        ");
-
-  frame_cnt = 0;
-  start_record_2nd_opinion = digitalRead(12);
-  start_record_1st_opinion = digitalRead(12);
-  start_record = 0;
-
-  delay(1000);
-
-  while (1) 
-  {
-    delay(1);
-
-    // if (frame_cnt == 0 && start_record == 0)  // do nothing
-    // if (frame_cnt == 0 && start_record == 1)  // start a movie
-    // if (frame_cnt > 0 && start_record == 0)   // stop the movie
-    // if (frame_cnt > 0 && start_record != 0)   // another frame
-
-    ///////////////////  NOTHING TO DO //////////////////
-    if ( (frame_cnt == 0 && start_record == 0)) {
-
-      // Serial.println("Do nothing");
-      // !!! 2026-01-27 здесь, наверное, ip-адрес не равен http://192.168.1.100/start
-      if (we_are_already_stopped == 0) jpr("\n\nDisconnect Pin 12 from GND to start recording or http://192.168.1.100/start \n\n");
-      we_are_already_stopped = 1;
-      delay(100);
-
-      ///////////////////  START A MOVIE  //////////////////
-    } else if (frame_cnt == 0 && start_record == 1) {
-
-      //Serial.println("Ready to start");
-
-      we_are_already_stopped = 0;
-
-      avi_start_time = millis();
-
-      jpr("\nStart the avi ... at %d\n", avi_start_time);
-      jpr("Framesize %d, quality %d, length %d seconds\n\n", framesize, quality, avi_length);
-      logfile.flush();
-
-      //88 frame_cnt++;
-
-      long wait_for_cam_start = millis();
-      wait_for_cam += millis() - wait_for_cam_start;
-
-      start_avi();
-
-      wait_for_cam_start = millis();
-
-      ///
-      frame_cnt++;
-
-      long delay_wait_for_sd_start = millis();
-
-      delay_wait_for_sd += millis() - delay_wait_for_sd_start;
-
-      fb_curr = get_good_jpeg();    //7
-
-      fb_curr_record_len = fb_curr->len;
-      memcpy(fb_curr_record_buf, fb_curr->buf, fb_curr->len);
-      fb_curr_record_time = millis();
-
-      xSemaphoreTake( baton, portMAX_DELAY );
-
-      fb_record_len = fb_curr_record_len;
-      memcpy(fb_record, fb_curr_record_buf, fb_curr_record_len);   // v59.5
-      fb_record_time = fb_curr_record_time;
-      xSemaphoreGive( baton );
-
-      esp_camera_fb_return(fb_curr);  //7
-
-      another_save_avi( fb_curr_record_buf, fb_curr_record_len );
-
-      ///
-      wait_for_cam += millis() - wait_for_cam_start;
-      if (blinking) digitalWrite(33, frame_cnt % 2);                // blink
-
-      ///////////////////  END THE MOVIE //////////////////
-    } else if ( restart_now || reboot_now || (frame_cnt > 0 && start_record == 0) ||  millis() > (avi_start_time + avi_length * 1000)) { // end the avi
-
-      jpr("End the Avi");
-      restart_now = false;
-
-      if (blinking)  digitalWrite(33, frame_cnt % 2);
-
-      end_avi();                                // end the movie
-
-      if (blinking) digitalWrite(33, HIGH);          // light off
-
-      delete_old_stuff_flag = 1;
-      delay(50);
-
-      avi_end_time = millis();
-
-      float fps = 1.0 * frame_cnt / ((avi_end_time - avi_start_time) / 1000) ;
-
-      jpr("End the avi at %d.  It was %d frames, %d ms at %.2f fps...\n", millis(), frame_cnt, avi_end_time, avi_end_time - avi_start_time, fps);
-
-      if (!reboot_now) frame_cnt = 0;             // start recording again on the next loop
-
-      ///////////////////  ANOTHER FRAME  //////////////////
-    } else if (frame_cnt > 0 && start_record != 0) {  // another frame of the avi
-
-      //Serial.println("Another frame");
-
-      current_frame_time = millis();
-      if (current_frame_time - last_frame_time < frame_interval) {
-        delay(frame_interval - (current_frame_time - last_frame_time));             // delay for timelapse
-      }
-      last_frame_time = millis();
-
-      frame_cnt++;
-
-      long delay_wait_for_sd_start = millis();
-      delay_wait_for_sd += millis() - delay_wait_for_sd_start;
-
-      fb_curr = get_good_jpeg();    //7
-
-      fb_curr_record_len = fb_curr->len;
-      memcpy(fb_curr_record_buf, fb_curr->buf, fb_curr->len);
-      fb_curr_record_time = millis();
-
-      xSemaphoreTake( baton, portMAX_DELAY );
-
-      fb_record_len = fb_curr_record_len;
-      memcpy(fb_record, fb_curr_record_buf, fb_curr_record_len);   // v59.5
-      fb_record_time = fb_curr_record_time;
-      xSemaphoreGive( baton );
-
-      esp_camera_fb_return(fb_curr);  //7
-
-      another_save_avi( fb_curr_record_buf, fb_curr_record_len );
-
-      long wait_for_cam_start = millis();
-
-      wait_for_cam += millis() - wait_for_cam_start;
-
-      if (blinking) digitalWrite(33, frame_cnt % 2);
-
-      if (frame_cnt % 100 == 10 ) {     // print some status every 100 frames
-        if (frame_cnt == 10) {
-          bytes_before_last_100_frames = movi_size;
-          time_before_last_100_frames = millis();
-          most_recent_fps = 0;
-          most_recent_avg_framesize = 0;
-        } else {
-
-          most_recent_fps = 100.0 / ((millis() - time_before_last_100_frames) / 1000.0) ;
-          most_recent_avg_framesize = (movi_size - bytes_before_last_100_frames) / 100;
-
-          if ( (Lots_of_Stats && frame_cnt < 1011) || (Lots_of_Stats && frame_cnt % 1000 == 10)) {
-            jpr("So far: %04d frames, in %6.1f seconds, for last 100 frames: avg frame size %6.1f kb, %.2f fps ...\n", frame_cnt, 0.001 * (millis() - avi_start_time), 1.0 / 1024  * most_recent_avg_framesize, most_recent_fps);
-          }
-
-          total_delay = 0;
-
-          bytes_before_last_100_frames = movi_size;
-          time_before_last_100_frames = millis();
-        }
-      }
-    }
-  }
-}
-
-//
-
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

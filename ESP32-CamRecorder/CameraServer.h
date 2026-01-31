@@ -71,16 +71,6 @@ static esp_err_t photos_handler(httpd_req_t *req);
 static esp_err_t capture_handler(httpd_req_t *req); 
 static esp_err_t index_handler(httpd_req_t *req); 
 
-long avi_start_time = 0;
-long avi_end_time = 0;
-int start_record = 0;
-int start_record_2nd_opinion = -2;
-int start_record_1st_opinion = -1;
-
-long time_in_web1 = 0;
-long time_in_web2 = 0;
-
-
 /*static esp_err_t delete_handler(httpd_req_t *req) 
 {
   esp_err_t res = ESP_OK;
@@ -1267,5 +1257,6 @@ void stopCameraServer()
 {
   httpd_stop(camera_httpd);
 }
+
 
 // ********************************************************* CameraServer.h ***

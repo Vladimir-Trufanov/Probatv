@@ -82,6 +82,27 @@ bool done_the_reindex = false;
 
 char file_to_edit[50] = "/JamCam0481.0007.avi"; //61.3
 
+int we_are_already_stopped = 0;
+long wait_for_cam = 0;
 
+long totalp;
+long totalw;
+
+long time_in_loop = 0;
+long time_in_camera = 0;
+long time_in_sd = 0;
+long time_in_good = 0;
+long time_total = 0;
+
+long time_in_web1 = 0;
+long time_in_web2 = 0;
+
+int very_high = 0;
+
+#define BUFFSIZE 512
+uint8_t buf[BUFFSIZE];
+
+long avi_start_time = 0;
+long avi_end_time = 0;
 
 // *************************************************************** inimem.h ***

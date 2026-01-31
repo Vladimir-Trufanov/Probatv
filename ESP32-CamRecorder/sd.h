@@ -27,6 +27,17 @@ uint16_t frame_cnt = 0;
 #define fbs  1 
 uint8_t fb_record_static[fbs * 1024 + 20];
 
+uint16_t remnant = 0;
+uint32_t length = 0;
+uint32_t startms;
+uint32_t elapsedms;
+uint32_t uVideoLen = 0;
+
+int bad_jpg = 0;
+int extend_jpg = 0;
+int normal_jpg = 0;
+
+
 
 //////////////////////////////
 //61.3 oneframe find_a_frame (char * avi_file_name, int frame_pct) ; // from avi.cpp file
@@ -93,6 +104,39 @@ int read_quartet( File fd)
   //Serial.printf("read_quartet %d %d %d %d, %d\n", y[0], y[1], y[2], y[3], value);
   return value;
 }
+
+
+//
+// Writes an uint32_t in Big Endian at current file position
+//
+static void inline print_quartet(unsigned long i, File fd) {
+
+  uint8_t y[4];
+  y[0] = i % 0x100;
+  y[1] = (i >> 8) % 0x100;
+  y[2] = (i >> 16) % 0x100;
+  y[3] = (i >> 24) % 0x100;
+  size_t i1_err = fd.write(y , 4);
+}
+
+
+//
+// Writes 2 uint32_t in Big Endian at current file position
+//
+static void inline print_2quartet(unsigned long i, unsigned long j, File fd) {
+
+  uint8_t y[8];
+  y[0] = i % 0x100;
+  y[1] = (i >> 8) % 0x100;
+  y[2] = (i >> 16) % 0x100;
+  y[3] = (i >> 24) % 0x100;
+  y[4] = j % 0x100;
+  y[5] = (j >> 8) % 0x100;
+  y[6] = (j >> 16) % 0x100;
+  y[7] = (j >> 24) % 0x100;
+  size_t i1_err = fd.write(y , 8);
+}
+
 
 
 

@@ -31,7 +31,6 @@ ESP32-CamRecorder
 			Info\v2-ESPxWebFlMgr-master.zip
 		camera.h
 		CameraServer.h
-		CameraServerOld.h
 		config.h
 		CRC32.cpp
 		CRC32.h
@@ -46,27 +45,32 @@ ESP32-CamRecorder
 		inimem.h
 		jpr.h
 		sd.h
+		stream32.h
 [Open project files]
 0=ESP32-CamRecorder.ino
-1=fil.txt
-2=CameraServer\index.html
-3=CameraServer\indexRes.html
-4=CameraServer.h
+1=CameraServer.h
+2=stream32.h
+3=fil.txt
+4=camera.h
+5=inimem.h
 [Selected Project Files]
 Main=
-Selected=CameraServer.h
+Selected=stream32.h
 [ESP32-CamRecorder.ino]
-TopLine=1230
-Caret=3,1245
+TopLine=3
+Caret=19,41
+[CameraServer.h]
+TopLine=60
+Caret=1,73
+[stream32.h]
+TopLine=1
+Caret=55,12
 [fil.txt]
 TopLine=1
-Caret=1,1
-[CameraServer\index.html]
-TopLine=21
-Caret=8,60
-[CameraServer\indexRes.html]
-TopLine=26
-Caret=2,25
-[CameraServer.h]
-TopLine=1032
-Caret=5,966
+Caret=48,50
+[camera.h]
+TopLine=71
+Caret=15,86
+[inimem.h]
+TopLine=70
+Caret=1,99
