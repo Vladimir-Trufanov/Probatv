@@ -82,6 +82,12 @@ long total_delay = 0;
 long bytes_before_last_100_frames = 0;
 long time_before_last_100_frames = 0;
 
+uint16_t remnant = 0;
+//uint32_t length = 0;
+uint32_t startms;
+uint32_t elapsedms;
+uint32_t uVideoLen = 0;
+
 unsigned long movi_size = 0;
 unsigned long jpeg_size = 0;
 unsigned long idx_offset = 0;
@@ -91,6 +97,9 @@ uint8_t idx1_buf[4]        = {0x69, 0x64, 0x78, 0x31};    // "idx1"
 uint8_t zero_buf[4]        = {0x00, 0x00, 0x00, 0x00};
 uint8_t dc_buf[4]          = {0x30, 0x30, 0x64, 0x63};      // "00dc"
 uint8_t dc_and_zero_buf[8] = {0x30, 0x30, 0x64, 0x63, 0x00, 0x00, 0x00, 0x00};
+
+// Декодирование JPEG для чайников - https://habr.com/ru/articles/102521/
+// Изобретаем JPEG                 - https://habr.com/ru/articles/206264/
 
 #define AVIOFFSET 240 // AVI main header length
 const int avi_header[AVIOFFSET] PROGMEM = 
@@ -266,57 +275,70 @@ static void config_camera()
   jprln("Размер буфера изображений для %d равен %d", x, frame_buffer_size);
   print_mem("MEM - после завершения инициирования камеры    ");
 }
-
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-//
-//  get_good_jpeg()  - take a picture and make sure it has a good jpeg
-//
+// ****************************************************************************
+// *       Cделать снимок и убедиться, что он имеет хороший формат jpeg       *
+// ****************************************************************************
 camera_fb_t *  get_good_jpeg() 
 {
-
+  //   Объявляем fb типа camera_fb_t — структура в ESP32, которая содержит указатель 
+  // на буфер с изображением и некоторые метаданные: ширину и высоту изображения, 
+  // а также длину буфера, в котором оно находится.
+  //   Для получения изображения с камеры используется функция esp_camera_fb_get,
+  // которая не принимает аргументов и возвращает указатель на структуру типа camera_fb_t. 
   camera_fb_t * fb;
 
   long start;
   int failures = 0;
 
-  do {
+  do 
+  {
     int fblen = 0;
     int foundffd9 = 0;
     long bp = millis();
     long mstart = micros();
 
     fb = esp_camera_fb_get();
-    if (!fb) {
+    if (!fb) 
+    {
       Serial.println("Camera Capture Failed");
       failures++;
-    } else {
+    } 
+    else 
+    {
       long mdelay = micros() - mstart;
-
       int get_fail = 0;
-
       totalp = totalp + millis() - bp;
       time_in_camera = totalp;
-
       fblen = fb->len;
 
-      for (int j = 1; j <= 1025; j++) {
-        if (fb->buf[fblen - j] != 0xD9) {
+      for (int j = 1; j <= 1025; j++) 
+      {
+        if (fb->buf[fblen - j] != 0xD9) 
+        {
           // no d9, try next for
-        } else {                                     //Serial.println("Found a D9");
-          if (fb->buf[fblen - j - 1] == 0xFF ) {     //Serial.print("Found the FFD9, junk is "); Serial.println(j);
-            if (j == 1) {
+        } 
+        else 
+        {                                     //Serial.println("Found a D9");
+          if (fb->buf[fblen - j - 1] == 0xFF ) 
+          {     //Serial.print("Found the FFD9, junk is "); Serial.println(j);
+            if (j == 1) 
+            {
               normal_jpg++;
-            } else {
+            } 
+            else 
+            {
               extend_jpg++;
             }
             foundffd9 = 1;
-            if (Lots_of_Stats) {
-              if (j > 9000) {                // was 900             //  rarely happens - sometimes on 2640
+            if (Lots_of_Stats) 
+            {
+              if (j > 9000) 
+              {                // was 900             //  rarely happens - sometimes on 2640
                 jpr("Frame %d, Len %d, Extra %d ", frame_cnt, fblen, j - 1 );
                 logfile.flush();
               }
-
-              if ( (frame_cnt % 1000 == 50) || (frame_cnt < 1000 && frame_cnt % 100 == 50)) {
+              if ( (frame_cnt % 1000 == 50) || (frame_cnt < 1000 && frame_cnt % 100 == 50)) 
+              {
                 gframe_cnt = frame_cnt;
                 gfblen = fblen;
                 gj = j;
@@ -331,13 +353,15 @@ camera_fb_t *  get_good_jpeg()
         }
       }
 
-      if (!foundffd9) {
+      if (!foundffd9) 
+      {
         bad_jpg++;
         jpr("Bad jpeg, Frame %d, Len = %d \n", frame_cnt, fblen);
         esp_camera_fb_return(fb);
         failures++;
-
-      } else {
+      } 
+      else 
+      {
         break;
         // count up the useless bytes
       }
@@ -346,9 +370,9 @@ camera_fb_t *  get_good_jpeg()
   } while (failures < 10);   // normally leave the loop with a break()
 
   // if we get 10 bad frames in a row, then quality parameters are too high - set them lower (+5), and start new movie
-  if (failures == 10) {
+  if (failures == 10) 
+  {
     jpr("10 failures");
-
     sensor_t * ss = esp_camera_sensor_get();
     int qual = ss->status.quality ;
     ss->set_quality(ss, qual + 5);
@@ -362,6 +386,13 @@ camera_fb_t *  get_good_jpeg()
   return fb;
 }
 
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+//
+// Make the avi functions
+//
+//   start_avi() - open the file and write headers
+//   another_save_avi() - write one more frame of movie
+//   end_avi() - write the final parameters and close the file
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 //
@@ -423,7 +454,7 @@ static void start_avi()
   {
     if (framesize >= 11) 
     {
-      ex_fps = 12.5 * speed_up_factor ;;
+      ex_fps = 12.5 * speed_up_factor ;
     } 
     else 
     {
@@ -572,7 +603,8 @@ static void end_avi()
     char * AteBytes;
     AteBytes = (char*) malloc (8);
 
-    for (int i = 0; i < frame_cnt; i++) {
+    for (int i = 0; i < frame_cnt; i++) 
+    {
       size_t res = idxfile.readBytes( AteBytes, 8);
       size_t i1_err = avifile.write(dc_buf, 4);
       size_t i2_err = avifile.write(zero_buf, 4);
@@ -609,20 +641,15 @@ static void end_avi()
     reboot_now = true;
   }
 }
-
-
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-//
-//  another_save_avi saves another frame to the avi file, uodates index
-//           -- pass in a fb pointer to the frame to add
-//
-
-static void another_save_avi(uint8_t* fb_buf, int fblen ) {
+// ****************************************************************************
+// *         Cохранить очередной кадр в avi-файл, обновить индекс -           *
+// *                указатель для fb на добавляемый кадр                      *
+// ****************************************************************************
+static void another_save_avi(uint8_t* fb_buf, int fblen ) 
+{
   long start = millis();
-
   int fb_block_length;
   uint8_t* fb_block_start;
-
   jpeg_size = fblen;
 
   remnant = (4 - (jpeg_size & 0x00000003)) & 0x00000003;
@@ -647,13 +674,15 @@ static void another_save_avi(uint8_t* fb_buf, int fblen ) {
 
   fb_block_start = fb_buf;
 
-  if (fblen > fbs * 1024 - 8 ) {                     // fbs is the size of frame buffer static
+  if (fblen > fbs * 1024 - 8 )  // fbs=1, это размер статического буфера кадров в Кб
+  {                     
     fb_block_length = fbs * 1024;
     fblen = fblen - (fbs * 1024 - 8);
     memcpy(fb_record_static + 8, fb_block_start, fb_block_length - 8);
     fb_block_start = fb_block_start + fb_block_length - 8;
-
-  } else {
+  } 
+  else 
+  {
     fb_block_length = fblen + 8  + remnant;
     memcpy(fb_record_static + 8, fb_block_start,  fblen);
     fblen = 0;
@@ -661,20 +690,24 @@ static void another_save_avi(uint8_t* fb_buf, int fblen ) {
 
   size_t err = avifile.write(fb_record_static, fb_block_length);
 
-  if (err != fb_block_length) {
+  if (err != fb_block_length) 
+  {
     start_record = 0;
-    jpr("Giving up - Error on avi write: err = %d, len = %d \n", err, fb_block_length);
+    jprln("Ошибка при записи в avi: %d, длина блока = %d", err, fb_block_length);
     return;
   }
 
   if (block_num < 10) block_delay[block_num++] = millis() - bw;
 
-  while (fblen > 0) {
-
-    if (fblen > fbs * 1024) {
+  while (fblen > 0) 
+  {
+    if (fblen > fbs * 1024) 
+    {
       fb_block_length = fbs * 1024;
       fblen = fblen - fb_block_length;
-    } else {
+    } 
+    else 
+    {
       fb_block_length = fblen  + remnant;
       fblen = 0;
     }
@@ -683,8 +716,9 @@ static void another_save_avi(uint8_t* fb_buf, int fblen ) {
 
     size_t err = avifile.write(fb_record_static,  fb_block_length);
 
-    if (err != fb_block_length) {
-      jpr("Giving up - Error on avi write: err = %d, len = %d \n", err, fb_block_length);
+    if (err != fb_block_length) 
+    {
+      jprln("Ошибка при записи в avi: %d, длина блока = %d", err, fb_block_length);
       return;
     }
 
@@ -705,7 +739,8 @@ static void another_save_avi(uint8_t* fb_buf, int fblen ) {
 
   movi_size = movi_size + remnant;
 
-  if ( do_it_now == 1 ) {  // && frame_cnt < 1011
+  if ( do_it_now == 1 ) 
+  {  // && frame_cnt < 1011
     do_it_now = 0;
     //jpr("Frame %6d, len %6d, extra  %4d, cam time %7d,  sd time %4d -- \n", gframe_cnt, gfblen, gj - 1, gmdelay / 1000, millis() - bw);
     jpr("Frame %6d, len %6d, cam time %7d,  sd time %4d -- \n", gframe_cnt, gfblen, gmdelay / 1000, millis() - bw);
@@ -716,7 +751,8 @@ static void another_save_avi(uint8_t* fb_buf, int fblen ) {
   time_in_sd += (millis() - start);
 
 
-  if ( (millis() - bw) > totalw / frame_cnt * 10) {
+  if ( (millis() - bw) > totalw / frame_cnt * 10) 
+  {
     unsigned long x = avifile.position();
     jpr ("Frame %6d, sd time very high %4d >>> %4d -- pos %X, ",  frame_cnt, millis() - bw, (totalw / frame_cnt), x );
 
@@ -731,7 +767,7 @@ static void another_save_avi(uint8_t* fb_buf, int fblen ) {
   avifile.flush();
   idxfile.flush();
 
-} // end of another_pic_avi
+} // end of another_save_avi
 
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -761,21 +797,18 @@ void the_camera_loop (void* pvParameter)
     // if (frame_cnt > 0 && start_record != 0)   // another frame
 
     ///////////////////  NOTHING TO DO //////////////////
-    if ( (frame_cnt == 0 && start_record == 0)) {
-
+    if ( (frame_cnt == 0 && start_record == 0)) 
+    {
       // Serial.println("Do nothing");
-      // !!! 2026-01-27 здесь, наверное, ip-адрес не равен http://192.168.1.100/start
       if (we_are_already_stopped == 0) jpr("\n\nDisconnect Pin 12 from GND to start recording or http://192.168.1.100/start \n\n");
       we_are_already_stopped = 1;
       delay(100);
-
+    } 
       ///////////////////  START A MOVIE  //////////////////
-    } else if (frame_cnt == 0 && start_record == 1) {
-
+    else if (frame_cnt == 0 && start_record == 1) 
+    {
       //Serial.println("Ready to start");
-
       we_are_already_stopped = 0;
-
       avi_start_time = millis();
 
       jpr("\nStart the avi ... at %d\n", avi_start_time);

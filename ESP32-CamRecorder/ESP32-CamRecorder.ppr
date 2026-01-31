@@ -53,15 +53,16 @@ ESP32-CamRecorder
 3=fil.txt
 4=camera.h
 5=inimem.h
+6=sd.h
 [Selected Project Files]
 Main=
-Selected=fil.txt
+Selected=camera.h
 [ESP32-CamRecorder.ino]
-TopLine=865
-Caret=16,886
+TopLine=117
+Caret=1,120
 [CameraServer.h]
-TopLine=24
-Caret=1,39
+TopLine=824
+Caret=35,839
 [stream32.h]
 TopLine=22
 Caret=1,42
@@ -69,8 +70,11 @@ Caret=1,42
 TopLine=1
 Caret=1,1
 [camera.h]
-TopLine=71
-Caret=15,86
+TopLine=364
+Caret=1,376
 [inimem.h]
-TopLine=70
-Caret=1,99
+TopLine=3
+Caret=62,18
+[sd.h]
+TopLine=10
+Caret=15,25

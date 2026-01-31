@@ -15,8 +15,8 @@
 
 // Объявляем дескрипторы файлов
 File logfile;  // файл информационных сообщений и сообщений об ошибках
-File avifile;
-File idxfile;
+File avifile;  // файл потока графических изображений (кадров)
+File idxfile;  // файл указателей кадров
 
 static const char vernum[]   = "v62.34.0"; // версия приложения
 static const char _soft_IP[] = "IP контроллера: ";
