@@ -36,8 +36,6 @@ bool do_the_ota = false;
 // выделяет память и ресурсы в зависимости от указанной конфигурации и 
 // возвращает указатель на экземпляр. 
 httpd_handle_t camera_httpd = NULL;
-httpd_handle_t stream81_httpd = NULL;
-httpd_handle_t stream82_httpd = NULL;
 
 char the_page[4200];
 int previous_capture = 0;
