@@ -21,7 +21,7 @@ ESP32-CamRecorder
 		-CameraServer
 			CameraServer\index.html
 			CameraServer\indexRes.html
-		-Info
+		+Info
 			-multiple_fb_count
 				Info\multiple_fb_count\multiple_fb_count.ino
 			Info\avi.cpp
@@ -48,33 +48,25 @@ ESP32-CamRecorder
 		stream32.h
 [Open project files]
 0=ESP32-CamRecorder.ino
-1=CameraServer.h
-2=stream32.h
-3=fil.txt
-4=camera.h
-5=inimem.h
-6=sd.h
+1=fil.txt
+2=camera.h
+3=inimem.h
+4=sd.h
 [Selected Project Files]
 Main=
 Selected=camera.h
 [ESP32-CamRecorder.ino]
-TopLine=117
-Caret=1,120
-[CameraServer.h]
-TopLine=824
-Caret=35,839
-[stream32.h]
-TopLine=22
-Caret=1,42
+TopLine=101
+Caret=12,116
 [fil.txt]
 TopLine=1
 Caret=1,1
 [camera.h]
-TopLine=364
-Caret=1,376
+TopLine=156
+Caret=1,179
 [inimem.h]
-TopLine=3
-Caret=62,18
+TopLine=57
+Caret=1,86
 [sd.h]
-TopLine=10
-Caret=15,25
+TopLine=12
+Caret=1,26

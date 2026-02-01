@@ -72,25 +72,12 @@ int start_record = 0;
 int start_record_2nd_opinion = -2;
 int start_record_1st_opinion = -1;
 
-long delay_wait_for_sd = 0;
-
 camera_fb_t * fb_curr = NULL;
 camera_fb_t * fb_next = NULL;
-
 
 long total_delay = 0;
 long bytes_before_last_100_frames = 0;
 long time_before_last_100_frames = 0;
-
-uint16_t remnant = 0;
-//uint32_t length = 0;
-uint32_t startms;
-uint32_t elapsedms;
-uint32_t uVideoLen = 0;
-
-unsigned long movi_size = 0;
-unsigned long jpeg_size = 0;
-unsigned long idx_offset = 0;
 
 uint8_t avi1_buf[4]        = {0x41, 0x56, 0x49, 0x31};    // "AVI1"
 uint8_t idx1_buf[4]        = {0x69, 0x64, 0x78, 0x31};    // "idx1"
@@ -121,7 +108,7 @@ const int avi_header[AVIOFFSET] PROGMEM =
   0x76, 0x36, 0x32, 0x20, 0x4C, 0x49, 0x53, 0x54, 0x00, 0x01, 0x0E, 0x00, 0x6D, 0x6F, 0x76, 0x69,
 };
 
-// Здесь используются две ссылки на Git-репозитарии, которые сохранены в каталоге DownLoads приложения: 
+// Здесь используются две ссылки на Git-репозитарии, которые сохранены в каталоге Info приложения: 
 // data structure from here https://github.com/s60sc/ESP32-CAM_MJPEG2SD/blob/master/avi.cpp, extended for ov5640
 // must match https://github.com/espressif/esp32-camera/blob/b6a8297342ed728774036089f196d599f03ea367/driver/include/sensor.h#L87
 // which changed in Nov 2024
@@ -161,6 +148,33 @@ static const frameSizeStruct frameSizeData[] =
   {{0x00, 0x0A}, {0x80, 0x07}}  // FRAMESIZE_QSXGA,    // 2560x1920 23
 };
 
+uint16_t remnant = 0;
+uint32_t startms;
+uint32_t elapsedms;
+
+long totalp;   // общее время съемки всех кадров записанного файла avi
+long totalw;   // общее время записи всех кадров файла avi
+
+unsigned long jpeg_size = 0;
+unsigned long movi_size = 0;
+uint32_t uVideoLen = 0;
+unsigned long idx_offset = 0;
+
+int bad_jpg = 0;
+int extend_jpg = 0;
+int normal_jpg = 0;
+
+long time_in_loop;
+long time_in_camera; //
+long time_in_sd;
+long time_in_good;
+long time_total;
+long time_in_web1;
+long time_in_web2;
+
+long delay_wait_for_sd = 0;
+long wait_for_cam = 0;
+int very_high = 0;
 
 // ****************************************************************************
 // *                      Установить параметры камеры                         *
@@ -208,7 +222,7 @@ static void config_camera()
     cam_err = esp_camera_init(&config);
     if (cam_err != ESP_OK) 
     {
-      jpr("Ошибка инициировании камеры 0x%x\n", cam_err);
+      jprln("Ошибка инициировании камеры 0x%x", cam_err);
       // Передёргиваем контакт питания
       digitalWrite(PWDN_GPIO_NUM, 1);
       delay(500);
@@ -281,30 +295,66 @@ static void config_camera()
 camera_fb_t *  get_good_jpeg() 
 {
   //   Объявляем fb типа camera_fb_t — структура в ESP32, которая содержит указатель 
-  // на буфер с изображением и некоторые метаданные: ширину и высоту изображения, 
-  // а также длину буфера, в котором оно находится.
+  // на данные кадра изображения, полученного с камеры и некоторые метаданные: ширину и 
+  // высоту изображения, а также длину буфера, в котором оно находится.
   //   Для получения изображения с камеры используется функция esp_camera_fb_get,
   // которая не принимает аргументов и возвращает указатель на структуру типа camera_fb_t. 
+  //   Структура camera_fb_t включает следующие поля:
+  // uint8_t * buf      — указатель на пиксельные данные;
+  // size_t len         — длина буфера в байтах;
+  // size_t width       — ширина буфера в пикселях;
+  // size_t height      — высота буфера в пикселях;
+  // pixformat_t format — формат структуры пиксельных данных;
+  // timeval timestamp  — отметка времени.
+  //   Функция esp_camera_fb_get() выделяет память для поля buf. После использования буфера 
+  // память освобождается с помощью функции esp_camera_fb_return(). 
+  //   Структура camera_fb_t используется для получения кадра из камеры. Например, 
+  // в коде может быть объявлена переменная, которая содержит указатель на структуру camera_fb_t, 
+  // и вызывается функция esp_camera_fb_get(). Эта функция не принимает аргументов 
+  // и возвращает указатель на структуру camera_fb_t.
+  //   Важно: при работе с камерой рекомендуется освобождать память, выделенную 
+  // функцией esp_camera_fb_get(). Это позволяет использовать буфер изображения 
+  // повторно, что полезно, например, при непрерывном захвате новых снимков. 
+  
+  // Как устроен jpg-файл? 
+  //   Файл поделен на секторы, предваряемые маркерами. Маркеры имеют длину 2 байта, 
+  // причем первый байт [FF]. Почти все секторы хранят свою длину в следующих 2 байта после маркера.
+  // [FF D8] — маркер начала. Он всегда находится в начале всех jpg-файлов. Следом идут 
+  // байты [FF FE]. Это маркер, означающий начало секции с комментарием. Например, следующие 
+  // 2 байта [00 04] — длина секции (включая эти 2 байта). Значит в следующих двух [3A 29] — сам комментарий. 
+  // Это коды символов ":" и ")", т.е. обычного смайлика.
+  //   Маркер [FF DB] называется DQT — таблица квантования. Маркер [FF C0], это SOF0 - 
+  // означает, что изображение закодировано базовым методом (сушествуют и другие методы,
+  // например, progressive-метод, когда сначала загружается изображение с низким 
+  // разрешением, а потом и нормальная картинка.
+  //   Маркер [FF C4]: DHT (таблица Хаффмана).
+  //   Маркер [FF DA]: SOS (Start of Scan).
+  //   [FF D9] — маркер EOI, что означает конец изображения. При этом данные сжатого 
+  // изображения никогда не содержат маркер [FF D9] (байты FF всегда следуют за байтом 00). 
+  // Однако некоторые поля могут содержать этот маркер.
+  
   camera_fb_t * fb;
-
   long start;
+  // Инициируем нулевую попытку захвата изображения камеры
   int failures = 0;
-
+  // Делаем до 10 попыток захвата изображения
   do 
   {
     int fblen = 0;
     int foundffd9 = 0;
+    // Отмечаем начало процедуры взятия изображения с камеры
     long bp = millis();
     long mstart = micros();
-
+    // Выделяем память и делаем изображение
     fb = esp_camera_fb_get();
     if (!fb) 
     {
-      Serial.println("Camera Capture Failed");
+      Serial.println("Не удалось выполнить захват с камеры");
       failures++;
     } 
     else 
     {
+      // Определяем время ушедшее на получение изображения
       long mdelay = micros() - mstart;
       int get_fail = 0;
       totalp = totalp + millis() - bp;
@@ -386,24 +436,15 @@ camera_fb_t *  get_good_jpeg()
   return fb;
 }
 
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-//
-// Make the avi functions
-//
-//   start_avi() - open the file and write headers
-//   another_save_avi() - write one more frame of movie
-//   end_avi() - write the final parameters and close the file
-
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-//
-// start_avi - open the files and write in headers
-//
-
+// ****************************************************************************
+// *                    Открыть avi-файл и записать заголовки                 *
+// ****************************************************************************
 static void start_avi() 
 {
+  // Отмечаем начало работы с файлом avi
+  long start = millis();
   char the_directory[50];
 
-  long start = millis();
 
   jpr("Starting an avi ");
   sprintf(the_directory, "/%s%03d",  devname, file_group);
@@ -490,6 +531,7 @@ static void start_avi()
   extend_jpg = 0;
   normal_jpg = 0;
 
+
   time_in_loop = 0;
   time_in_camera = 0;
   time_in_sd = 0;
@@ -497,6 +539,7 @@ static void start_avi()
   time_total = 0;
   time_in_web1 = 0;
   time_in_web2 = 0;
+  
   delay_wait_for_sd = 0;
   wait_for_cam = 0;
   very_high = 0;
@@ -508,29 +551,24 @@ static void start_avi()
 
 } // end of start avi
 
-
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-//
-//  end_avi writes the index, and closes the files
-//
-
+// ****************************************************************************
+// *             Записать индекс, закрыть  файлы и вывести протокол           *
+// ****************************************************************************
 static void end_avi() 
 {
-
   long start = millis();
-
   unsigned long current_end = avifile.position();
-
-  jpr("End of avi - closing the files");
-
-  if (frame_cnt <  5 ) {
-    jpr("Recording screwed up, less than 5 frames, forget index\n");
+  jpr("Запись avi завершена, файлы закрываются");
+  if (frame_cnt < 5) 
+  {
+    jprln("Запись испорчена, менее 5 кадров, убираем индекс");
     idxfile.close();
     avifile.close();
     int xx = remove("/idx.tmp");
     int yy = remove(avi_file_name);
-
-  } else {
+  } 
+  else 
+  {
 
     elapsedms = millis() - startms;
 
@@ -565,15 +603,15 @@ static void end_avi()
     avifile.seek( 0xe8 , SeekSet);
     print_quartet(movi_size + frame_cnt * 8 + 4, avifile);
 
-    jpr("\n*** Video recorded and saved ***\n");
+    jprln("\n*** Видео записано и сохранено ***");
 
-    jpr("Recorded %5d frames in %5d seconds\n", frame_cnt, elapsedms / 1000);
+    jpr("Снято и записано %5d кадров за %5d секунд\n", frame_cnt, elapsedms / 1000);
     jpr("File size is %u bytes\n", movi_size + 12 * frame_cnt + 4);
     jpr("Adjusted FPS is %5.2f\n", fRealFPS);
     jpr("Max data rate is %lu bytes/s\n", max_bytes_per_sec);
     jpr("Frame duration is %d us\n", us_per_frame);
     jpr("Average frame length is %d bytes\n", uVideoLen / frame_cnt);
-    jpr("Average picture time (ms) %f\n", 1.0 * totalp / frame_cnt);
+    jpr("Среднее время съемки (ms) %f\n", 1.0 * totalp / frame_cnt);
     jpr("Average write time (ms)  %f\n", 1.0 * totalw / frame_cnt );
     jpr("Normal jpg % %3.1f\n", 100.0 * normal_jpg / frame_cnt );
     jpr("Extend jpg % %3.1f\n", 100.0 * extend_jpg / frame_cnt );

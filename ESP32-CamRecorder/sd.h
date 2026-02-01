@@ -18,18 +18,11 @@
 #include "inimem.h"
 #include "jpr.h"
 
-char avi_file_name[100];
-uint16_t frame_cnt = 0;
-
 // Обеспечиваем ускорение записи на SD-карту [https://github.com/espressif/esp32-camera/issues/182],
 // ранее было fbs=64 - столько КБ статической оперативной памяти 
 // для psram -> буфер sram для записи на sd
 #define fbs  1 
 uint8_t fb_record_static[fbs * 1024 + 20];
-
-int bad_jpg = 0;
-int extend_jpg = 0;
-int normal_jpg = 0;
 
 //////////////////////////////
 //61.3 oneframe find_a_frame (char * avi_file_name, int frame_pct) ; // from avi.cpp file
