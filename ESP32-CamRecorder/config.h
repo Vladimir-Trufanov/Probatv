@@ -271,20 +271,20 @@ ssid              // ssid $3: здесь будет имя камеры, есл�
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Above lines - 1 item per line followed by 2 spaces
 
-desklens - camera name for files, mdns, etc
-13 - framesize 13 is hd 720p 1280x720
+desklens - название камеры для файлов, mdns и т.д.
+13 - framesize - формат изображения, 13 => hd 720p 1280x720
  - for ov2640 camera 10=vga, 11=svga, 12=xga, 13=hd, 14=sxga, 15=uxga
  - for ov5640 camera add 16=fhd, 19=qxga, 20=qhd, 23=qsxga
 1800 - length of video in seconds
-0 - interval - millisecond between frames for recording
- - 0 is as fast as possible bound by camera speed or sd writing speed
+0 - interval - интервал между кадрами для записи в миллисекундах
+ - 0 выполняется настолько быстро, насколько это возможно, в зависимости от скорости камеры или скорости записи на sd-карту
  - 500 is 2 frames per second (subject to bounds)
  - 10000 is 0.1 frames per second or 10 seconds per frame
  - vga is max 25 fps, hd is max 12.5 fps, uxga at 12.5 fps etc
-1 - speedup - multiply framerate to speed up playback
-  - 1 is realtime
-  - 24 will play a 1 fps recording at 24 fps on your computer
-  - 300 will play 10 sec per frame at 30 fps on your computer
+1 - speedup - ускорение воспроизведения
+  - 1 в реальном времени
+  - 24 запись 1 кадр/с будет воспроизводиться со скоростью 24 кадра/с 
+  - 300 запись 10 секунд на кадр будет воспроизводиться со скоростью 30 кадров в секунду
 0 - streamdelay - milliseconds of delay between streaming frames
  - this allows you to slow down streaming to save battery power 
      and network usage

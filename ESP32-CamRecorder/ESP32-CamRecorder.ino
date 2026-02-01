@@ -418,7 +418,7 @@ bool init_wifi()
   
   // По умолчанию IP-адресом настроенной программной точки доступа будет «192.168.4.1». 
   // Его можно поменять при помощи функции softAPConfig. 
-  jprln("Контроллер устанавливает собственная точка доступа …");
+  jprln("Контроллер устанавливает собственную точку доступа");
   WiFi.softAP(ssidch3, passch3);
   /*
   IPAddress IP = WiFi.softAPIP();
@@ -427,7 +427,7 @@ bool init_wifi()
   */
   sprintf(localip, "%s", WiFi.softAPIP().toString().c_str());
   Serial.print(_soft_IP); Serial.println(localip); 
-  jprln("Контроллер подключается к локальной точке доступа …");
+  jprln("Контроллер подключается к локальной точке доступа");
   // Инициируем нулевую попытку подключения
   int connAttempts = 0;
   Serial.println(" ");
@@ -440,7 +440,7 @@ bool init_wifi()
   sprintf(localip,"%s",WiFi.localIP().toString().c_str());
   Serial.print(_localIP); Serial.println(localip); Serial.println(" ");
 
-  jprln("Определяется локальное время …");
+  jprln("Определяется локальное время");
   configTime(0, 0, "pool.ntp.org");
   char tzchar[60];
   TIMEZONE.toCharArray(tzchar, TIMEZONE.length() + 1);        // name of your camera for mDNS, Router, and filenames

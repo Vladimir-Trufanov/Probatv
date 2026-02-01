@@ -118,8 +118,8 @@ struct frameSizeStruct
   uint8_t frameHeight[2];
 };
 static const frameSizeStruct frameSizeData[] = 
-{
-  {{0x60, 0x00}, {0x60, 0x00}}, // FRAMESIZE_96X96,    // 96x96    0 framesize
+{                                                      // framesize:
+  {{0x60, 0x00}, {0x60, 0x00}}, // FRAMESIZE_96X96,    // 96x96    0 
   {{0xA0, 0x00}, {0x78, 0x00}}, // FRAMESIZE_QQVGA,    // 160x120  1
   {{0x60, 0x00}, {0x60, 0x00}}, // FRAMESIZE_128X128   // 128x128  2
   {{0xB0, 0x00}, {0x90, 0x00}}, // FRAMESIZE_QCIF,     // 176x144  3
@@ -133,7 +133,7 @@ static const frameSizeStruct frameSizeData[] =
   //               38,400    61,440    153,600
   {{0x20, 0x03}, {0x58, 0x02}}, // FRAMESIZE_SVGA,     // 800x600   11
   {{0x00, 0x04}, {0x00, 0x03}}, // FRAMESIZE_XGA,      // 1024x768  12
-  {{0x00, 0x05}, {0xD0, 0x02}}, // FRAMESIZE_HD,       // 1280x720  13
+  {{0x00, 0x05}, {0xD0, 0x02}}, // FRAMESIZE_HD,       // 1280x720  13 - по умолчанию
   {{0x00, 0x05}, {0x00, 0x04}}, // FRAMESIZE_SXGA,     // 1280x1024 14
   {{0x40, 0x06}, {0xB0, 0x04}}, // FRAMESIZE_UXGA,     // 1600x1200 15
   // 3MP Sensors
@@ -149,11 +149,11 @@ static const frameSizeStruct frameSizeData[] =
 };
 
 uint16_t remnant = 0;
-uint32_t startms;
+uint32_t startms;            // начало работы с камерой и файлом avi    
 uint32_t elapsedms;
 
-long totalp;   // общее время съемки всех кадров записанного файла avi
-long totalw;   // общее время записи всех кадров файла avi
+long totalp;                 // общее время съемки всех кадров записанного файла avi
+long totalw;                 // общее время записи всех кадров файла avi
 
 unsigned long jpeg_size = 0;
 unsigned long movi_size = 0;
@@ -165,10 +165,10 @@ int extend_jpg = 0;
 int normal_jpg = 0;
 
 long time_in_loop;
-long time_in_camera; //
-long time_in_sd;
-long time_in_good;
-long time_total;
+long time_in_camera;         // общее время работы камеры
+long time_in_sd;             // время, потраченное на работу с sd-картой
+long time_in_good;           // время камеры с получением целых (хороших) кадров
+long time_total;         
 long time_in_web1;
 long time_in_web2;
 
@@ -441,65 +441,81 @@ camera_fb_t *  get_good_jpeg()
 // ****************************************************************************
 static void start_avi() 
 {
-  // Отмечаем начало работы с файлом avi
+  // Отмечаем начало работы с камерой и файлом avi - инициируем переменные
+  startms = millis();  // начало работы с камерой и файлом avi
+  totalp=0;            // общее время съемки всех кадров записанного файла avi
+  totalw=0;            // общее время записи всех кадров файла avi
+  jpeg_size = 0;
+  movi_size = 0;
+  uVideoLen = 0;
+  idx_offset = 4;
+  bad_jpg = 0;
+  extend_jpg = 0;
+  normal_jpg = 0;
+  time_in_loop = 0;
+  time_in_camera=0;    // общее время работы камеры
+  time_in_sd=0;        // время, потраченное на работу с sd-картой
+  time_in_good=0;      // время камеры с получением целых (хороших) кадров
+  time_total = 0;
+  time_in_web1 = 0;
+  time_in_web2 = 0;
+  delay_wait_for_sd = 0;
+  wait_for_cam = 0;
+  very_high = 0;
+
   long start = millis();
   char the_directory[50];
-
-
-  jpr("Starting an avi ");
-  sprintf(the_directory, "/%s%03d",  devname, file_group);
+  jprln("Начинается формирование avi по снятым камерой кадрам");
+  sprintf(the_directory,"/%s%03d",devname,file_group);
   SD_MMC.mkdir(the_directory);
-
   sprintf(avi_file_name, "/%s%03d/%s%03d.%03d.avi",  devname, file_group, devname, file_group, file_number);
-
   file_number++;
-
   avifile = SD_MMC.open(avi_file_name, "w");
   idxfile = SD_MMC.open("/idx.tmp", "w");
-
   if (avifile) 
   {
-    jpr("File open: %s\n", avi_file_name);
+    jpr("Файл открыт: %s\n", avi_file_name);
   }  
   else  
   {
-    jpr("Could not open avi file");
+    jprln("Не получилось открыть файл avi, контроллер будет перезагружен");
     major_fail();
   }
-
   if (idxfile)  
   {
     //Serial.printf("File open: %s\n", "//idx.tmp");
   }  
   else  
   {
-    jpr("Could not open file /idx.tmp");
+    jpr("Не получилось открыть файл /idx.tmp, контроллер будет перезагружен");
     major_fail();
   }
-
+  // Формируем и записываем в avi заголовок файла в соответствии с размером изображения
   for (int i = 0; i < AVIOFFSET; i++) 
   {
     char ch = pgm_read_byte(&avi_header[i]);
     buf[i] = ch;
   }
-
   memcpy(buf + 0x40, frameSizeData[framesize].frameWidth, 2);
   memcpy(buf + 0xA8, frameSizeData[framesize].frameWidth, 2);
   memcpy(buf + 0x44, frameSizeData[framesize].frameHeight, 2);
   memcpy(buf + 0xAC, frameSizeData[framesize].frameHeight, 2);
-
   size_t err = avifile.write(buf, AVIOFFSET);
-
+  // Назначаем скорость воспроизведения (ex_fps) на основании данных:
+  // frame_interval - интервал между записями кадров в миллисекундах, по умолчанию 0 => самая быстрая запись;
+  // framesize - формат изображения, по умолчанию 13 => hd 720p 1280x720;
+  // speed_up_factor - ускорение воспроизведения, по умолчанию 1 => в реальном времени
+  //   
   uint8_t ex_fps = 1;
   if (frame_interval == 0) 
   {
-    if (framesize >= 11) 
+    if (framesize >= 11)                 
     {
-      ex_fps = 12.5 * speed_up_factor ;
+      ex_fps = 12.5 * speed_up_factor; // от 12.5 кадров в секунду
     } 
     else 
     {
-      ex_fps = 25.0 * speed_up_factor;
+      ex_fps = 25.0 * speed_up_factor; // от 25 кадров в секунду
     }
   } 
   else 
@@ -517,32 +533,6 @@ static void start_avi()
 
   jpr("Recording %d seconds\n", avi_length);
 
-  startms = millis();
-
-  totalp = 0;
-  totalw = 0;
-
-  jpeg_size = 0;
-  movi_size = 0;
-  uVideoLen = 0;
-  idx_offset = 4;
-
-  bad_jpg = 0;
-  extend_jpg = 0;
-  normal_jpg = 0;
-
-
-  time_in_loop = 0;
-  time_in_camera = 0;
-  time_in_sd = 0;
-  time_in_good = 0;
-  time_total = 0;
-  time_in_web1 = 0;
-  time_in_web2 = 0;
-  
-  delay_wait_for_sd = 0;
-  wait_for_cam = 0;
-  very_high = 0;
 
   time_in_sd += (millis() - start);
 

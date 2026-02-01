@@ -21,7 +21,7 @@ ESP32-CamRecorder
 		-CameraServer
 			CameraServer\index.html
 			CameraServer\indexRes.html
-		+Info
+		-Info
 			-multiple_fb_count
 				Info\multiple_fb_count\multiple_fb_count.ino
 			Info\avi.cpp
@@ -52,21 +52,33 @@ ESP32-CamRecorder
 2=camera.h
 3=inimem.h
 4=sd.h
+5=eprom.h
+6=Info\sensor.h
+7=config.h
 [Selected Project Files]
 Main=
 Selected=camera.h
 [ESP32-CamRecorder.ino]
-TopLine=101
-Caret=12,116
+TopLine=428
+Caret=39,443
 [fil.txt]
 TopLine=1
 Caret=1,1
 [camera.h]
-TopLine=156
-Caret=1,179
+TopLine=468
+Caret=21,468
 [inimem.h]
-TopLine=57
-Caret=1,86
+TopLine=41
+Caret=84,56
 [sd.h]
 TopLine=12
 Caret=1,26
+[eprom.h]
+TopLine=29
+Caret=5,38
+[Info\sensor.h]
+TopLine=143
+Caret=5,181
+[config.h]
+TopLine=262
+Caret=1,281
