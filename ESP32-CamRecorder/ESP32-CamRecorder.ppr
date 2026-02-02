@@ -44,6 +44,7 @@ ESP32-CamRecorder
 		fil.txt
 		inimem.h
 		jpr.h
+		Prot-2026-02-02.txt
 		sd.h
 		stream32.h
 [Open project files]
@@ -55,26 +56,28 @@ ESP32-CamRecorder
 5=eprom.h
 6=Info\sensor.h
 7=config.h
+8=ESPxWebFlMgr.cpp
+9=Prot-2026-02-02.txt
 [Selected Project Files]
 Main=
-Selected=ESP32-CamRecorder.ino
+Selected=Prot-2026-02-02.txt
 [ESP32-CamRecorder.ino]
-TopLine=123
-Caret=1,125
+TopLine=1274
+Caret=3,1312
 [fil.txt]
 TopLine=1
 Caret=1,1
 [camera.h]
-TopLine=58
-Caret=29,73
+TopLine=889
+Caret=24,904
 [inimem.h]
 TopLine=57
 Caret=1,90
 [sd.h]
-TopLine=1
-Caret=76,95
+TopLine=141
+Caret=84,149
 [eprom.h]
-TopLine=29
+TopLine=1
 Caret=5,38
 [Info\sensor.h]
 TopLine=143
@@ -82,3 +85,9 @@ Caret=5,181
 [config.h]
 TopLine=377
 Caret=3,406
+[ESPxWebFlMgr.cpp]
+TopLine=306
+Caret=11,321
+[Prot-2026-02-02.txt]
+TopLine=1345
+Caret=16,24

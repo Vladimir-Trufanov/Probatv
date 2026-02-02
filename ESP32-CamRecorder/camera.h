@@ -177,6 +177,9 @@ long delay_wait_for_sd = 0;
 long wait_for_cam = 0;
 int very_high = 0;
 
+// Сбрасываем флаг "удалить старые файлы по завершению записи текущего файла avi"
+int delete_old_stuff_flag = 0;
+
 // ****************************************************************************
 // *                      Установить параметры камеры                         *
 // ****************************************************************************
@@ -810,8 +813,6 @@ static void another_save_avi(uint8_t* fb_buf, int fblen )
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 // the_camera_loop()
-int delete_old_stuff_flag = 0;
-
 void the_camera_loop (void* pvParameter) 
 {
   print_mem("MEM - стартовала задача the_camera_loop        ");
@@ -900,6 +901,7 @@ void the_camera_loop (void* pvParameter)
 
       if (blinking) digitalWrite(33, HIGH);          // light off
 
+      // Устанавливаем флаг "удалить старые файлы по завершению записи текущего файла avi"
       delete_old_stuff_flag = 1;
       delay(50);
 

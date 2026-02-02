@@ -4,7 +4,7 @@
  *                (https://github.com/jameszah/ESP32-CAM-Video-Recorder-junior) 
  *                                                     для умного хозяйства tve
  *                                                     
- * v1.0.4, 28.01.2026                                 Автор:      Труфанов В.Е.
+ * v1.0.5, 02.02.2026                                 Автор:      Труфанов В.Е.
  * Copyright © 2026 tve                               Дата создания: 11.01.2026
  * 
  * Modify by James Zahary Sep 12, 2020 - jamzah.plc@gmail.com
@@ -112,143 +112,6 @@ static int i = 0;
 
 #include "lwip/sockets.h"
 #include <lwip/netdb.h>
-
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-//
-//  delete_old_stuff() - delete oldest files to free diskspace
-//
-
-#include <list>
-#include <tuple>
-
-void delete_old_stuff() 
-{
-  using namespace std;
-  using records = tuple<String, String, size_t, time_t>;
-  list<records> dirList;
-
-  int card = SD_MMC.cardSize()  / (1024 * 1024);
-  int total = SD_MMC.totalBytes()  / (1024 * 1024);
-  int used = SD_MMC.usedBytes()  / (1024 * 1024);
-
-  jpr("Card  space: %5dMB\n", card);  // %llu
-  jpr("Total space: %5dMB\n", total);
-  jpr("Used  space: %5dMB\n", used);
-
-  float full = 1.0 * used / total;
-  if (full  <  0.8) {
-    jpr("Nothing deleted, %.1f%% disk full\n", 100.0 * full);
-  } else {
-    jpr("Disk is %.1f%% full ... deleting ...\n", 100.0 * full);
-
-    int x = millis();
-    File xdir = SD_MMC.open("/");
-    File xf = xdir.openNextFile();
-
-    while (xf) {
-      if (xf.isDirectory()) {
-        String the_dir = xf.name();
-        if (SD_MMC.rmdir("/" + the_dir )) {                      // remove empty dir
-          jpr("Dir removed\n"); Serial.println("/" + the_dir);
-        } else {
-          String log_name = "/" + the_dir + "/" + the_dir + ".999.txt";
-          //Serial.println(log_name);
-          File the_log = SD_MMC.open(log_name, "r");
-          time_t the_fold = xf.getLastWrite();
-          time_t the_logfile = the_log.getLastWrite();
-          the_log.close();
-
-          if ( the_fold > the_logfile) {
-            dirList.emplace_back("", the_dir, 0, the_fold);
-          } else {
-            dirList.emplace_back("", the_dir, 0, the_logfile);
-            //Serial.printf("Log is newer than dir by %d -- ", the_logfile - the_fold);
-          }
-        }
-      } else {
-        // skip files
-        //dirList.emplace_back("", xf.name(), xf.size(), xf.getLastWrite());
-        //Serial.printf("Added: "); Serial.println(xf.name());
-      }
-      xf = xdir.openNextFile();
-    }
-    xdir.close();
-
-    dirList.sort([](const records & f, const records & l) {                                 // sort by date
-      return get<3>(f) < get<3>(l);
-      return false;
-    });
-
-    jpr("Sort files took %d ms\n", millis() - x);
-
-    for ( auto& iter : dirList) {
-      String fn =  get<1>(iter);
-
-      //jpr("Oldest file is "); Serial.print(fn);
-      deleteFolderOrFile(fn.c_str());
-
-      total = SD_MMC.totalBytes()  / (1024 * 1024);
-      used = SD_MMC.usedBytes()  / (1024 * 1024);
-
-      full = 1.0 * used / total;
-
-      Serial.println(full);
-      if (full < 0.7) break;
-    }
-  }
-}
-
-void deleteFolderOrFile(const char * val) {
-  Serial.printf("Deleting : %s\n", val);
-  File f = SD_MMC.open("/" + String(val));
-  if (!f) {
-    jpr("Failed to open %s\n", val);
-    return;
-  }
-
-  if (f.isDirectory()) {
-    File file = f.openNextFile();
-    while (file) {
-      if (file.isDirectory()) {
-        Serial.print("  DIR : ");
-        Serial.println(file.name());
-      } else {
-        Serial.print("  FILE: ");
-        Serial.print(file.name());
-        Serial.print("  SIZE: ");
-        Serial.print(file.size());
-        if (SD_MMC.remove("/" + String(val) + "/" + file.name())) {
-          Serial.println(" deleted.");
-        } else {
-          Serial.println(" FAILED.");
-        }
-      }
-      int total = SD_MMC.totalBytes()  / (1024 * 1024);
-      int used = SD_MMC.usedBytes()  / (1024 * 1024);
-
-      float full = 1.0 * used / total;
-
-      Serial.println(full);
-      if (full < 0.7) break;
-      file = f.openNextFile();
-    }
-    f.close();
-    //Remove the dir
-    if (SD_MMC.rmdir("/" + String(val))) {
-      Serial.printf("Dir %s removed\n", val);
-    } else {
-      Serial.println("Remove dir failed");
-    }
-
-  } else {
-    //Remove the file
-    if (SD_MMC.remove("/" + String(val))) {
-      Serial.printf("File %s deleted\n", val);
-    } else {
-      Serial.println("Delete failed");
-    }
-  }
-}
 
 /*
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -539,23 +402,6 @@ int extras = 0;
 
 
 
-//
-// Writes an uint32_t in Big Endian at current file position
-//
-static void inline print_dc_quartet(unsigned long i, File fd) {
-
-  uint8_t y[8];
-  y[0] = 0x30;       // "00dc"
-  y[1] = 0x30;
-  y[2] = 0x64;
-  y[3] = 0x63;
-
-  y[4] = i % 0x100;
-  y[5] = (i >> 8) % 0x100;
-  y[6] = (i >> 16) % 0x100;
-  y[7] = (i >> 24) % 0x100;
-  size_t i1_err = fd.write(y , 8);
-}
 void re_index( char * avi_file_name, char * out_file_name) 
 {
   //once++;
@@ -1307,15 +1153,13 @@ void setup()
 #include <ESPping.h>
 long wakeup;
 long last_wakeup = 0;
-int loops = 0;
+// Инициируем начальный номер фонового цикла 
+int loops = 0;   
 
 void loop() 
 {
   loops++;
-  if (loops % 10000 == 17) 
-  {
-    Serial.printf("looooooooooooooooooooooooooooops %10d\n",loops);
-  }
+  if (loops % 10000 == 17) /*Serial.printf("looooooooooooooooooooooooooooops %10d\n",loops)*/;
   //
   for (int x = 0; x < 1; x++) 
   {
@@ -1326,16 +1170,19 @@ void loop()
   {
     ArduinoOTA.handle();
   }
-  //
+  // Если установлен флаг удаления старых файлов,
+  // то удаляем старые файлы и сбрасываем флаг
   if (delete_old_stuff_flag == 1) 
   {
-    delete_old_stuff_flag = 0;
     delete_old_stuff();
+    delete_old_stuff_flag = 0;
   }
+  
   start_record_2nd_opinion = start_record_1st_opinion;
   start_record_1st_opinion = digitalRead(12);
 
-  if (do_the_reindex) {
+  if (do_the_reindex) 
+  {
     done_the_reindex = false;
     do_the_reindex = false;
     re_index ( file_to_read, file_to_write );
@@ -1344,7 +1191,8 @@ void loop()
   }
 
   wakeup = millis();
-  if (wakeup - last_wakeup > (10  * 60 * 1000) ) {
+  if (wakeup - last_wakeup > (10  * 60 * 1000) ) 
+  {
     last_wakeup = millis();
     print_mem("---------- 10 Minute Internet Check -----------\n");
     time(&now);
@@ -1359,7 +1207,8 @@ void loop()
 
       client_err = httpd_get_client_list(camera_httpd, &client_count, client_fds);
       jpr("camera_httpd Sockets , Num = %d\n", client_count);
-      for (size_t i = 0; i < client_count; i++) {
+      for (size_t i = 0; i < client_count; i++) 
+      {
         int sock = client_fds[i];
         int x = httpd_ws_get_fd_info(camera_httpd, sock) ;
         jpr("Socket %d, fd=%d, info=%d \n", i, sock, x);
@@ -1368,7 +1217,8 @@ void loop()
 
       client_err = httpd_get_client_list(stream81_httpd, &client_count, client_fds);
       jpr("stream81_httpd Sockets , Num = %d\n", client_count);
-      for (size_t i = 0; i < client_count; i++) {
+      for (size_t i = 0; i < client_count; i++) 
+      {
         int sock = client_fds[i];
         //Serial.printf("%d, sock %d\n", i, sock);
         int x = httpd_ws_get_fd_info(camera_httpd, sock) ;
@@ -1377,7 +1227,8 @@ void loop()
       }
       client_err = httpd_get_client_list(stream82_httpd, &client_count, client_fds);
       jpr("stream82_httpd Sockets , Num = %d\n", client_count);
-      for (size_t i = 0; i < client_count; i++) {
+      for (size_t i = 0; i < client_count; i++) 
+      {
         int sock = client_fds[i];
         //Serial.printf("%d, sock %d\n", i, sock);
         int x = httpd_ws_get_fd_info(camera_httpd, sock) ;
@@ -1385,24 +1236,29 @@ void loop()
         print_sock(sock);
       }
 
-      if (found_router) {
+      if (found_router) 
+      {
         // Ping local IP
         Serial.println(WiFi.gatewayIP());
         if (Ping.ping(WiFi.gatewayIP()) > 0) {
           jpr(" -- response time : %d/%.2f/%d ms\n", Ping.minTime(), Ping.averageTime(), Ping.maxTime());
-        } else {
+        } 
+        else 
+        {
 
           jprln("\n\nCannot Ping the gateway - REBOOT");
           jprln("***** WiFi reconnect *****");
           WiFi.reconnect();
           delay(8000);
-          if (WiFi.status() != WL_CONNECTED) {
+          if (WiFi.status() != WL_CONNECTED) 
+          {
             // Подключаем локальные WiFi и создаём одну свою от контроллера
             jprln("***** WiFi restart *****");
             init_wifi();
           }
           delay(15000);
-          if (WiFi.status() != WL_CONNECTED) {
+          if (WiFi.status() != WL_CONNECTED) 
+          {
             jprln("***** Reboot *****");
             reboot_now = true;
           }
@@ -1413,9 +1269,12 @@ void loop()
         // Ping Host
         const char* remote_host = "google.com";
         jpr(remote_host);
-        if (Ping.ping(remote_host) > 0) {
+        if (Ping.ping(remote_host) > 0) 
+        {
           jpr(" -- response time : %d/%.2f/%d ms\n", Ping.minTime(), Ping.averageTime(), Ping.maxTime());
-        } else {
+        } 
+        else 
+        {
           jprln(" Ping Error !");
         }
         delay(1000);
@@ -1441,34 +1300,47 @@ void loop()
       Serial.print(_localIP); Serial.println(WiFi.localIP());   
       logfile.println(_localIP+WiFi.localIP());
 
-      if (!MDNS.begin(devname)) {
+      if (!MDNS.begin(devname)) 
+      {
         jprln("Error setting up MDNS responder!");
-      } else {
+      } 
+      else 
+      {
         jpr("mDNS responder started '%s'\n", devname);
       }
     }  // not internet off
   }  // wakeup
 
-  if (reboot_now == true) {
+  if (reboot_now == true) 
+  {
     jprln(" \n\n\n Rebooting in 5 seconds... \n\n\n");
     delay(5000);
     ESP.restart();
   }
 
-  if (web_stop == true) {
-    if (start_record == 1) {
+  if (web_stop == true) 
+  {
+    if (start_record == 1) 
+    {
       start_record = 0;
       jprln("web_stop web_stop code");
     }
-  } else {
+  } 
+  else 
+  {
     //jpr("first %d, second %d, web %d\n", start_record_1st_opinion, start_record_2nd_opinion, web_stop);
-    if (start_record == 1) {
-      if (start_record_1st_opinion == 0 && start_record_2nd_opinion == 0) {
+    if (start_record == 1) 
+    {
+      if (start_record_1st_opinion == 0 && start_record_2nd_opinion == 0) 
+      {
         start_record = 0;
         jprln("stopping in web_stop code");
       }
-    } else {
-      if (start_record_1st_opinion == 1 && start_record_2nd_opinion == 1) {
+    } 
+    else 
+    {
+      if (start_record_1st_opinion == 1 && start_record_2nd_opinion == 1) 
+      {
         start_record = 1;
         jprln("starting in web_stop code");
       }
