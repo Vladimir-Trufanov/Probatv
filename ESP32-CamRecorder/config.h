@@ -275,7 +275,7 @@ desklens - название камеры для файлов, mdns и т.д.
 13 - framesize - формат изображения, 13 => hd 720p 1280x720
  - for ov2640 camera 10=vga, 11=svga, 12=xga, 13=hd, 14=sxga, 15=uxga
  - for ov5640 camera add 16=fhd, 19=qxga, 20=qhd, 23=qsxga
-1800 - length of video in seconds
+1800 - примерная длительность видео в секундах
 0 - interval - интервал между кадрами для записи в миллисекундах
  - 0 выполняется настолько быстро, насколько это возможно, в зависимости от скорости камеры или скорости записи на sd-карту
  - 500 is 2 frames per second (subject to bounds)

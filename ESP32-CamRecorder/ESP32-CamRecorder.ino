@@ -90,12 +90,6 @@ long last_frame_length = 0;
 int done = 0;
 */
 
-/*
-int start_record = 0;
-int start_record_2nd_opinion = -2;
-int start_record_1st_opinion = -1;
-*/
-
 //long time_in_web1 = 0;
 //long time_in_web2 = 0;
 
@@ -115,8 +109,6 @@ int start_record_1st_opinion = -1;
 static int i = 0;
 //uint16_t frame_cnt = 0;
 
-long boot_time = 0;
-
 
 #include "lwip/sockets.h"
 #include <lwip/netdb.h>
@@ -129,7 +121,8 @@ long boot_time = 0;
 #include <list>
 #include <tuple>
 
-void delete_old_stuff() {
+void delete_old_stuff() 
+{
   using namespace std;
   using records = tuple<String, String, size_t, time_t>;
   list<records> dirList;
@@ -1280,16 +1273,11 @@ void setup()
     Serial.println("Failed to open logfile for writing");
   }
 
-  boot_time = millis();
-
   const char *strdate = ctime(&now);
   //logfile.println(strdate);
 
   digitalWrite(33, HIGH);         // red light turns off when setup is complete
-
   print_mem("End of setup");
-  jpr("\n---  End of setup()  ---\n\n");
-
 }
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1310,29 +1298,37 @@ void setup()
   }
 */
 
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// loop() - loop runs at low prio, so I had to move it to the task the_camera_loop at higher priority
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// loop()             - основной (фоновый) цикл выполняется с 0 - низким приоритетом;
+// the_camera_loop()  - цикл фотографирования и записи avi-имеет наибольший приоритет = 4;
+// the_streaming_loop - видео-поток имеет приоритет 2
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 #include <ESPping.h>
 long wakeup;
 long last_wakeup = 0;
 int loops = 0;
-void loop() {
-  long run_time = millis() - boot_time;
-  loops++;
-  if (loops % 10000 == 17) {
-    //Serial.printf("loops %10d\n",loops);
-  }
 
-  for (int x = 0; x < 1; x++) {
+void loop() 
+{
+  loops++;
+  if (loops % 10000 == 17) 
+  {
+    Serial.printf("looooooooooooooooooooooooooooops %10d\n",loops);
+  }
+  //
+  for (int x = 0; x < 1; x++) 
+  {
     filemgr.handleClient();  //soc.6
   }
-
-  if (do_the_ota) {
+  //
+  if (do_the_ota) 
+  {
     ArduinoOTA.handle();
   }
-
-  if (delete_old_stuff_flag == 1) {
+  //
+  if (delete_old_stuff_flag == 1) 
+  {
     delete_old_stuff_flag = 0;
     delete_old_stuff();
   }

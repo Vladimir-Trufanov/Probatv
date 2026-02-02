@@ -2,7 +2,7 @@
  * 
  *                                             Обслужить работу с видео-камерой
  *                                                     
- * v1.0.1, 26.01.2026                                 Автор:      Труфанов В.Е.
+ * v1.0.2, 02.02.2026                                 Автор:      Труфанов В.Е.
  * Copyright © 2026 tve                               Дата создания: 25.01.2026
  * 
 **/
@@ -81,14 +81,15 @@ long time_before_last_100_frames = 0;
 
 uint8_t avi1_buf[4]        = {0x41, 0x56, 0x49, 0x31};    // "AVI1"
 uint8_t idx1_buf[4]        = {0x69, 0x64, 0x78, 0x31};    // "idx1"
-uint8_t zero_buf[4]        = {0x00, 0x00, 0x00, 0x00};
-uint8_t dc_buf[4]          = {0x30, 0x30, 0x64, 0x63};      // "00dc"
+uint8_t zero_buf[4]        = {0x00, 0x00, 0x00, 0x00};    // "    "
+uint8_t dc_buf[4]          = {0x30, 0x30, 0x64, 0x63};    // "00dc"
 uint8_t dc_and_zero_buf[8] = {0x30, 0x30, 0x64, 0x63, 0x00, 0x00, 0x00, 0x00};
 
 // Декодирование JPEG для чайников - https://habr.com/ru/articles/102521/
 // Изобретаем JPEG                 - https://habr.com/ru/articles/206264/
 
-#define AVIOFFSET 240 // AVI main header length
+// Заголовок AVI-файла
+#define AVIOFFSET 240  // длина заголовка
 const int avi_header[AVIOFFSET] PROGMEM = 
 {
   0x52, 0x49, 0x46, 0x46, 0xD8, 0x01, 0x0E, 0x00, 0x41, 0x56, 0x49, 0x20, 0x4C, 0x49, 0x53, 0x54,
@@ -505,7 +506,6 @@ static void start_avi()
   // frame_interval - интервал между записями кадров в миллисекундах, по умолчанию 0 => самая быстрая запись;
   // framesize - формат изображения, по умолчанию 13 => hd 720p 1280x720;
   // speed_up_factor - ускорение воспроизведения, по умолчанию 1 => в реальном времени
-  //   
   uint8_t ex_fps = 1;
   if (frame_interval == 0) 
   {
@@ -522,25 +522,33 @@ static void start_avi()
   {
     ex_fps = round(1000.0 / frame_interval * speed_up_factor);
   }
-
+  
+  // SeekSet — один из режимов функции file.seek(offset, mode) в файловой системе SPIFFS, 
+  // используемой в микроконтроллере ESP32. В зависимости от значения режима функция 
+  // перемещает текущую позицию в файле:
+  // SeekSet — позиция устанавливается на отсчет байтов с начала файла.
+  // SeekCur — текущая позиция перемещается на отсчет байтов.
+  // SeekEnd — позиция устанавливается на отсчет байтов с конца файла.
+  // Функция возвращает true, если позиция была установлена успешно.
+  
+  // Включаем в заголовок скорость воспроизведения 
   avifile.seek( 0x84 , SeekSet);
   print_quartet((int)ex_fps, avifile);
-
+  // Указываем магическое число 3, которое означает, что количество кадров не записано
   avifile.seek( 0x30 , SeekSet);
   print_quartet(3, avifile);  // magic number 3 means frame count not written // 61.3
-
+  // Перемещаем указатель на после заголовка в файле
   avifile.seek( AVIOFFSET, SeekSet);
-
-  jpr("Recording %d seconds\n", avi_length);
-
-
+  jprln("Запускается запись видео на %d секунд", avi_length);
+  // Пересчитываем время работы на записи на SD-карту при записи видео
   time_in_sd += (millis() - start);
-
+  // Очищаем оставшуюся информацию в буферах файлов, для того,
+  // чтобы начать с новых данных, а также для того, чтобы последующие вызовы функции 
+  // available() показывали, что данных нет, пока не поступят новые. 
+  // Это важно, чтобы оставшиеся данные не мешали последующим чтениям. 
   logfile.flush();
   avifile.flush();
-
-} // end of start avi
-
+} 
 // ****************************************************************************
 // *             Записать индекс, закрыть  файлы и вывести протокол           *
 // ****************************************************************************
@@ -807,7 +815,7 @@ int delete_old_stuff_flag = 0;
 void the_camera_loop (void* pvParameter) 
 {
   print_mem("MEM - стартовала задача the_camera_loop        ");
-
+  // Инициируем счетчик кадров
   frame_cnt = 0;
   start_record_2nd_opinion = digitalRead(12);
   start_record_1st_opinion = digitalRead(12);
