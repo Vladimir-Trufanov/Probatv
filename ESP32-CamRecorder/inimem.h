@@ -2,7 +2,7 @@
  * 
  *                      Объявить/проинициализировать общепрограммные переменные
  *                                                     
- * v1.0.1, 26.01.2026                                 Автор:      Труфанов В.Е.
+ * v1.0.2, 04.02.2026                                 Автор:      Труфанов В.Е.
  * Copyright © 2026 tve                               Дата создания: 24.01.2026
 **/
 
@@ -39,12 +39,10 @@ SemaphoreHandle_t baton;
 
 long current_frame_time;
 long last_frame_time;
-bool web_stop = false;
 
-bool reboot_now = false;
-bool restart_now = false;
-String czone;
-
+bool restart_now = false;   // true - начать запись нового avi-видео
+bool reboot_now = false;    // true - завершить запись и перезагрузить контроллер
+bool web_stop = false;      // true - завершить запись для OTA или по команде Stop из браузера
 
 #define Lots_of_Stats true  // true - выводить статистику состояний
 #define blinking 0
@@ -61,7 +59,7 @@ bool configfile = false;    // true - считан файл config2.txt
 // Московская timezone в соответствии с:
 // https://www.gnu.org/software/libc/manual/html_node/Proleptic-TZ.html
 // String TIMEZONE = "GMT0BST,M3.5.0/01,M10.5.0/02";
-String TIMEZONE = "MSK+00";
+String TIMEZONE = "MSK-3";
 
 String cssid1, cssid2, cssid3;
 String cpass1, cpass2, cpass3;

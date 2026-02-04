@@ -2,7 +2,7 @@
  * 
  *                                           Обслужить Html-server видео-камеры
  *                                                     
- * v1.0.1, 30.01.2026                                 Автор:      Труфанов В.Е.
+ * v1.0.2, 04.02.2026                                 Автор:      Труфанов В.Е.
  * Copyright © 2026 tve                               Дата создания: 29.01.2026
  * 
 **/
@@ -52,6 +52,7 @@ char file_to_write[50];
 void startCameraServer();
 void stopCameraServer();
 void print_sock(int sock); 
+
 //static esp_err_t delete_handler(httpd_req_t *req); 
 static esp_err_t reindex_handler(httpd_req_t *req); 
 static esp_err_t edit_handler(httpd_req_t *req); 
@@ -61,7 +62,7 @@ static esp_err_t find_handler(httpd_req_t *req);
 static esp_err_t start_handler(httpd_req_t *req); 
 static esp_err_t stop_handler(httpd_req_t *req); 
 static esp_err_t time_handler(httpd_req_t *req); 
-static esp_err_t restart_handler(httpd_req_t *req); 
+static esp_err_t restart_handler(httpd_req_t *req); // обработчик запроса на запись нового avi-файла: restart_handler
 static esp_err_t reboot_handler(httpd_req_t *req); 
 static esp_err_t sphotos_handler(httpd_req_t *req); 
 static esp_err_t fphotos_handler(httpd_req_t *req); 
@@ -213,7 +214,8 @@ static esp_err_t ota_handler(httpd_req_t *req)
   ArduinoOTA.setHostname(ssidota);
   ArduinoOTA.setPassword("mrpeanut");
   ArduinoOTA
-  .onStart([]() {
+  .onStart([]() 
+  {
     String type;
     if (ArduinoOTA.getCommand() == U_FLASH)
       type = "sketch";
@@ -228,13 +230,16 @@ static esp_err_t ota_handler(httpd_req_t *req)
     delay(500);
     Serial.println("Start updating " + type);
   })
-  .onEnd([]() {
+  .onEnd([]() 
+  {
     Serial.println("\nEnd");
   })
-  .onProgress([](unsigned int progress, unsigned int total) {
+  .onProgress([](unsigned int progress, unsigned int total) 
+  {
     Serial.printf("Progress: %u%%\r", (progress / (total / 100)));
   })
-  .onError([](ota_error_t error) {
+  .onError([](ota_error_t error) 
+  {
     Serial.printf("Error[%u]: ", error);
     if (error == OTA_AUTH_ERROR) Serial.println("Auth Failed");
     else if (error == OTA_BEGIN_ERROR) Serial.println("Begin Failed");
@@ -419,7 +424,7 @@ static esp_err_t find_handler(httpd_req_t *req)
 
     free (x.the_frame);
   }
-  return res;;
+  return res;
 }
 
 
@@ -517,43 +522,42 @@ static esp_err_t time_handler(httpd_req_t *req)
 
   return ESP_OK;
 }
-
-
+// ****************************************************************************
+// *      Обработать запрос на запись нового avi-файла: restart_handler       *
+// ****************************************************************************
 static esp_err_t restart_handler(httpd_req_t *req) 
 {
-
   long start = millis();
-
   print_mem("restart_handler");
-
+  // Отмечаем, что началась запись нового avi-видео
   restart_now = true;
-
   const char the_message[] = "Status";
-
   time(&now);
   const char *strdate = ctime(&now);
+  const char msg[] PROGMEM = R"rawliteral(
+  
+  <!doctype html>
+  <html lang="ru">
+  <head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>%s - начало следующего видео</title>
+  </head>
+  <body>
+  <h1>%s<br>ESP32-CamRecorder - начало следующего видео %s <br><font color="red">%s</font></h1><br>
+  <br>
+  Завершена текущая запись, и начинается следующее видео ...
+  <br>
+  <br>
+  </body>
+  </html>
+ 
+  )rawliteral";
 
-  const char msg[] PROGMEM = R"rawliteral(<!doctype html>
-<html>
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>%s ESP32-CAM Video Recorder Junior</title>
-</head>
-<body>
-<h1>%s<br>ESP32-CAM Video Recorder Junior %s <br><font color="red">%s</font></h1><br>
- <br>
- Ending current recording, and starting next video ...
- <br>
-<br>
-</body>
-</html>)rawliteral";
-
+  // Возвращаем клиенту ответ на запрос 
   sprintf(the_page, msg, devname, devname, vernum, strdate );
-
   httpd_resp_send(req, the_page, strlen(the_page));
   time_in_web1 += (millis() - start);
-
   return ESP_OK;
 }
 
@@ -932,13 +936,12 @@ static esp_err_t index_handler(httpd_req_t *req)
   //const query = `${baseHost}:8080/e?edit=config.txt`
 
   const char msg[] PROGMEM = R"rawliteral(
-  
   <!doctype html>
-  <html>
+  <html lang="ru">
   <head>
-  <meta charset="utf-8">
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>%s ESP32-CamRecorder</title>
+  <title>%s: ESP32-CamRecorder</title>
 
   <script>
   function initialize() 
@@ -957,21 +960,20 @@ static esp_err_t index_handler(httpd_req_t *req)
   </head>
   
   <body onload="initialize()" style="background-color: white">
-  <h1>%s<br>ESP32-CamRecorder %s <br><font color="red">%s</font></h1><br>
-  Used / Total SD Space <font color="red"> %d MB / %d MB</font>, Rssi %d<br>
-
-  Filename: %s <br>
-  Framesize %d, Quality %d, Frame %d <br>
-  Record Interval %dms, Stream Interval %dms <br>
-  Avg framesize %d, fps %.1f <br>
+  <h1>%s %s<font color="red">%s</font></h1><br>
+  Используемое/общее пространство на SD-карте <font color="red"> %d Мб / %d Мб</font>, Rssi %d <br>
+  Имя файла: %s <br>
+  Размер %d, качество %d, кадров %d <br>
+  Интервалы при записи %dms, интервалы в потоке %dмс<br>
+  Размер файлов %d, кадров в сек. %.1f <br>
   Time left in current video %d seconds<br>
 
   <h3><a href="http://%s/">http://%s/</a></h3>
-  Current Frame:<br>
+  Текущий кадр:<br>
   <img src="http://%s/capture"/> <br>
-  First Frame of Current Recording: (see more in File Management section)<br>
+  Первый кадр в этой записи: (см. больше в разделе File Management)<br>
   <img src="http://%s/find?f=/%s&n=0"> <br>
-  <h3>Streaming</h3>
+  <h3>Потоки</h3>
   <a href="http://%s:81/stream"><button>Stream 81</button></a>
   <a href="http://%s:82/stream"><button>Stream 82</button></a>
   <h3>Series of pictures</h3>
@@ -986,7 +988,7 @@ static esp_err_t index_handler(httpd_req_t *req)
   <a href="http://%s:%d/e?edit=config2.txt"><button>edit config2.txt </button></a>
   <a href="http://%s:%d"><button>File Manager - download, delete, view videos </button></a> </h4>
 
-  <h4><a href="http://%s/restart"><button>End recording, and start new video (write the index) </button></a></h4>
+  <h4><a href="http://%s/restart"><button>Завершить запись и начать новое видео (записать индекс)</button></a></h4>
   <h4><a href="http://%s/reboot"><button>End recording, and reboot (using new settings)</button> </a></h4>
   <br>
   James Zahary - Dec 8, 2024 -- May 18, 2022<br>
@@ -1158,6 +1160,7 @@ void startCameraServer()
     .handler   = reboot_handler,
     .user_ctx  = NULL
   };
+  // Регистрируем обработчик запроса на запись нового avi-файла: restart_handler
   httpd_uri_t restart_uri = 
   {
     .uri       = "/restart",

@@ -41,14 +41,6 @@
 #include "stream32.h"
 #include "CameraServer.h"
 
-//bool configfile = false;
-//bool reboot_now = false;
-//bool restart_now = false;
-
-//String czone;
-//char apssid[30];
-//char appass[14];
-
 #include <stdio.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -62,36 +54,6 @@
 static esp_err_t cam_err;
 //float most_recent_fps = 0;
 //int most_recent_avg_framesize = 0;
-
-/*
-uint8_t* fb_record;
-uint8_t* fb_curr_record_buf;
-uint8_t* fb_streaming;
-uint8_t* fb_capture;
-
-int fb_record_len;
-int fb_curr_record_len;
-int fb_streaming_len;
-int fb_capture_len;
-long fb_record_time = 0;
-long fb_curr_record_time = 0;
-long fb_streaming_time = 0;
-long fb_capture_time = 0;
-
-int first = 1;
-long frame_start = 0;
-long frame_end = 0;
-long frame_total = 0;
-long frame_average = 0;
-long loop_average = 0;
-long loop_total = 0;
-long total_frame_data = 0;
-long last_frame_length = 0;
-int done = 0;
-*/
-
-//long time_in_web1 = 0;
-//long time_in_web2 = 0;
 
 //bool do_the_ota = false;
 

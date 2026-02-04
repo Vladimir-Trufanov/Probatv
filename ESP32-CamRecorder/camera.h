@@ -68,9 +68,12 @@ int gj;
 int gmdelay;
 int do_it_now = 0;
 
+// Сбрасываем второй флаг записи по событию
+int start_record_2nd_opinion = 0; 
+// Сбрасываем первый флаг записи по событию
+int start_record_1st_opinion = 0;
+// Сбрасываем флаг запуска записи очередного видео файла
 int start_record = 0;
-int start_record_2nd_opinion = -2;
-int start_record_1st_opinion = -1;
 
 camera_fb_t * fb_curr = NULL;
 camera_fb_t * fb_next = NULL;
@@ -170,8 +173,8 @@ long time_in_camera;         // общее время работы камеры
 long time_in_sd;             // время, потраченное на работу с sd-картой
 long time_in_good;           // время камеры с получением целых (хороших) кадров
 long time_total;         
-long time_in_web1;
-long time_in_web2;
+long time_in_web1;           // время пребывания на страницах браузера
+//long time_in_web2;
 
 long delay_wait_for_sd = 0;
 long wait_for_cam = 0;
@@ -461,15 +464,15 @@ static void start_avi()
   time_in_sd=0;        // время, потраченное на работу с sd-картой
   time_in_good=0;      // время камеры с получением целых (хороших) кадров
   time_total = 0;
-  time_in_web1 = 0;
-  time_in_web2 = 0;
+  time_in_web1 = 0;    // время пребывания на страницах браузера
+  //time_in_web2 = 0;
   delay_wait_for_sd = 0;
   wait_for_cam = 0;
   very_high = 0;
 
   long start = millis();
   char the_directory[50];
-  jprln("Начинается формирование avi по снятым камерой кадрам");
+  jprln("Начинается формирование avi по снимаемым кадрам");
   sprintf(the_directory,"/%s%03d",devname,file_group);
   SD_MMC.mkdir(the_directory);
   sprintf(avi_file_name, "/%s%03d/%s%03d.%03d.avi",  devname, file_group, devname, file_group, file_number);
@@ -671,7 +674,7 @@ static void end_avi()
   jpr("waiting for sd  %10dms, %4.1f%%\n", delay_wait_for_sd , 100.0 * delay_wait_for_sd  / time_total);
   jpr("Time in sd      %10dms, %4.1f%%\n", time_in_sd    , 100.0 * time_in_sd     / time_total);
   jpr("web (core 1)    %10dms, %4.1f%%\n", time_in_web1  , 100.0 * time_in_web1   / time_total);
-  jpr("web (core 0)    %10dms, %4.1f%%\n", time_in_web2  , 100.0 * time_in_web2   / time_total);
+  //jpr("web (core 0)    %10dms, %4.1f%%\n", time_in_web2  , 100.0 * time_in_web2   / time_total);
   jpr("time total      %10dms, %4.1f%%\n", time_total    , 100.0 * time_total     / time_total);
 
   logfile.flush();
@@ -816,10 +819,12 @@ static void another_save_avi(uint8_t* fb_buf, int fblen )
 void the_camera_loop (void* pvParameter) 
 {
   print_mem("MEM - стартовала задача the_camera_loop        ");
-  // Инициируем счетчик кадров
+  // Инициируем счетчик кадров в файле
   frame_cnt = 0;
+  // Считываем состояние 12 контакта (начинать запись видео или нет)
   start_record_2nd_opinion = digitalRead(12);
   start_record_1st_opinion = digitalRead(12);
+  // Сбрасываем флаг записи видео (пока не начинать)
   start_record = 0;
 
   delay(1000);
@@ -837,11 +842,11 @@ void the_camera_loop (void* pvParameter)
     if ( (frame_cnt == 0 && start_record == 0)) 
     {
       // Serial.println("Do nothing");
-      if (we_are_already_stopped == 0) jpr("\n\nDisconnect Pin 12 from GND to start recording or http://192.168.1.100/start \n\n");
+      if (we_are_already_stopped == 0) jpr("\nОтсоедините Pin12 от GND для того, чтобы начать запись или http://192.168.1.100/start \n");
       we_are_already_stopped = 1;
       delay(100);
     } 
-      ///////////////////  START A MOVIE  //////////////////
+    ///////////////////  START A MOVIE  //////////////////
     else if (frame_cnt == 0 && start_record == 1) 
     {
       //Serial.println("Ready to start");
@@ -888,9 +893,10 @@ void the_camera_loop (void* pvParameter)
       ///
       wait_for_cam += millis() - wait_for_cam_start;
       if (blinking) digitalWrite(33, frame_cnt % 2);                // blink
-
-      ///////////////////  END THE MOVIE //////////////////
-    } else if ( restart_now || reboot_now || (frame_cnt > 0 && start_record == 0) ||  millis() > (avi_start_time + avi_length * 1000)) { // end the avi
+    } 
+    ///////////////////  END THE MOVIE //////////////////
+    else if ( restart_now || reboot_now || (frame_cnt > 0 && start_record == 0) ||  millis() > (avi_start_time + avi_length * 1000)) 
+    { // end the avi
 
       jpr("End the Avi");
       restart_now = false;
@@ -913,13 +919,14 @@ void the_camera_loop (void* pvParameter)
 
       if (!reboot_now) frame_cnt = 0;             // start recording again on the next loop
 
-      ///////////////////  ANOTHER FRAME  //////////////////
+    ///////////////////  ANOTHER FRAME  //////////////////
     } else if (frame_cnt > 0 && start_record != 0) {  // another frame of the avi
 
       //Serial.println("Another frame");
 
       current_frame_time = millis();
-      if (current_frame_time - last_frame_time < frame_interval) {
+      if (current_frame_time - last_frame_time < frame_interval) 
+      {
         delay(frame_interval - (current_frame_time - last_frame_time));             // delay for timelapse
       }
       last_frame_time = millis();
