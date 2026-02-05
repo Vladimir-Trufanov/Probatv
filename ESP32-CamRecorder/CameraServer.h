@@ -60,7 +60,7 @@ static esp_err_t ota_handler(httpd_req_t *req);
 static esp_err_t status_handler(httpd_req_t *req); 
 static esp_err_t find_handler(httpd_req_t *req); 
 static esp_err_t start_handler(httpd_req_t *req); 
-static esp_err_t stop_handler(httpd_req_t *req); 
+static esp_err_t stop_handler(httpd_req_t *req);    // обработчик запроса на остановку записи avi-файла: stop_handler
 static esp_err_t time_handler(httpd_req_t *req); 
 static esp_err_t restart_handler(httpd_req_t *req); // обработчик запроса на запись нового avi-файла: restart_handler
 static esp_err_t reboot_handler(httpd_req_t *req); 
@@ -208,6 +208,7 @@ static esp_err_t ota_handler(httpd_req_t *req)
   delay(100);
 
   start_record = 0;
+  // Устанавливаем флаг "Остановить запись avi-файла"
   web_stop = true;
 
   ///  ota updates always enabled without password at either softap ip or router ip
@@ -226,6 +227,7 @@ static esp_err_t ota_handler(httpd_req_t *req)
 
     Serial.println("\n\nStop Recording due to OTA ! \n\n" );
     start_record = 0;
+    // Устанавливаем флаг "Остановить запись avi-файла"
     web_stop = true;
     delay(500);
     Serial.println("Start updating " + type);
@@ -426,27 +428,29 @@ static esp_err_t find_handler(httpd_req_t *req)
   }
   return res;
 }
-
-
+// ****************************************************************************
+// *  Обработать запрос запуска остановленной записи avi-файла: start_handler *    
+// ****************************************************************************
 static esp_err_t start_handler(httpd_req_t *req) 
 {
-
+  // Сбрасываем флаг остановленной записи avi-файла
   web_stop = false;
-  Serial.printf("Web record start, it was %d\n", web_stop);
+  Serial.println("Отмена остановки записи avi-файла (из браузера)");
   delay(500);
-  esp_err_t xx = index_handler(req);
+  esp_err_t xx = index_handler(req); // возврат на главную страницу, 2026-02-05 не срабатывает!
   return ESP_OK;
-
 }
+// ****************************************************************************
+// *      Обработать запрос на остановку записи avi-файла: stop_handler       *
+// ****************************************************************************
 static esp_err_t stop_handler(httpd_req_t *req) 
 {
-
+  // Устанавливаем флаг команды из браузера на остановку записи avi-файла
   web_stop = true;
-  Serial.printf("Web record stop, it was %d\n", web_stop);
+  Serial.println("Команда из браузера на остановку записи avi-файла");
   delay(500);
-  esp_err_t xx = index_handler(req);
+  esp_err_t xx = index_handler(req); // возврат на главную страницу, 2026-02-05 не срабатывает!
   return ESP_OK;
-
 }
 
 
@@ -570,6 +574,7 @@ static esp_err_t reboot_handler(httpd_req_t *req)
   print_mem("reboot_handler");
 
   start_record = 0;
+  // Устанавливаем флаг "Отменить запись avi-файла"
   web_stop = true;
   reboot_now = true;
 
@@ -1182,6 +1187,7 @@ void startCameraServer()
     .handler   = start_handler,
     .user_ctx  = NULL
   };
+  // Регистрируем обработчик запроса на остановку записи avi-файла: stop_handler
   httpd_uri_t stop_uri = 
   {
     .uri       = "/stop",

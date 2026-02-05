@@ -4,7 +4,7 @@
  *                (https://github.com/jameszah/ESP32-CAM-Video-Recorder-junior) 
  *                                                     для умного хозяйства tve
  *                                                     
- * v1.0.5, 02.02.2026                                 Автор:      Труфанов В.Е.
+ * v1.0.6, 05.02.2026                                 Автор:      Труфанов В.Е.
  * Copyright © 2026 tve                               Дата создания: 11.01.2026
  * 
  * Modify by James Zahary Sep 12, 2020 - jamzah.plc@gmail.com
@@ -940,6 +940,8 @@ void the_camera_loop (void* pvParameter);
 void the_sd_loop (void* pvParameter);
 void delete_old_stuff();
 
+bool InternetOff = true;    // true - WiFi не подключен
+
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void setup() 
@@ -1273,38 +1275,44 @@ void loop()
     }  // not internet off
   }  // wakeup
 
+  // Перезагружаем контроллер если установлен флаг "Перезагрузить контроллер" 
   if (reboot_now == true) 
   {
-    jprln(" \n\n\n Rebooting in 5 seconds... \n\n\n");
+    jprln(" \n\n\n Перезагрузка контроллера в течение 5 секунд ... \n\n\n");
     delay(5000);
     ESP.restart();
   }
-
+  // Реагируем на команду "Остановить запись avi-файла", поступившую из браузера
   if (web_stop == true) 
   {
+    // Если запись велась, то сбрасываем флаг запуска записи очередного видео-файла
     if (start_record == 1) 
     {
       start_record = 0;
-      jprln("web_stop web_stop code");
+      jprln("Поступила команда 'Остановить запись avi-файла'");
     }
   } 
+  // Если команды на остановку записи видео нет, то реагируем на "12"-ый контакт
   else 
   {
-    //jpr("first %d, second %d, web %d\n", start_record_1st_opinion, start_record_2nd_opinion, web_stop);
     if (start_record == 1) 
     {
+      // Если запись велась, но обе проверки дали останов записи,
+      // то сбрасываем флаг запуска записи очередного видео-файла
       if (start_record_1st_opinion == 0 && start_record_2nd_opinion == 0) 
       {
         start_record = 0;
-        jprln("stopping in web_stop code");
+        jprln("'Остановить запись avi-файла' по событию на 12-том контакте");
       }
     } 
     else 
     {
+      // Если запись НЕ велась, но обе проверки дали запуск записи,
+      // то устанавливаем флаг запуска записи очередного видео-файла
       if (start_record_1st_opinion == 1 && start_record_2nd_opinion == 1) 
       {
         start_record = 1;
-        jprln("starting in web_stop code");
+        jprln("'Запустить запись avi-файла' по событию на 12-том контакте");
       }
     }
   }
