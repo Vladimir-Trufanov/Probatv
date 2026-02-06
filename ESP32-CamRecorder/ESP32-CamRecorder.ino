@@ -4,7 +4,7 @@
  *                (https://github.com/jameszah/ESP32-CAM-Video-Recorder-junior) 
  *                                                     для умного хозяйства tve
  *                                                     
- * v1.0.6, 05.02.2026                                 Автор:      Труфанов В.Е.
+ * v1.0.7, 06.02.2026                                 Автор:      Труфанов В.Е.
  * Copyright © 2026 tve                               Дата создания: 11.01.2026
  * 
  * Modify by James Zahary Sep 12, 2020 - jamzah.plc@gmail.com
@@ -32,16 +32,8 @@
 #include "esp_camera.h"
 #include "sensor.h"
 
-#include "inimem.h"
-#include "jpr.h"
-#include "sd.h"
-#include "eprom.h"
-#include "config.h"
-#include "camera.h"
-#include "stream32.h"
-#include "CameraServer.h"
-
 #include <stdio.h>
+#include "time.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "esp_system.h"
@@ -52,12 +44,7 @@
 #include "soc/rtc_cntl_reg.h"
 
 static esp_err_t cam_err;
-//float most_recent_fps = 0;
-//int most_recent_avg_framesize = 0;
 
-//bool do_the_ota = false;
-
-// MicroSD
 #include "driver/sdmmc_host.h"
 #include "driver/sdmmc_defs.h"
 #include "sdmmc_cmd.h"
@@ -65,93 +52,38 @@ static esp_err_t cam_err;
 #include "FS.h"
 #include <SD_MMC.h>
 
-//char avi_file_name[100];
-//char file_to_edit[50] = "/JamCam0481.0007.avi"; //61.3
-
-static int i = 0;
-//uint16_t frame_cnt = 0;
-
-
 #include "lwip/sockets.h"
 #include <lwip/netdb.h>
-
-/*
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-//
-//  eprom functions  - increment the file_group, so files are always unique
-//
-
-#include <EEPROM.h>
-
-struct eprom_data {
-  int eprom_good;
-  int file_group;
-};
-
-void do_eprom_read() {
-
-  eprom_data ed;
-
-  EEPROM.begin(200);
-  EEPROM.get(0, ed);
-
-  if (ed.eprom_good == MagicNumber) {
-    jpr("Good settings in the EPROM ");
-    file_group = ed.file_group;
-    file_group++;
-    jpr("New File Group "); Serial.println(file_group );
-  } else {
-    jpr("No settings in EPROM - Starting with File Group 1 ");
-    file_group = 1;
-  }
-  do_eprom_write();
-  file_number = 1;
-}
-
-void do_eprom_write() {
-
-  eprom_data ed;
-  ed.eprom_good = MagicNumber;
-  ed.file_group  = file_group;
-
-  Serial.println("Writing to EPROM ...");
-
-  EEPROM.begin(200);
-  EEPROM.put(0, ed);
-  EEPROM.commit();
-  EEPROM.end();
-}
-*/
-
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// Time
-#include "time.h"
 
 #include "WiFi.h"
 #include <WiFiMulti.h>
 WiFiMulti jMulti;
 #include <ArduinoOTA.h>
-//char ssidota[20];
 #include "ESPmDNS.h"
 
-#include "ESPxWebFlMgr.h"          //v56
-//const word filemanagerport = 8080;
-ESPxWebFlMgr filemgr(filemanagerport); // we want a different port than the webserver
+WiFiEventId_t eventID;      
+#include "esp_wifi.h"  
 
-/*
-time_t now;
-struct tm timeinfo;
-*/
-WiFiEventId_t eventID;
-#include "esp_wifi.h"
-bool found_router = false;
+#include "inimem.h"
+#include "jpr.h"
+#include "sd.h"
+#include "eprom.h"
+#include "config.h"
+#include "camera.h"
+#include "stream32.h"
+#include "CameraServer.h"
+
+#include "ESPxWebFlMgr.h"              // v56
+ESPxWebFlMgr filemgr(filemanagerport); // we want a different port than the webserver
 
 // ****************************************************************************
 // *       Подключить локальные WiFi и создать одну свою от контроллера       *
 // ****************************************************************************
 bool init_wifi() 
 {
+  // Выбираем и показываем версию ESP-IDF
+  String idfver = esp_get_idf_version();
+  Serial.println("Версия компилятора ESP:  "+idfver);
   //uint32_t brown_reg_temp = READ_PERI_REG(RTC_CNTL_BROWN_OUT_REG);
   //Serial.printf("Brownout was %d\n", brown_reg_temp);
   //WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0);
@@ -218,9 +150,6 @@ bool init_wifi()
   // Выбираем и показываем Mac-адрес WiFi
   String wifiMacString = WiFi.macAddress();
   Serial.println("Mac-адрес точки доступа: "+wifiMacString);
-  // Выбираем и показываем версию ESP-IDF
-  String idfver = esp_get_idf_version();
-  Serial.println("Версия компилятора ESP:  "+idfver);
 
   // Задаем режим программной точки доступа (soft-AP) для установления Wi-Fi-сети. 
   // (то есть создаём собственную сеть Wi-Fi, а другие устройства (станции) могут 
@@ -236,15 +165,13 @@ bool init_wifi()
   
   // По умолчанию IP-адресом настроенной программной точки доступа будет «192.168.4.1». 
   // Его можно поменять при помощи функции softAPConfig. 
+  const char _soft_IP[] = "IP контроллера: ";
   jprln("Контроллер устанавливает собственную точку доступа");
   WiFi.softAP(ssidch3, passch3);
-  /*
-  IPAddress IP = WiFi.softAPIP();
-  Serial.print("AP IP address: ");
-  Serial.println(IP);
-  */
-  sprintf(localip, "%s", WiFi.softAPIP().toString().c_str());
-  Serial.print(_soft_IP); Serial.println(localip); 
+  sprintf(softip, "%s", WiFi.softAPIP().toString().c_str());
+  Serial.print(_soft_IP); Serial.println(softip); 
+  
+  const char _localIP[] = "  Локальный IP: ";
   jprln("Контроллер подключается к локальной точке доступа");
   // Инициируем нулевую попытку подключения
   int connAttempts = 0;
@@ -256,10 +183,12 @@ bool init_wifi()
     if (connAttempts++ == 15) break;   
   }
   sprintf(localip,"%s",WiFi.localIP().toString().c_str());
-  Serial.print(_localIP); Serial.println(localip); Serial.println(" ");
-
-  jprln("Определяется локальное время");
-  configTime(0, 0, "pool.ntp.org");
+  Serial.print(_localIP); Serial.println(localip); 
+  
+  Serial.println(" ");
+  jprln("Определяется местное время");
+  // configTime(0, 0, "pool.ntp.org");
+  configTime(10800, 0, "ntp.msk-ix.ru");
   char tzchar[60];
   TIMEZONE.toCharArray(tzchar, TIMEZONE.length() + 1);        // name of your camera for mDNS, Router, and filenames
   Serial.printf("Char >%s<\n", tzchar);
@@ -273,7 +202,7 @@ bool init_wifi()
     Serial.print("o");
     time(&now);
   }
-  Serial.print("Локальное время: "); Serial.print(ctime(&now));
+  Serial.print("Местное время: "); Serial.print(ctime(&now));
 
   // Запускаем службу multicast DNS (mDNS). Это позволяет использовать имя хоста 
   // в веб-браузере вместо IP-адреса при доступе к ESP32 с компьютера. 
@@ -1037,7 +966,7 @@ void setup()
   if (the_streaming_loop_task == NULL ) 
   {
     //vTaskDelete( xHandle );
-    Serial.printf("do_the_steaming_task failed to start! %d\n", the_streaming_loop_task);
+    Serial.printf("Не удалось запустить задачу do_the_steaming_task! %d\n", the_streaming_loop_task);
   }
   
   if (InternetOff) 
@@ -1064,7 +993,7 @@ void setup()
     print_mem("МЕМ - после запуска WiFi                       ");
   }
 
-  jprln("Checking SD for available space ...");
+  jprln("Проверяется SD-карта на наличие свободного места ...");
   delete_old_stuff();
 
   char logname[60];
@@ -1074,39 +1003,18 @@ void setup()
   SD_MMC.mkdir(the_directory);
 
   sprintf(logname, "/%s%03d/%s%03d.999.txt",  devname, file_group, devname, file_group);
-  jprln("Creating logfile %s\n",  logname);
-  if (logfile) {
-    logfile.close();
-  }
+  jprln("Создается logfile %s\n", logname);
+  if (logfile) logfile.close();
   logfile = SD_MMC.open(logname, FILE_WRITE);
-  if (!logfile) {
-    Serial.println("Failed to open logfile for writing");
+  if (!logfile) 
+  {
+    Serial.println("Ошибка открытия logfile для записи");
   }
-
   const char *strdate = ctime(&now);
   //logfile.println(strdate);
-
   digitalWrite(33, HIGH);         // red light turns off when setup is complete
-  print_mem("End of setup");
+  print_mem("МЕМ - после завершения setup                   ");
 }
-
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// the_sd_loop()
-//
-/* //8
-  void the_sd_loop (void* pvParameter) {
-
-  Serial.print("the_sd_loop, core ");  Serial.print(xPortGetCoreID());
-  Serial.print(", priority = "); Serial.println(uxTaskPriorityGet(NULL));
-
-  while (1) {
-    xSemaphoreTake( sd_go, portMAX_DELAY );            // we wait for camera loop to tell us to go
-    another_save_avi( fb_curr);                        // do the actual sd wrte
-    xSemaphoreGive( wait_for_sd );                     // tell camera loop we are done
-  }
-  }
-*/
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // loop()             - основной (фоновый) цикл выполняется с 0 - низким приоритетом;
@@ -1115,7 +1023,9 @@ void setup()
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 #include <ESPping.h>
+// Определяем переменную "времени текущего пробуждения"
 long wakeup;
+// Инициируем переменную "времени прошлого пробуждения"
 long last_wakeup = 0;
 // Инициируем начальный номер фонового цикла 
 int loops = 0;   
@@ -1154,21 +1064,23 @@ void loop()
     done_the_reindex = true;
   }
 
+  // Если прошло 10 минут, то выполняем контроль интернета
   wakeup = millis();
   if (wakeup - last_wakeup > (10  * 60 * 1000) ) 
   {
     last_wakeup = millis();
-    print_mem("---------- 10 Minute Internet Check -----------\n");
+    Serial.println(" "); 
+    print_mem("---------- 10 Minute Internet Check -----------");
     time(&now);
-    jpr("Local time: "); jpr(ctime(&now));
+    jpr("Текущее время: "); jpr(ctime(&now));
     if (!InternetOff ) 
     {
+      // Выводим информацию по сокетам
       esp_err_t client_err;
-      struct sockaddr_in *client_list;
+      //struct sockaddr_in *client_list;
       size_t clients = 10;
       size_t client_count = 10;
       int    client_fds[10];
-
       client_err = httpd_get_client_list(camera_httpd, &client_count, client_fds);
       jpr("camera_httpd Sockets , Num = %d\n", client_count);
       for (size_t i = 0; i < client_count; i++) 
@@ -1178,7 +1090,6 @@ void loop()
         jpr("Socket %d, fd=%d, info=%d \n", i, sock, x);
         print_sock(sock);
       }
-
       client_err = httpd_get_client_list(stream81_httpd, &client_count, client_fds);
       jpr("stream81_httpd Sockets , Num = %d\n", client_count);
       for (size_t i = 0; i < client_count; i++) 
@@ -1199,37 +1110,38 @@ void loop()
         jpr("Socket %d, fd=%d, info=%d \n", i, sock, x);
         print_sock(sock);
       }
-
+      //
       if (found_router) 
       {
-        // Ping local IP
-        Serial.println(WiFi.gatewayIP());
-        if (Ping.ping(WiFi.gatewayIP()) > 0) {
-          jpr(" -- response time : %d/%.2f/%d ms\n", Ping.minTime(), Ping.averageTime(), Ping.maxTime());
+        // Получаем IP-адрес шлюза (роутера) текущей подключённой сети Wi-Fi и
+        // пингуем её. Функция возвращает IP-адрес шлюза подключённой сети Wi-Fi. 
+        // Если модуль не подключён к сети, функция вернёт 0.0.0.0. 
+        Serial.println("IP-адрес шлюза (роутера): "); Serial.println(WiFi.gatewayIP());
+        if (Ping.ping(WiFi.gatewayIP())>0) 
+        {
+          jpr("Время отклика: %d/%.2f/%d ms\n", Ping.minTime(), Ping.averageTime(), Ping.maxTime());
         } 
         else 
         {
-
-          jprln("\n\nCannot Ping the gateway - REBOOT");
-          jprln("***** WiFi reconnect *****");
+          jprln("Пинг роутера не прошел, отключается WiFi");
           WiFi.reconnect();
           delay(8000);
           if (WiFi.status() != WL_CONNECTED) 
           {
             // Подключаем локальные WiFi и создаём одну свою от контроллера
-            jprln("***** WiFi restart *****");
+            jprln("Подключается WiFi заново");
             init_wifi();
           }
           delay(15000);
           if (WiFi.status() != WL_CONNECTED) 
           {
-            jprln("***** Reboot *****");
+            jprln("Нет поключения к WiFi - перезагрузка контроллера");
             reboot_now = true;
           }
-
         }
         delay(1000);
 
+        /*
         // Ping Host
         const char* remote_host = "google.com";
         jpr(remote_host);
@@ -1242,38 +1154,38 @@ void loop()
           jprln(" Ping Error !");
         }
         delay(1000);
-
+        */
 
         if (WiFi.status() != WL_CONNECTED) 
         {
-          jprln("***** WiFi reconnect *****");
+          jprln("Отключается WiFi");
           WiFi.reconnect();
           delay(8000);
 
           if (WiFi.status() != WL_CONNECTED) 
           {
             // Подключаем локальные WiFi и создаём одну свою от контроллера
-            jprln("***** WiFi restart *****");
+            jprln("Подключается WiFi заново");
             init_wifi();
           }
         }
       }
+      Serial.print(_hsoftIP);  Serial.println(WiFi.softAPIP()); 
+      Serial.print(_hlocalIP); Serial.println(WiFi.localIP()); 
 
-      Serial.print(_soft_IP); Serial.println(WiFi.softAPIP());  
-      logfile.println(_soft_IP+WiFi.softAPIP());
-      Serial.print(_localIP); Serial.println(WiFi.localIP());   
-      logfile.println(_localIP+WiFi.localIP());
+      logfile.println(WiFi.softAPIP());
+      logfile.println(WiFi.localIP());
 
       if (!MDNS.begin(devname)) 
       {
-        jprln("Error setting up MDNS responder!");
+        jprln("Ошибка установки MDNS responder!");
       } 
       else 
       {
-        jpr("mDNS responder started '%s'\n", devname);
+        jprln("mDNS responder стартовал: '%s'", devname);
       }
-    }  // not internet off
-  }  // wakeup
+    }  
+  } 
 
   // Перезагружаем контроллер если установлен флаг "Перезагрузить контроллер" 
   if (reboot_now == true) 
@@ -1302,7 +1214,7 @@ void loop()
       if (start_record_1st_opinion == 0 && start_record_2nd_opinion == 0) 
       {
         start_record = 0;
-        jprln("'Остановить запись avi-файла' по событию на 12-том контакте");
+        //jprln("'Остановить запись avi-файла' по событию на 12-том контакте");
       }
     } 
     else 
@@ -1312,7 +1224,7 @@ void loop()
       if (start_record_1st_opinion == 1 && start_record_2nd_opinion == 1) 
       {
         start_record = 1;
-        jprln("'Запустить запись avi-файла' по событию на 12-том контакте");
+        //jprln("'Запустить запись avi-файла' по событию на 12-том контакте");
       }
     }
   }

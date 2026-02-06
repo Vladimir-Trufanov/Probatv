@@ -2,7 +2,7 @@
  * 
  *                      Объявить/проинициализировать общепрограммные переменные
  *                                                     
- * v1.0.3, 05.02.2026                                 Автор:      Труфанов В.Е.
+ * v1.0.4, 06.02.2026                                 Автор:      Труфанов В.Е.
  * Copyright © 2026 tve                               Дата создания: 24.01.2026
 **/
 
@@ -18,23 +18,19 @@ File logfile;  // файл информационных сообщений и с
 File avifile;  // файл потока графических изображений (кадров)
 File idxfile;  // файл указателей кадров
 
-static const char vernum[]   = "v62.34.0"; // версия приложения
-static const char _soft_IP[] = "IP контроллера: ";
-static const char _localIP[] = "  локальный IP: ";
-
-const word filemanagerport = 8080;
-
-char localip[20];           // IP-адрес локальной сети
+static const char _hsoftIP[] ="IP-адрес своей сети контроллера - http://";
+static const char _hlocalIP[]="IP-адрес в локальной сети       - http://";
+static const char vernum[]="v62.34.0"; // версия приложения
+const word filemanagerport=8080;       // порт файлового менеджера
+char localip[20];                      // IP-адрес локальной сети
+char softip[20];                       // IP-адрес собственной сети контроллера
+bool found_router = false;             // true - определена локальная сеть
 
 time_t now;
 struct tm timeinfo;
 
 TaskHandle_t the_camera_loop_task;
-TaskHandle_t the_sd_loop_task;
 TaskHandle_t the_streaming_loop_task;
-
-static SemaphoreHandle_t wait_for_sd;
-static SemaphoreHandle_t sd_go;
 SemaphoreHandle_t baton;
 
 long current_frame_time;
@@ -78,12 +74,10 @@ bool done_the_reindex = false;
 
 char file_to_edit[50] = "/JamCam0481.0007.avi"; //61.3
 
-int we_are_already_stopped = 0;
-
 #define BUFFSIZE 512
 uint8_t buf[BUFFSIZE];
 
-long avi_start_time = 0;
+long avi_start_time = 0;   // время начала видео-записи
 long avi_end_time = 0;
 char avi_file_name[100];   // название записываемого файла *.avi
 uint16_t frame_cnt = 0;    // общее количество кадров в файле

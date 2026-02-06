@@ -169,16 +169,17 @@ int extend_jpg = 0;
 int normal_jpg = 0;
 
 long time_in_loop;
-long time_in_camera;         // общее время работы камеры
-long time_in_sd;             // время, потраченное на работу с sd-картой
-long time_in_good;           // время камеры с получением целых (хороших) кадров
-long time_total;         
-long time_in_web1;           // время пребывания на страницах браузера
-//long time_in_web2;
+long time_in_camera;          // общее время работы камеры
+long time_in_sd;              // время, потраченное на работу с sd-картой
+long time_in_good;            // время камеры с получением целых (хороших) кадров
+long time_total;              // общее время съёмки и записи на SD
+long time_in_web1;            // время пребывания на страницах браузера
 
 long delay_wait_for_sd = 0;
 long wait_for_cam = 0;
 int very_high = 0;
+
+int we_are_already_stopped=0; // 1 - "видео-запись уже остановлена"
 
 // Сбрасываем флаг "удалить старые файлы по завершению записи текущего файла avi"
 int delete_old_stuff_flag = 0;
@@ -449,9 +450,9 @@ camera_fb_t *  get_good_jpeg()
 static void start_avi() 
 {
   // Отмечаем начало работы с камерой и файлом avi - инициируем переменные
-  startms = millis();  // начало работы с камерой и файлом avi
-  totalp=0;            // общее время съемки всех кадров записанного файла avi
-  totalw=0;            // общее время записи всех кадров файла avi
+  startms = millis();    // начало работы с камерой и файлом avi
+  totalp=0;              // общее время съемки всех кадров записанного файла avi
+  totalw=0;              // общее время записи всех кадров файла avi
   jpeg_size = 0;
   movi_size = 0;
   uVideoLen = 0;
@@ -460,17 +461,18 @@ static void start_avi()
   extend_jpg = 0;
   normal_jpg = 0;
   time_in_loop = 0;
-  time_in_camera=0;    // общее время работы камеры
-  time_in_sd=0;        // время, потраченное на работу с sd-картой
-  time_in_good=0;      // время камеры с получением целых (хороших) кадров
-  time_total = 0;
-  time_in_web1 = 0;    // время пребывания на страницах браузера
-  //time_in_web2 = 0;
+  time_in_camera=0;      // общее время работы камеры
+  time_in_sd=0;          // время, потраченное на работу с sd-картой
+  time_in_good=0;        // время камеры с получением целых (хороших) кадров
+  time_total = 0;        // общее время съёмки и записи на SD
+  time_in_web1 = 0;      // время пребывания на страницах браузера
   delay_wait_for_sd = 0;
   wait_for_cam = 0;
   very_high = 0;
-
+  
+  // Отмечаем начало работы функции
   long start = millis();
+  // Создаем/открываем каталог и начинаем запись видео-файла
   char the_directory[50];
   jprln("Начинается формирование avi по снимаемым кадрам");
   sprintf(the_directory,"/%s%03d",devname,file_group);
@@ -674,7 +676,6 @@ static void end_avi()
   jpr("waiting for sd  %10dms, %4.1f%%\n", delay_wait_for_sd , 100.0 * delay_wait_for_sd  / time_total);
   jpr("Time in sd      %10dms, %4.1f%%\n", time_in_sd    , 100.0 * time_in_sd     / time_total);
   jpr("web (core 1)    %10dms, %4.1f%%\n", time_in_web1  , 100.0 * time_in_web1   / time_total);
-  //jpr("web (core 0)    %10dms, %4.1f%%\n", time_in_web2  , 100.0 * time_in_web2   / time_total);
   jpr("time total      %10dms, %4.1f%%\n", time_total    , 100.0 * time_total     / time_total);
 
   logfile.flush();
@@ -814,8 +815,6 @@ static void another_save_avi(uint8_t* fb_buf, int fblen )
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-// the_camera_loop()
 void the_camera_loop (void* pvParameter) 
 {
   print_mem("MEM - стартовала задача the_camera_loop        ");
@@ -826,7 +825,6 @@ void the_camera_loop (void* pvParameter)
   start_record_1st_opinion = digitalRead(12);
   // Сбрасываем флаг записи видео (пока не начинать)
   start_record = 0;
-
   delay(1000);
 
   while (1) 
@@ -849,15 +847,14 @@ void the_camera_loop (void* pvParameter)
     ///////////////////  START A MOVIE  //////////////////
     else if (frame_cnt == 0 && start_record == 1) 
     {
-      //Serial.println("Ready to start");
+      // Сбрасываем флаг "видео-запись уже остановлена"
       we_are_already_stopped = 0;
+      // Отмечаем время начала видео-записи
       avi_start_time = millis();
 
-      jpr("\nStart the avi ... at %d\n", avi_start_time);
-      jpr("Framesize %d, quality %d, length %d seconds\n\n", framesize, quality, avi_length);
+      jpr("Началась видеозапись на %d мс. ", avi_start_time);
+      jpr("Размер кадра %d, качество %d, время %d секунд\n", framesize, quality, avi_length);
       logfile.flush();
-
-      //88 frame_cnt++;
 
       long wait_for_cam_start = millis();
       wait_for_cam += millis() - wait_for_cam_start;
@@ -898,7 +895,7 @@ void the_camera_loop (void* pvParameter)
     else if ( restart_now || reboot_now || (frame_cnt > 0 && start_record == 0) ||  millis() > (avi_start_time + avi_length * 1000)) 
     { // end the avi
 
-      jpr("End the Avi");
+      jprln("End the Avi");
       restart_now = false;
 
       if (blinking)  digitalWrite(33, frame_cnt % 2);
@@ -919,8 +916,10 @@ void the_camera_loop (void* pvParameter)
 
       if (!reboot_now) frame_cnt = 0;             // start recording again on the next loop
 
+    } 
     ///////////////////  ANOTHER FRAME  //////////////////
-    } else if (frame_cnt > 0 && start_record != 0) {  // another frame of the avi
+    else if (frame_cnt > 0 && start_record != 0) 
+    {  // another frame of the avi
 
       //Serial.println("Another frame");
 
@@ -959,18 +958,22 @@ void the_camera_loop (void* pvParameter)
 
       if (blinking) digitalWrite(33, frame_cnt % 2);
 
-      if (frame_cnt % 100 == 10 ) {     // print some status every 100 frames
-        if (frame_cnt == 10) {
+      if (frame_cnt % 100 == 10 ) 
+      {     // print some status every 100 frames
+        if (frame_cnt == 10) 
+        {
           bytes_before_last_100_frames = movi_size;
           time_before_last_100_frames = millis();
           most_recent_fps = 0;
           most_recent_avg_framesize = 0;
-        } else {
-
+        } 
+        else 
+        {
           most_recent_fps = 100.0 / ((millis() - time_before_last_100_frames) / 1000.0) ;
           most_recent_avg_framesize = (movi_size - bytes_before_last_100_frames) / 100;
 
-          if ( (Lots_of_Stats && frame_cnt < 1011) || (Lots_of_Stats && frame_cnt % 1000 == 10)) {
+          if ( (Lots_of_Stats && frame_cnt < 1011) || (Lots_of_Stats && frame_cnt % 1000 == 10)) 
+          {
             jpr("So far: %04d frames, in %6.1f seconds, for last 100 frames: avg frame size %6.1f kb, %.2f fps ...\n", frame_cnt, 0.001 * (millis() - avi_start_time), 1.0 / 1024  * most_recent_avg_framesize, most_recent_fps);
           }
 
