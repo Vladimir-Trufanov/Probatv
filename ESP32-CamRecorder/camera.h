@@ -37,17 +37,13 @@
 float most_recent_fps = 0;
 int most_recent_avg_framesize = 0;
 
-uint8_t* fb_record;
-uint8_t* fb_curr_record_buf;
 uint8_t* fb_streaming;
 uint8_t* fb_capture;
 
 int fb_record_len;
-int fb_curr_record_len;
 int fb_streaming_len;
 int fb_capture_len;
 long fb_record_time = 0;
-long fb_curr_record_time = 0;
 long fb_streaming_time = 0;
 long fb_capture_time = 0;
 
@@ -74,9 +70,6 @@ int start_record_1st_opinion = 0;
 int start_record_2nd_opinion = 0; 
 // Сбрасываем флаг запуска записи очередного видео файла
 int start_record = 0;
-
-camera_fb_t * fb_curr = NULL;
-camera_fb_t * fb_next = NULL;
 
 long total_delay = 0;
 long bytes_before_last_100_frames = 0;
@@ -153,27 +146,35 @@ static const frameSizeStruct frameSizeData[] =
 };
 
 uint16_t remnant = 0;
-uint32_t startms;            // начало работы с камерой и файлом avi    
+uint32_t startms;             // начало работы с камерой и файлом avi    
 uint32_t elapsedms;
 
-long totalp;                 // общее время съемки всех кадров записанного файла avi
-long totalw;                 // общее время записи всех кадров файла avi
 
-unsigned long jpeg_size = 0;
-unsigned long movi_size = 0;
-uint32_t uVideoLen = 0;
-unsigned long idx_offset = 0;
+camera_fb_t * fb_curr=NULL;   // структура с буфером снятого кадра
+uint8_t* fb_curr_record_buf;  // копия буфера снятого кадра
+int fb_curr_record_len;       // длина буфера снятого кадра
+long fb_curr_record_time=0;   // время записи снятого кадра с начала запуска программы (мс)
 
-int bad_jpg = 0;
-int extend_jpg = 0;
-int normal_jpg = 0;
+// Окончательные данные по кадрам, защищенные семафором
+uint8_t* fb_record;
 
+long totalp;                  // общее время съемки всех кадров записанного файла avi
+long totalw;                  // общее время записи всех кадров файла avi
 long time_in_loop;
 long time_in_camera;          // общее время работы камеры
 long time_in_sd;              // время, потраченное на работу с sd-картой
 long time_in_good;            // время камеры с получением целых (хороших) кадров
 long time_total;              // общее время съёмки и записи на SD
 long time_in_web1;            // время пребывания на страницах браузера
+
+unsigned long jpeg_size = 0;
+unsigned long movi_size = 0;
+uint32_t uVideoLen = 0;
+unsigned long idx_offset = 0;
+
+int bad_jpg = 0;              // количество плохих кадров
+int extend_jpg = 0;           // количество расширенных кадров
+int normal_jpg = 0;           // количество нормальных кадров
 
 long delay_wait_for_sd = 0;
 long wait_for_cam = 0;
@@ -372,12 +373,12 @@ camera_fb_t *  get_good_jpeg()
     fb = esp_camera_fb_get();
     if (!fb) 
     {
-      Serial.println("Не удалось выполнить захват с камеры");
+      Serial.println("get_good_jpeg: Не удалось выполнить захват с камеры");
       failures++;
     } 
     else 
     {
-      // Определяем время ушедшее на получение изображения
+      // Определяем время ушедшее на получение изображения (микрос)
       long mdelay = micros() - mstart;
       int get_fail = 0;
       totalp = totalp + millis() - bp;
@@ -391,9 +392,11 @@ camera_fb_t *  get_good_jpeg()
           // no d9, try next for
         } 
         else 
-        {                                     //Serial.println("Found a D9");
+        { 
+          // Serial.println("Found a D9");
           if (fb->buf[fblen - j - 1] == 0xFF ) 
-          {     //Serial.print("Found the FFD9, junk is "); Serial.println(j);
+          {     
+            // Serial.print("Found the FFD9, junk is "); Serial.println(j);
             if (j == 1) 
             {
               normal_jpg++;
@@ -403,11 +406,13 @@ camera_fb_t *  get_good_jpeg()
               extend_jpg++;
             }
             foundffd9 = 1;
+            
+            // Lots_of_Stats
             if (Lots_of_Stats) 
             {
               if (j > 9000) 
               {                // was 900             //  rarely happens - sometimes on 2640
-                jpr("Frame %d, Len %d, Extra %d ", frame_cnt, fblen, j - 1 );
+                jpr("get_good_jpeg 9000:  Frame %d, Len %d, Extra %d ", frame_cnt, fblen, j - 1 );
                 logfile.flush();
               }
               if ( (frame_cnt % 1000 == 50) || (frame_cnt < 1000 && frame_cnt % 100 == 50)) 
@@ -421,6 +426,7 @@ camera_fb_t *  get_good_jpeg()
                 do_it_now = 1;
               }
             }
+            // end Lots_of_Stats
             break;
           }
         }
@@ -429,7 +435,7 @@ camera_fb_t *  get_good_jpeg()
       if (!foundffd9) 
       {
         bad_jpg++;
-        jpr("Bad jpeg, Frame %d, Len = %d \n", frame_cnt, fblen);
+        jpr("get_good_jpeg: Bad jpeg, Frame %d, Len = %d \n", frame_cnt, fblen);
         esp_camera_fb_return(fb);
         failures++;
       } 
@@ -472,9 +478,9 @@ static void start_avi()
   movi_size = 0;
   uVideoLen = 0;
   idx_offset = 4;
-  bad_jpg = 0;
-  extend_jpg = 0;
-  normal_jpg = 0;
+  bad_jpg = 0;           // количество плохих кадров
+  extend_jpg = 0;        // количество расширенных кадров
+  normal_jpg = 0;        // количество нормальных кадров
   time_in_loop = 0;
   time_in_camera=0;      // общее время работы камеры
   time_in_sd=0;          // время, потраченное на работу с sd-картой
@@ -891,15 +897,14 @@ void the_camera_loop (void* pvParameter)
       memcpy(fb_curr_record_buf, fb_curr->buf, fb_curr->len);
       fb_curr_record_time = millis();
 
+      // 
       xSemaphoreTake( baton, portMAX_DELAY );
-
       fb_record_len = fb_curr_record_len;
       memcpy(fb_record, fb_curr_record_buf, fb_curr_record_len);   // v59.5
       fb_record_time = fb_curr_record_time;
       xSemaphoreGive( baton );
-
+      
       esp_camera_fb_return(fb_curr);  //7
-
       another_save_avi( fb_curr_record_buf, fb_curr_record_len );
 
       ///
