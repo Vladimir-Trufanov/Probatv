@@ -57,19 +57,19 @@ ESP32-CamRecorder
 6=stream32.h
 [Selected Project Files]
 Main=
-Selected=ESP32-CamRecorder.ino
+Selected=camera.h
 [ESP32-CamRecorder.ino]
-TopLine=54
-Caret=1,65
+TopLine=924
+Caret=3,929
 [Prot-2026-02-06.txt]
-TopLine=324
+TopLine=340
 Caret=1,324
 [camera.h]
-TopLine=23
-Caret=5,38
+TopLine=283
+Caret=29,307
 [inimem.h]
-TopLine=18
-Caret=1,28
+TopLine=47
+Caret=5,69
 [eprom.h]
 TopLine=41
 Caret=6,58
