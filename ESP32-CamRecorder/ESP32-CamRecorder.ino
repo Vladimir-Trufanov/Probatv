@@ -929,9 +929,8 @@ void setup()
   config_camera();
 
   // Выделяем память под рабочие буферы для хранения jpg в движении 
-  // (должны быть больше больших кадров с ov5640),
+  // (должны быть больше больших кадров с ov2640,ov5640),
   // размер устанавливаем от ранее сформированного и расчитанного config_camera
-  // fb_record = (uint8_t*)ps_malloc(512 * 1024); 
   fb_record =          (uint8_t*)ps_malloc(frame_buffer_size); 
   fb_curr_record_buf = (uint8_t*)ps_malloc(frame_buffer_size);
   fb_streaming =       (uint8_t*)ps_malloc(frame_buffer_size); 

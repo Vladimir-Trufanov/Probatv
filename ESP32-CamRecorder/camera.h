@@ -2,7 +2,7 @@
  * 
  *                                             Обслужить работу с видео-камерой
  *                                                     
- * v1.0.3, 07.02.2026                                 Автор:      Труфанов В.Е.
+ * v1.0.4, 08.02.2026                                 Автор:      Труфанов В.Е.
  * Copyright © 2026 tve                               Дата создания: 25.01.2026
  * 
 **/
@@ -40,10 +40,8 @@ int most_recent_avg_framesize = 0;
 uint8_t* fb_streaming;
 uint8_t* fb_capture;
 
-int fb_record_len;
 int fb_streaming_len;
 int fb_capture_len;
-long fb_record_time = 0;
 long fb_streaming_time = 0;
 long fb_capture_time = 0;
 
@@ -155,17 +153,21 @@ uint8_t* fb_curr_record_buf;  // копия буфера снятого кадр
 int fb_curr_record_len;       // длина буфера снятого кадра
 long fb_curr_record_time=0;   // время записи снятого кадра с начала запуска программы (мс)
 
-// Окончательные данные по кадрам, защищенные семафором
-uint8_t* fb_record;
+// Окончательные данные по кадрам, защищенные мьютексом
+uint8_t* fb_record;           // копия буфера снятого кадра
+int fb_record_len;            // длина буфера снятого кадра
+long fb_record_time = 0;      // время записи снятого кадра с начала запуска программы (мс)
 
 long totalp;                  // общее время съемки всех кадров записанного файла avi
 long totalw;                  // общее время записи всех кадров файла avi
 long time_in_loop;
+long wait_for_cam;            // общее время ожидания камеры между съемками
 long time_in_camera;          // общее время работы камеры
-long time_in_sd;              // время, потраченное на работу с sd-картой
 long time_in_good;            // время камеры с получением целых (хороших) кадров
 long time_total;              // общее время съёмки и записи на SD
 long time_in_web1;            // время пребывания на страницах браузера
+long delay_wait_for_sd;       // общее время ожидания записи на SD
+long time_in_sd;              // время, потраченное на работу с sd-картой
 
 unsigned long jpeg_size = 0;
 unsigned long movi_size = 0;
@@ -176,8 +178,6 @@ int bad_jpg = 0;              // количество плохих кадров
 int extend_jpg = 0;           // количество расширенных кадров
 int normal_jpg = 0;           // количество нормальных кадров
 
-long delay_wait_for_sd = 0;
-long wait_for_cam = 0;
 int very_high = 0;
 
 int we_are_already_stopped=0; // 1 - "видео-запись уже остановлена"
@@ -482,13 +482,13 @@ static void start_avi()
   extend_jpg = 0;        // количество расширенных кадров
   normal_jpg = 0;        // количество нормальных кадров
   time_in_loop = 0;
+  wait_for_cam = 0;      // общее время ожидания камеры между съемками
   time_in_camera=0;      // общее время работы камеры
-  time_in_sd=0;          // время, потраченное на работу с sd-картой
   time_in_good=0;        // время камеры с получением целых (хороших) кадров
+  delay_wait_for_sd=0;   // общее время ожидания записи на SD
+  time_in_sd=0;          // время, потраченное на работу с sd-картой
   time_total = 0;        // общее время съёмки и записи на SD
   time_in_web1 = 0;      // время пребывания на страницах браузера
-  delay_wait_for_sd = 0;
-  wait_for_cam = 0;
   very_high = 0;
   
   // Отмечаем начало работы функции
@@ -838,6 +838,9 @@ static void another_save_avi(uint8_t* fb_buf, int fblen )
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void the_camera_loop (void* pvParameter) 
 {
+  long wait_for_cam_start;       // Промежуточная точка начала ожидания камеры
+  long delay_wait_for_sd_start;  // Промежуточная точка начала ожидания работы с SD
+
   print_mem("MEM - стартовала задача the_camera_loop        ");
   // Инициируем счетчик кадров в файле
   frame_cnt = 0;
@@ -872,44 +875,42 @@ void the_camera_loop (void* pvParameter)
       we_are_already_stopped = 0;
       // Отмечаем время начала видео-записи
       avi_start_time = millis();
-
+      // Отмечаем точку начала ожидания камеры
+      wait_for_cam_start = millis();
+      
       jpr("Началась видеозапись на %d мс. ", avi_start_time);
       jpr("Размер кадра %d, качество %d, время %d секунд\n", framesize, quality, avi_length);
       logfile.flush();
 
-      long wait_for_cam_start = millis();
-      wait_for_cam += millis() - wait_for_cam_start;
-
+      // Открываем avi-файл и записываем заголовки
       start_avi();
-
-      wait_for_cam_start = millis();
-
-      ///
+      // Отмечаем точку начала ожидания работы с SD
+      delay_wait_for_sd_start = millis();
+      // Пересчитываем время ожидания камеры
+      wait_for_cam += millis() - wait_for_cam_start;
+      // Меняем счетчик и делаем кадр
       frame_cnt++;
-
-      long delay_wait_for_sd_start = millis();
-
-      delay_wait_for_sd += millis() - delay_wait_for_sd_start;
-
-      fb_curr = get_good_jpeg();    //7
-
+      fb_curr = get_good_jpeg();    
+      // Копируем изображение в буфер текущего кадра
       fb_curr_record_len = fb_curr->len;
       memcpy(fb_curr_record_buf, fb_curr->buf, fb_curr->len);
-      fb_curr_record_time = millis();
-
-      // 
-      xSemaphoreTake( baton, portMAX_DELAY );
+      
+      // В мьютексе выбираем в буфер снятый кадр и отмечаем время
+      xSemaphoreTake(baton, portMAX_DELAY);
       fb_record_len = fb_curr_record_len;
       memcpy(fb_record, fb_curr_record_buf, fb_curr_record_len);   // v59.5
       fb_record_time = fb_curr_record_time;
-      xSemaphoreGive( baton );
+      xSemaphoreGive(baton);
       
+      // Освобождаем буфер камеры и отмечаем новую точку начала ожидания камеры
       esp_camera_fb_return(fb_curr);  //7
+      wait_for_cam_start = millis();
+      // Пересчитываем время ожидания работы с SD и заносим кадр в видео-файл
+      delay_wait_for_sd += millis() - delay_wait_for_sd_start;
       another_save_avi( fb_curr_record_buf, fb_curr_record_len );
-
-      ///
+      // Пересчитываем время ожидания камеры
       wait_for_cam += millis() - wait_for_cam_start;
-      if (blinking) digitalWrite(33, frame_cnt % 2);                // blink
+      if (blinking) digitalWrite(33, frame_cnt % 2); // blink
     } 
     ///////////////////  END THE MOVIE //////////////////
     else if ( restart_now || reboot_now || (frame_cnt > 0 && start_record == 0) ||  millis() > (avi_start_time + avi_length * 1000)) 
@@ -937,12 +938,9 @@ void the_camera_loop (void* pvParameter)
       if (!reboot_now) frame_cnt = 0;             // start recording again on the next loop
 
     } 
-    ///////////////////  ANOTHER FRAME  //////////////////
+    ///////////////////  ANOTHER FRAME AVI  //////////////////
     else if (frame_cnt > 0 && start_record != 0) 
-    {  // another frame of the avi
-
-      //Serial.println("Another frame");
-
+    {  
       current_frame_time = millis();
       if (current_frame_time - last_frame_time < frame_interval) 
       {
@@ -952,7 +950,7 @@ void the_camera_loop (void* pvParameter)
 
       frame_cnt++;
 
-      long delay_wait_for_sd_start = millis();
+      delay_wait_for_sd_start = millis();
       delay_wait_for_sd += millis() - delay_wait_for_sd_start;
 
       fb_curr = get_good_jpeg();    //7
@@ -972,7 +970,7 @@ void the_camera_loop (void* pvParameter)
 
       another_save_avi( fb_curr_record_buf, fb_curr_record_len );
 
-      long wait_for_cam_start = millis();
+      wait_for_cam_start = millis();
 
       wait_for_cam += millis() - wait_for_cam_start;
 
