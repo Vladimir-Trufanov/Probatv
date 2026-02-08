@@ -1140,21 +1140,6 @@ void loop()
         }
         delay(1000);
 
-        /*
-        // Ping Host
-        const char* remote_host = "google.com";
-        jpr(remote_host);
-        if (Ping.ping(remote_host) > 0) 
-        {
-          jpr(" -- response time : %d/%.2f/%d ms\n", Ping.minTime(), Ping.averageTime(), Ping.maxTime());
-        } 
-        else 
-        {
-          jprln(" Ping Error !");
-        }
-        delay(1000);
-        */
-
         if (WiFi.status() != WL_CONNECTED) 
         {
           jprln("Отключается WiFi");

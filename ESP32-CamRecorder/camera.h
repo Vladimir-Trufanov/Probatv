@@ -34,9 +34,6 @@
 #define HREF_GPIO_NUM     23
 #define PCLK_GPIO_NUM     22
 
-float most_recent_fps = 0;
-int most_recent_avg_framesize = 0;
-
 uint8_t* fb_streaming;
 uint8_t* fb_capture;
 
@@ -68,10 +65,6 @@ int start_record_1st_opinion = 0;
 int start_record_2nd_opinion = 0; 
 // Сбрасываем флаг запуска записи очередного видео файла
 int start_record = 0;
-
-long total_delay = 0;
-long bytes_before_last_100_frames = 0;
-long time_before_last_100_frames = 0;
 
 uint8_t avi1_buf[4]        = {0x41, 0x56, 0x49, 0x31};    // "AVI1"
 uint8_t idx1_buf[4]        = {0x69, 0x64, 0x78, 0x31};    // "idx1"
@@ -147,6 +140,8 @@ uint16_t remnant = 0;
 uint32_t startms;             // начало работы с камерой и файлом avi    
 uint32_t elapsedms;
 
+long current_frame_time=0;    // 
+long last_frame_time=0;
 
 camera_fb_t * fb_curr=NULL;   // структура с буфером снятого кадра
 uint8_t* fb_curr_record_buf;  // копия буфера снятого кадра
@@ -169,8 +164,14 @@ long time_in_web1;            // время пребывания на стран
 long delay_wait_for_sd;       // общее время ожидания записи на SD
 long time_in_sd;              // время, потраченное на работу с sd-картой
 
-unsigned long jpeg_size = 0;
-unsigned long movi_size = 0;
+unsigned long jpeg_size;      // размер текущего кадра для сбора статистика
+unsigned long movi_size;      // текущий размер видео-файла для статистики
+
+long bytes_before_last_100_frames=0;  // размер видео с последними 100 кадрами
+long time_before_last_100_frames=0;   // время записи последних 100 кадров
+float most_recent_fps=0;              // количество недавних кадров в секунду
+int most_recent_avg_framesize=0;      // средний размер недавних кадров
+
 uint32_t uVideoLen = 0;
 unsigned long idx_offset = 0;
 
@@ -474,8 +475,8 @@ static void start_avi()
   startms = millis();    // начало работы с камерой и файлом avi
   totalp=0;              // общее время съемки всех кадров записанного файла avi
   totalw=0;              // общее время записи всех кадров файла avi
-  jpeg_size = 0;
-  movi_size = 0;
+  jpeg_size=0;           // размер текущего кадра для сбора статистика
+  movi_size=0;           // текущий размер видео-файла для статистики
   uVideoLen = 0;
   idx_offset = 4;
   bad_jpg = 0;           // количество плохих кадров
@@ -714,6 +715,7 @@ static void another_save_avi(uint8_t* fb_buf, int fblen )
   long start = millis();
   int fb_block_length;
   uint8_t* fb_block_start;
+  // Фиксируем длину изображения
   jpeg_size = fblen;
 
   remnant = (4 - (jpeg_size & 0x00000003)) & 0x00000003;
@@ -792,7 +794,7 @@ static void another_save_avi(uint8_t* fb_buf, int fblen )
     delay(0);
   }
 
-
+  // Фиксируем длину видео с текущим кадром
   movi_size += jpeg_size;
   uVideoLen += jpeg_size;
   long frame_write_end = millis();
@@ -894,6 +896,7 @@ void the_camera_loop (void* pvParameter)
       // Копируем изображение в буфер текущего кадра
       fb_curr_record_len = fb_curr->len;
       memcpy(fb_curr_record_buf, fb_curr->buf, fb_curr->len);
+      fb_curr_record_time = millis();
       
       // В мьютексе выбираем в буфер снятый кадр и отмечаем время
       xSemaphoreTake(baton, portMAX_DELAY);
@@ -907,7 +910,7 @@ void the_camera_loop (void* pvParameter)
       wait_for_cam_start = millis();
       // Пересчитываем время ожидания работы с SD и заносим кадр в видео-файл
       delay_wait_for_sd += millis() - delay_wait_for_sd_start;
-      another_save_avi( fb_curr_record_buf, fb_curr_record_len );
+      another_save_avi(fb_curr_record_buf, fb_curr_record_len);
       // Пересчитываем время ожидания камеры
       wait_for_cam += millis() - wait_for_cam_start;
       if (blinking) digitalWrite(33, frame_cnt % 2); // blink
@@ -940,50 +943,52 @@ void the_camera_loop (void* pvParameter)
     } 
     ///////////////////  ANOTHER FRAME AVI  //////////////////
     else if (frame_cnt > 0 && start_record != 0) 
-    {  
+    { 
+      // Если интервал между кадрами не истек, делаем паузу (timelapse)
       current_frame_time = millis();
       if (current_frame_time - last_frame_time < frame_interval) 
       {
-        delay(frame_interval - (current_frame_time - last_frame_time));             // delay for timelapse
+        delay(frame_interval - (current_frame_time - last_frame_time));     
       }
       last_frame_time = millis();
-
-      frame_cnt++;
-
+      // Отмечаем точку начала ожидания работы с SD
       delay_wait_for_sd_start = millis();
-      delay_wait_for_sd += millis() - delay_wait_for_sd_start;
-
-      fb_curr = get_good_jpeg();    //7
-
+      // Меняем счетчик и делаем кадр
+      frame_cnt++;
+      fb_curr = get_good_jpeg();   
+      // Копируем изображение в буфер текущего кадра
       fb_curr_record_len = fb_curr->len;
       memcpy(fb_curr_record_buf, fb_curr->buf, fb_curr->len);
       fb_curr_record_time = millis();
-
-      xSemaphoreTake( baton, portMAX_DELAY );
-
+      
+      // В мьютексе выбираем в буфер снятый кадр и отмечаем время
+      xSemaphoreTake(baton, portMAX_DELAY);
       fb_record_len = fb_curr_record_len;
       memcpy(fb_record, fb_curr_record_buf, fb_curr_record_len);   // v59.5
       fb_record_time = fb_curr_record_time;
-      xSemaphoreGive( baton );
-
+      xSemaphoreGive(baton);
+      
+      // Освобождаем буфер камеры и отмечаем новую точку начала ожидания камеры
       esp_camera_fb_return(fb_curr);  //7
-
-      another_save_avi( fb_curr_record_buf, fb_curr_record_len );
-
       wait_for_cam_start = millis();
 
+      // Пересчитываем время ожидания работы с SD и заносим кадр в видео-файл
+      delay_wait_for_sd += millis() - delay_wait_for_sd_start;
+      another_save_avi(fb_curr_record_buf, fb_curr_record_len);
+      // Пересчитываем время ожидания камеры
       wait_for_cam += millis() - wait_for_cam_start;
-
       if (blinking) digitalWrite(33, frame_cnt % 2);
-
+      
+      // Выводим усредненные статистические данные через каждые 100 кадров,
+      // начиная с 10-ого (среди первых 1011 кадров)
       if (frame_cnt % 100 == 10 ) 
-      {     // print some status every 100 frames
+      {    
         if (frame_cnt == 10) 
         {
           bytes_before_last_100_frames = movi_size;
           time_before_last_100_frames = millis();
-          most_recent_fps = 0;
-          most_recent_avg_framesize = 0;
+          most_recent_fps = 0;            // количество недавних кадров в секунду
+          most_recent_avg_framesize = 0;  // средний размер недавних кадров
         } 
         else 
         {
@@ -992,11 +997,8 @@ void the_camera_loop (void* pvParameter)
 
           if ( (Lots_of_Stats && frame_cnt < 1011) || (Lots_of_Stats && frame_cnt % 1000 == 10)) 
           {
-            jpr("So far: %04d frames, in %6.1f seconds, for last 100 frames: avg frame size %6.1f kb, %.2f fps ...\n", frame_cnt, 0.001 * (millis() - avi_start_time), 1.0 / 1024  * most_recent_avg_framesize, most_recent_fps);
+            jprln("Всего: %04d кадров за %6.1f секунд, среднее недавних 100 кадров: размер и частота %6.1f kb, %.2f fps", frame_cnt, 0.001 * (millis() - avi_start_time), 1.0 / 1024  * most_recent_avg_framesize, most_recent_fps);
           }
-
-          total_delay = 0;
-
           bytes_before_last_100_frames = movi_size;
           time_before_last_100_frames = millis();
         }

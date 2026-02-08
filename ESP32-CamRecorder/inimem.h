@@ -33,9 +33,6 @@ TaskHandle_t the_camera_loop_task;
 TaskHandle_t the_streaming_loop_task;
 SemaphoreHandle_t baton;
 
-long current_frame_time;
-long last_frame_time;
-
 bool restart_now = false;   // true - начать запись нового avi-видео
 bool reboot_now = false;    // true - завершить запись и перезагрузить контроллер
 bool web_stop = false;      // true - завершить запись для OTA или по команде Stop из браузера

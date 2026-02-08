@@ -1,321 +1,117 @@
 
 *********** Первые минуты до 10-минутной проверки, когда ЕСТЬ локальная сеть ***
 
----
-Arduino IDE 2.3.7 - Espressif ESP32 3.3.5
-Инициализируется SD-карта ...
-SD_MMC инициализирована успешно
-Тип карты SD_MMC: SDHC
-Ёмкость SD_MMC-карты: 15103 MB
- 
----------------------------------------
-ESP32-CamRecorder v62.34.0
----------------------------------------
-[MEM - В начале SETUP                           ] ядро: 1, приоритет: 1, свободная куча 245568 от ОЗУ 295704, FreePSRAM 4154188 от FLASH 4194304
-Причина перезагрузки: ESP_RST_POWERON
-Продолжение существующей нумерации файлов!
-Новый номер файлов потока изображений 
-249
-Выполняется запись в EPROM ...
-Выбираются параметры из config2.txt ...
-Открывается config2.txt на SD
-Читается config2.txt
-=========   Данные, считанные из config2.txt и по умолчанию  =========
-Название камеры                      Esp32dacha
-Размер кадра                         13
-Качество                             12
-Количество буферов для кадров        4
-Размер видео в секундах              420
-Интервал между записями кадров (ms)  0
-Частота кадров                       1
-Интервал между кадрами в потоке (ms) 0
-TIMEZONE                             5, MSK-3
-ssid1                                OPPO A9 2020
-ssid2                                ssid
-ssid3                                ssid
-pass3                                12344321
-Устанавливаются параметры камеры ...
-Frame config 0, quality config 0, buffers config 4
-[MEM - перед инициированием камеры              ] ядро: 1, приоритет: 1, свободная куча 245044 от ОЗУ 295704, FreePSRAM 4154188 от FLASH 4194304
-[MEM - после инициирования камеры               ] ядро: 1, приоритет: 1, свободная куча 202160 от ОЗУ 295704, FreePSRAM 3416844 от FLASH 4194304
-Камера стартовала корректно, id.PID: 26 (hex) of 9650, 7725, 2640, 3660, 5640
-Pic  0, len=  55415, at mem 3F863D10
-Pic  1, len=  48413, at mem 3F890D30
-Pic  2, len=  48360, at mem 3F809CD0
-Pic 28, len=  37419, at mem 3F836CF0
-Pic 29, len=  38481, at mem 3F809CD0
-Размер буфера изображений для 38481 равен 163840
-[MEM - после завершения инициирования камеры    ] ядро: 1, приоритет: 1, свободная куча 202160 от ОЗУ 295704, FreePSRAM 3416844 от FLASH 4194304
-[MEM - после выделения памяти для jpg в движении] ядро: 1, приоритет: 1, свободная куча 202160 от ОЗУ 295704, FreePSRAM 2745084 от FLASH 4194304
-Создаётся задача the_camera_loop на 0 ядре
-[MEM - стартовала задача the_camera_loop        ] ядро: 0, приоритет: 4, свободная куча 196556 от ОЗУ 295704, FreePSRAM 2745084 от FLASH 4194304
-Создаётся задача the_streaming_loop
-[MEM - стартовала задача the_streaming_loop     ] ядро: 1, приоритет: 2, свободная куча 187988 от ОЗУ 295704, FreePSRAM 2745084 от FLASH 4194304
-[MEM - перед подключением WiFi                  ] ядро: 1, приоритет: 1, свободная куча 187988 от ОЗУ 295704, FreePSRAM 2745084 от FLASH 4194304
-Версия компилятора ESP:  v5.5.1-931-g9bb7aa84fe
-
->>>>>>>>>>>>>>>>>>>>>OPPO A9 2020<
->>>>>>>>>>>>>>>>>>>>>ssid<
->>>>>>>>>>>>>>>>>>>>>Esp32dacha</>12344321<
-
-Отсоедините Pin12 от GND для того, чтобы начать запись или http://192.168.1.100/start 
-Mac-адрес точки доступа: F8:B3:B7:A7:E1:18
-Контроллер устанавливает собственную точку доступа
-IP контроллера: 192.168.4.1
-Контроллер подключается к локальной точке доступа
- 
-  Локальный IP: 10.120.175.2
- 
-Определяется местное время
-Char >MSK-3<
-Местное время: Thu Jan  1 03:00:09 1970
-multicast DNS (mDNS) стартовал с именем 'Esp32dacha'
-Начальный режим энергосбережения: 1
--Текущий- режим энергосбережения: 0
-[MEM - перед запуском Filemanager               ] ядро: 1, приоритет: 1, свободная куча 127608 от ОЗУ 295704, FreePSRAM 2740600 от FLASH 4194304
-fm begin, core 1, priority = 1
-start fm bindings
-Filemanager в своей сети     - http://192.168.4.1:8080/
-Filemanager в локальной сети - http://10.120.175.2:8080/
-[MEM - перед запуском Web-сервисов              ] ядро: 1, приоритет: 1, свободная куча 125648 от ОЗУ 295704, FreePSRAM 2740600 от FLASH 4194304
-http task prio: 5
-Camera http started
-http Stream task prio: 5
-Stream 81 http started
-http Stream task prio: 5
-Stream 82 http started
-[МЕМ - после запуска WiFi                       ] ядро: 1, приоритет: 1, свободная куча  96252 от ОЗУ 295704, FreePSRAM 2740024 от FLASH 4194304
-Проверяется SD-карта на наличие свободного места ...
-Общий размер SD-карты памяти:                15103MB
-Общее количество байтов, доступных на карте: 15095MB
-Количество используемых байтов на карте SD:   8059MB
-Удаление невозможно, SD-карта заполнена на 53.4%
-Создается logfile /Esp32dacha249/Esp32dacha249.999.txt
-
-[МЕМ - после завершения setup                   ] ядро: 1, приоритет: 1, свободная куча  95944 от ОЗУ 295704, FreePSRAM 2740024 от FLASH 4194304
-
-Start the avi ... at 9418
-Framesize 13, quality 12, length 420 seconds
-
-Начинается формирование avi по снимаемым кадрам
-Файл открыт: /Esp32dacha249/Esp32dacha249.001.avi
-Запускается запись видео на 420 секунд
-Frame     50, len  40769, cam time       0,  sd time   55 -- 
-So far: 0110 frames, in    9.0 seconds, for last 100 frames: avg frame size   39.4 kb, 12.32 fps ...
-Frame    150, len  40444, cam time       0,  sd time   48 -- 
-So far: 0210 frames, in   17.9 seconds, for last 100 frames: avg frame size   39.2 kb, 11.28 fps ...
-Frame    250, len  40070, cam time       0,  sd time   45 -- 
-So far: 0310 frames, in   27.3 seconds, for last 100 frames: avg frame size   39.2 kb, 10.67 fps ...
-Frame    350, len  40298, cam time       2,  sd time   45 -- 
-So far: 0410 frames, in   35.2 seconds, for last 100 frames: avg frame size   39.7 kb, 12.57 fps ...
-Frame    450, len  41645, cam time       1,  sd time   51 -- 
-So far: 0510 frames, in   43.9 seconds, for last 100 frames: avg frame size   40.4 kb, 11.56 fps ...
-Frame    550, len  41143, cam time       0,  sd time   54 -- 
-So far: 0610 frames, in   52.8 seconds, for last 100 frames: avg frame size   40.2 kb, 11.26 fps ...
-Frame    623, sd time very high  732 >>>   53 -- pos 182CFC0, Block 0, delay     1 ... 
-Frame    650, len  43009, cam time       0,  sd time   51 -- 
-So far: 0710 frames, in   62.3 seconds, for last 100 frames: avg frame size   41.1 kb, 10.52 fps ...
-Frame    750, len  41623, cam time       0,  sd time   56 -- 
-So far: 0810 frames, in   70.8 seconds, for last 100 frames: avg frame size   40.6 kb, 11.69 fps ...
-Frame    850, len  41313, cam time       0,  sd time   49 -- 
-So far: 0910 frames, in   78.8 seconds, for last 100 frames: avg frame size   40.3 kb, 12.53 fps ...
-Открывается config2.txt на SD
-Читается config2.txt
-=========   Данные, считанные из config2.txt и по умолчанию  =========
-Название камеры                      Esp32dacha
-Размер кадра                         13
-Качество                             12
-Количество буферов для кадров        4
-Размер видео в секундах              420
-Интервал между записями кадров (ms)  0
-Частота кадров                       1
-Интервал между кадрами в потоке (ms) 0
-TIMEZONE                             5, MSK-3
-ssid1                                OPPO A9 2020
-ssid2                                ssid
-ssid3                                ssid
-pass3                                12344321
-Устанавливаются параметры камеры ...
-Frame config 0, quality config 0, buffers config 4
-[MEM - перед инициированием камеры              ] ядро: 1, приоритет: 1, свободная куча 245044 от ОЗУ 295704, FreePSRAM 4154188 от FLASH 4194304
-[MEM - после инициирования камеры               ] ядро: 1, приоритет: 1, свободная куча 202160 от ОЗУ 295704, FreePSRAM 3416844 от FLASH 4194304
-Камера стартовала корректно, id.PID: 26 (hex) of 9650, 7725, 2640, 3660, 5640
-Pic  0, len=  54375, at mem 3F863D10
-Pic  1, len=  47554, at mem 3F890D30
-Pic  2, len=  47557, at mem 3F809CD0
-Pic 28, len=  36318, at mem 3F836CF0
-Pic 29, len=  35605, at mem 3F809CD0
-Размер буфера изображений для 35605 равен 147456
-[MEM - после завершения инициирования камеры    ] ядро: 1, приоритет: 1, свободная куча 202160 от ОЗУ 295704, FreePSRAM 3416844 от FLASH 4194304
-[MEM - после выделения памяти для jpg в движении] ядро: 1, приоритет: 1, свободная куча 202160 от ОЗУ 295704, FreePSRAM 2810620 от FLASH 4194304
-Создаётся задача the_camera_loop на 0 ядре
-[MEM - стартовала задача the_camera_loop        ] ядро: 0, приоритет: 4, свободная куча 196556 от ОЗУ 295704, FreePSRAM 2810620 от FLASH 4194304
-Создаётся задача the_streaming_loop
-[MEM - стартовала задача the_streaming_loop     ] ядро: 1, приоритет: 2, свободная куча 187988 от ОЗУ 295704, FreePSRAM 2810620 от FLASH 4194304
-[MEM - перед подключением WiFi                  ] ядро: 1, приоритет: 1, свободная куча 187988 от ОЗУ 295704, FreePSRAM 2810620 от FLASH 4194304
-Версия компилятора ESP:  v5.5.1-931-g9bb7aa84fe
-
->>>>>>>>>>>>>>>>>>>>>OPPO A9 2020<
->>>>>>>>>>>>>>>>>>>>>ssid<
->>>>>>>>>>>>>>>>>>>>>Esp32dacha</>12344321<
-
-Отсоедините Pin12 от GND для того, чтобы начать запись или http://192.168.1.100/start 
-Mac-адрес точки доступа: F8:B3:B7:A7:E1:18
-Контроллер устанавливает собственную точку доступа
-IP контроллера: 192.168.4.1
-Контроллер подключается к локальной точке доступа
- 
-  Локальный IP: 10.120.175.2
- 
-Определяется местное время
-Char >MSK-3<
-Местное время: Thu Jan  1 03:00:10 1970
-multicast DNS (mDNS) стартовал с именем 'Esp32dacha'
-Начальный режим энергосбережения: 1
--Текущий- режим энергосбережения: 0
-[MEM - перед запуском Filemanager               ] ядро: 1, приоритет: 1, свободная куча 127644 от ОЗУ 295704, FreePSRAM 2806136 от FLASH 4194304
-fm begin, core 1, priority = 1
-start fm bindings
-Filemanager в своей сети     - http://192.168.4.1:8080/
-Filemanager в локальной сети - http://10.120.175.2:8080/
-[MEM - перед запуском Web-сервисов              ] ядро: 1, приоритет: 1, свободная куча 125676 от ОЗУ 295704, FreePSRAM 2806136 от FLASH 4194304
-http task prio: 5
-Camera http started
-http Stream task prio: 5
-Stream 81 http started
-http Stream task prio: 5
-Stream 82 http started
-[МЕМ - после запуска WiFi                       ] ядро: 1, приоритет: 1, свободная куча  96276 от ОЗУ 295704, FreePSRAM 2805560 от FLASH 4194304
-Проверяется SD-карта на наличие свободного места ...
-Общий размер SD-карты памяти:                15103MB
-Общее количество байтов, доступных на карте: 15095MB
-Количество используемых байтов на карте SD:   8096MB
-Удаление невозможно, SD-карта заполнена на 53.6%
-Создается logfile /Esp32dacha250/Esp32dacha250.999.txt
-
-[МЕМ - после завершения setup                   ] ядро: 1, приоритет: 1, свободная куча  96008 от ОЗУ 295704, FreePSRAM 2805560 от FLASH 4194304
-
-Start the avi ... at 10476
-Framesize 13, quality 12, length 420 seconds
-
-Начинается формирование avi по снимаемым кадрам
-Файл открыт: /Esp32dacha250/Esp32dacha250.001.avi
-Запускается запись видео на 420 секунд
-Frame     50, len  34220, cam time      10,  sd time   44 -- 
-So far: 0110 frames, in    8.7 seconds, for last 100 frames: avg frame size   33.5 kb, 12.70 fps ...
-Frame    150, len  34281, cam time       0,  sd time   44 -- 
-So far: 0210 frames, in   16.9 seconds, for last 100 frames: avg frame size   33.3 kb, 12.12 fps ...
-Frame    250, len  34153, cam time       9,  sd time   28 -- 
-So far: 0310 frames, in   24.9 seconds, for last 100 frames: avg frame size   33.2 kb, 12.53 fps ...
-Frame    350, len  33856, cam time      12,  sd time   42 -- 
-So far: 0410 frames, in   32.9 seconds, for last 100 frames: avg frame size   33.0 kb, 12.50 fps ...
-Frame    450, len  34542, cam time       8,  sd time   46 -- 
-So far: 0510 frames, in   41.4 seconds, for last 100 frames: avg frame size   35.0 kb, 11.79 fps ...
-Frame    550, len  31467, cam time       0,  sd time   46 -- 
-So far: 0610 frames, in   50.0 seconds, for last 100 frames: avg frame size   30.7 kb, 11.61 fps ...
-Frame    650, len  31045, cam time      14,  sd time   35 -- 
-So far: 0710 frames, in   58.0 seconds, for last 100 frames: avg frame size   30.6 kb, 12.51 fps ...
-Frame    750, len  31009, cam time      15,  sd time   39 -- 
-So far: 0810 frames, in   66.0 seconds, for last 100 frames: avg frame size   30.5 kb, 12.51 fps ...
-Frame    850, len  30933, cam time      19,  sd time   37 -- 
-Frame    871, sd time very high  463 >>>   41 -- pos 1B87094, Block 0, delay     0 ... 
-So far: 0910 frames, in   74.4 seconds, for last 100 frames: avg frame size   30.4 kb, 11.91 fps ...
-Frame    950, len  30932, cam time      22,  sd time   37 -- 
-So far: 1010 frames, in   82.4 seconds, for last 100 frames: avg frame size   30.4 kb, 12.51 fps ...
-Frame   1050, len  31055, cam time       1,  sd time   37 -- 
-Frame   1641, sd time very high  474 >>>   41 -- pos 334C480, Block 0, delay     0 ... 
-So far: 2010 frames, in  163.2 seconds, for last 100 frames: avg frame size   30.7 kb, 12.50 fps ...
-Frame   2050, len  33162, cam time       0,  sd time   44 -- 
-So far: 3010 frames, in  244.2 seconds, for last 100 frames: avg frame size   30.0 kb, 12.53 fps ...
-Frame   3050, len  30813, cam time      14,  sd time   38 -- 
-Frame   3622, sd time very high  477 >>>   40 -- pos 6F2BF18, Block 0, delay     1 ... 
-So far: 4010 frames, in  325.0 seconds, for last 100 frames: avg frame size   30.1 kb, 12.53 fps ...
-Frame   4050, len  26884, cam time       6,  sd time   32 -- 
-Frame   4481, sd time very high  446 >>>   40 -- pos 89ABA24, Block 0, delay     0 ... 
-Frame   4788, sd time very high  427 >>>   40 -- pos 9402F0C, Block 0, delay     0 ... 
-So far: 5010 frames, in  407.1 seconds, for last 100 frames: avg frame size   32.7 kb, 12.50 fps ...
-Frame   5050, len  31264, cam time      14,  sd time   32 -- 
+Всего: 0110 кадров за    8.7 секунд, среднее недавних 100 кадров: размер и частота   28.0 kb, 12.59 fps
+Frame    150, len  28811, cam time      17,  sd time   36 -- 
+Всего: 0210 кадров за   16.7 секунд, среднее недавних 100 кадров: размер и частота   28.0 kb, 12.53 fps
+Frame    250, len  28616, cam time      20,  sd time   35 -- 
+Всего: 0310 кадров за   24.7 секунд, среднее недавних 100 кадров: размер и частота   28.0 kb, 12.52 fps
+Frame    350, len  29405, cam time      16,  sd time   41 -- 
+Frame    393, sd time very high  442 >>>   35 -- pos ABF554, Block 0, delay     0 ... 
+Всего: 0410 кадров за   33.2 секунд, среднее недавних 100 кадров: размер и частота   28.0 kb, 11.75 fps
+Frame    450, len  29103, cam time      15,  sd time   31 -- 
+Всего: 0510 кадров за   41.1 секунд, среднее недавних 100 кадров: размер и частота   28.1 kb, 12.72 fps
+Frame    511, sd time very high  487 >>>   37 -- pos DFD440, Block 0, delay     0 ... 
+Frame    550, len  28833, cam time      20,  sd time   38 -- 
+Всего: 0610 кадров за   49.5 секунд, среднее недавних 100 кадров: размер и частота   28.2 kb, 11.84 fps
+Frame    650, len  28914, cam time      16,  sd time   33 -- 
+Всего: 0710 кадров за   57.6 секунд, среднее недавних 100 кадров: размер и частота   28.3 kb, 12.51 fps
+Frame    750, len  29362, cam time      16,  sd time   40 -- 
+Всего: 0810 кадров за   65.5 секунд, среднее недавних 100 кадров: размер и частота   28.4 kb, 12.53 fps
+Frame    850, len  30120, cam time       0,  sd time   39 -- 
+Всего: 0910 кадров за   73.9 секунд, среднее недавних 100 кадров: размер и частота   28.4 kb, 11.92 fps
+Frame    950, len  28840, cam time       9,  sd time   39 -- 
+Всего: 1010 кадров за   81.9 секунд, среднее недавних 100 кадров: размер и частота   28.2 kb, 12.54 fps
+Frame   1050, len  28690, cam time      18,  sd time   41 -- 
+Frame   1720, sd time very high  361 >>>   36 -- pos 2F3B21C, Block 0, delay     0 ... 
+Всего: 2010 кадров за  162.6 секунд, среднее недавних 100 кадров: размер и частота   28.0 kb, 12.51 fps
+Frame   2050, len  28462, cam time      20,  sd time   28 -- 
+Frame   2152, sd time very high  423 >>>   36 -- pos 3AFEBEC, Block 0, delay     0 ... 
+Frame   2605, sd time very high  365 >>>   35 -- pos 47148E0, Block 0, delay     0 ... 
+Всего: 3010 кадров за  243.4 секунд, среднее недавних 100 кадров: размер и частота   26.4 kb, 12.49 fps
+Frame   3050, len  26563, cam time       0,  sd time   34 -- 
+Frame   3978, sd time very high  370 >>>   35 -- pos 6AE9858, Block 0, delay     0 ... 
+Всего: 4010 кадров за  324.5 секунд, среднее недавних 100 кадров: размер и частота   28.1 kb, 11.91 fps
+Frame   4050, len  28800, cam time      12,  sd time   41 -- 
+Frame   4509, sd time very high  487 >>>   35 -- pos 78F57EC, Block 0, delay     0 ... 
+Всего: 5010 кадров за  405.7 секунд, среднее недавних 100 кадров: размер и частота   25.9 kb, 12.51 fps
+Frame   5050, len  27227, cam time      11,  sd time   37 -- 
 End the Avi
 Запись avi завершена, файлы закрываются
 *** Видео записано и сохранено ***
-Снято и записано  5166 кадров за   420 секунд
-File size is 167839448 bytes
-Adjusted FPS is 12.30
-Max data rate is 389726 bytes/s
-Frame duration is 81312 us
-Average frame length is 32475 bytes
-Среднее время съемки (ms) 11.214866
-Average write time (ms)  40.591173
+Снято и записано  5189 кадров за   420 секунд
+File size is 144905272 bytes
+Adjusted FPS is 12.35
+Max data rate is 334961 bytes/s
+Frame duration is 80949 us
+Average frame length is 27911 bytes
+Среднее время съемки (ms) 19.295625
+Average write time (ms)  34.837156
 Normal jpg %3.1f
 Extend jpg %3.1f
 Bad    jpg %6.5f
-Slow sd writes 5, 0.097 % 
-Writng the index, 5166 frames
+Slow sd writes 7, 0.135 % 
+Writng the index, 5189 frames
 ---
-waiting for cam         96ms,  0.0%
-Time in camera       57936ms, 13.8%
-waiting for sd           0ms,  0.0%
-Time in sd          210387ms, 50.0%
+waiting for cam     286579ms, 68.2%
+Time in camera      100125ms, 23.8%
+waiting for sd      130048ms, 30.9%
+Time in sd          181283ms, 43.1%
 web (core 1)             0ms,  0.0%
-time total          420658ms, 100.0%
+time total          420483ms, 100.0%
 Общий размер SD-карты памяти:                15103MB
 Общее количество байтов, доступных на карте: 15095MB
-Количество используемых байтов на карте SD:   8256MB
-Удаление невозможно, SD-карта заполнена на 54.7%
-End the avi at 431216.  It was 5166 frames, 431216 ms at 32.68 fps...
-
-Start the avi ... at 431217
-Framesize 13, quality 12, length 420 seconds
-
+Количество используемых байтов на карте SD:   9403MB
+Удаление невозможно, SD-карта заполнена на 62.3%
+End the avi at 429743.  It was 5189 frames, 429743 ms at 25.92 fps...
+Началась видеозапись на 429744 мс. Размер кадра 13, качество 12, время 420 секунд
 Начинается формирование avi по снимаемым кадрам
-Файл открыт: /Esp32dacha250/Esp32dacha250.002.avi
+Файл открыт: /Esp32dacha276/Esp32dacha276.002.avi
 Запускается запись видео на 420 секунд
-Frame     50, len  30021, cam time      17,  sd time   35 -- 
-So far: 0110 frames, in    8.7 seconds, for last 100 frames: avg frame size   30.8 kb, 12.71 fps ...
-Frame    150, len  31132, cam time      12,  sd time   35 -- 
-So far: 0210 frames, in   16.7 seconds, for last 100 frames: avg frame size   31.1 kb, 12.50 fps ...
-Frame    250, len  34906, cam time       7,  sd time   41 -- 
-So far: 0310 frames, in   25.0 seconds, for last 100 frames: avg frame size   33.8 kb, 11.93 fps ...
-Frame    350, len  35072, cam time       6,  sd time   43 -- 
-So far: 0410 frames, in   32.9 seconds, for last 100 frames: avg frame size   33.5 kb, 12.73 fps ...
-Frame    450, len  35354, cam time       0,  sd time   43 -- 
-Frame    494, sd time very high  667 >>>   42 -- pos FC3FF0, Block 0, delay     0 ... 
-So far: 0510 frames, in   41.9 seconds, for last 100 frames: avg frame size   34.3 kb, 11.15 fps ...
-Frame    550, len  34866, cam time       0,  sd time   42 -- 
-Frame    594, sd time very high  728 >>>   45 -- pos 1315DCC, Block 0, delay     0 ... 
-So far: 0610 frames, in   51.5 seconds, for last 100 frames: avg frame size   33.9 kb, 10.35 fps ...
-Frame    650, len  34850, cam time       7,  sd time   42 -- 
-So far: 0710 frames, in   59.4 seconds, for last 100 frames: avg frame size   34.0 kb, 12.64 fps ...
-Frame    750, len  32127, cam time      11,  sd time   36 -- 
-So far: 0810 frames, in   67.4 seconds, for last 100 frames: avg frame size   32.3 kb, 12.51 fps ...
-Frame    850, len  31497, cam time      12,  sd time   35 -- 
-So far: 0910 frames, in   75.4 seconds, for last 100 frames: avg frame size   30.6 kb, 12.51 fps ...
-Frame    950, len  34816, cam time       9,  sd time   43 -- 
-So far: 1010 frames, in   83.4 seconds, for last 100 frames: avg frame size   32.8 kb, 12.49 fps ...
-Frame   1050, len  32902, cam time      12,  sd time   40 -- 
-Frame   1937, sd time very high  495 >>>   40 -- pos 3AC0404, Block 0, delay     0 ... 
-So far: 2010 frames, in  164.6 seconds, for last 100 frames: avg frame size   29.1 kb, 11.80 fps ...
-Frame   2050, len  29522, cam time       8,  sd time   38 -- 
+Frame     50, len  26435, cam time      24,  sd time   32 -- 
+Всего: 0110 кадров за    8.7 секунд, среднее недавних 100 кадров: размер и частота   25.9 kb, 12.51 fps
+Frame    150, len  27082, cam time      31,  sd time   31 -- 
+Всего: 0210 кадров за   17.0 секунд, среднее недавних 100 кадров: размер и частота   26.3 kb, 12.02 fps
+Frame    250, len  26780, cam time      17,  sd time   30 -- 
+Всего: 0310 кадров за   25.6 секунд, среднее недавних 100 кадров: размер и частота   26.2 kb, 11.60 fps
+Frame    350, len  26828, cam time      22,  sd time   32 -- 
+Всего: 0410 кадров за   33.6 секунд, среднее недавних 100 кадров: размер и частота   26.1 kb, 12.55 fps
+Frame    450, len  27138, cam time      20,  sd time   27 -- 
+Всего: 0510 кадров за   41.6 секунд, среднее недавних 100 кадров: размер и частота   25.6 kb, 12.52 fps
+Frame    550, len  26029, cam time      33,  sd time   33 -- 
+Всего: 0610 кадров за   49.6 секунд, среднее недавних 100 кадров: размер и частота   25.5 kb, 12.51 fps
+Frame    650, len  25910, cam time       0,  sd time   32 -- 
+Всего: 0710 кадров за   58.1 секунд, среднее недавних 100 кадров: размер и частота   25.4 kb, 11.83 fps
+Frame    750, len  25874, cam time      34,  sd time   39 -- 
+Frame    803, sd time very high  455 >>>   34 -- pos 143D184, Block 0, delay     0 ... 
+Всего: 0810 кадров за   66.5 секунд, среднее недавних 100 кадров: размер и частота   25.4 kb, 11.85 fps
+Frame    850, len  25922, cam time      21,  sd time   26 -- 
+Всего: 0910 кадров за   74.4 секунд, среднее недавних 100 кадров: размер и частота   25.4 kb, 12.73 fps
+Frame    950, len  25891, cam time      17,  sd time   29 -- 
+Всего: 1010 кадров за   82.4 секунд, среднее недавних 100 кадров: размер и частота   25.3 kb, 12.53 fps
+Frame   1050, len  26126, cam time      23,  sd time   31 -- 
+Frame   1144, sd time very high  498 >>>   33 -- pos 1CBCCA0, Block 0, delay     0 ... 
+Всего: 2010 кадров за  163.2 секунд, среднее недавних 100 кадров: размер и частота   26.8 kb, 12.51 fps
+Frame   2050, len  27418, cam time       0,  sd time   30 -- 
  
-[---------- 10 Minute Internet Check -----------] ядро: 1, приоритет: 1, свободная куча  86520 от ОЗУ 295704, FreePSRAM 2805560 от FLASH 4194304
-Текущее время: Fri Feb  6 11:38:57 2026
+[---------- 10 Minute Internet Check -----------] ядро: 1, приоритет: 1, свободная куча  86900 от ОЗУ 295712, FreePSRAM 2477880 от FLASH 4194304
+Текущее время: Sun Feb  8 12:44:50 2026
 camera_httpd Sockets , Num = 0
 stream81_httpd Sockets , Num = 0
 stream82_httpd Sockets , Num = 0
 IP-адрес шлюза (роутера): 
-10.120.175.135
-Время отклика: 0/82.00/0 ms
+10.136.23.242
+Время отклика: 0/17.43/0 ms
 IP-адрес своей сети контроллера - http://192.168.4.1
-IP-адрес в локальной сети       - http://10.120.175.2
+IP-адрес в локальной сети       - http://10.136.23.2
 mDNS responder стартовал: 'Esp32dacha'
-So far: 3010 frames, in  245.5 seconds, for last 100 frames: avg frame size   30.5 kb, 12.50 fps ...
-Frame   3050, len  31086, cam time      17,  sd time   31 -- 
-Frame   3174, sd time very high  438 >>>   40 -- pos 5F47E50, Block 0, delay     0 ... 
-So far: 4010 frames, in  326.6 seconds, for last 100 frames: avg frame size   33.9 kb, 11.89 fps ...
-Frame   4050, len  34614, cam time       2,  sd time   45 -- 
-Frame   4797, sd time very high  693 >>>   40 -- pos 91985B4, Block 0, delay     0 ... 
-Frame   4841, sd time very high  443 >>>   40 -- pos 92E6D5C, Block 0, delay     0 ... 
-Frame   4949, sd time very high  635 >>>   40 -- pos 963A600, Block 0, delay     0 ... 
+Всего: 3010 кадров за  244.2 секунд, среднее недавних 100 кадров: размер и частота   27.5 kb, 12.04 fps
+Frame   3050, len  28072, cam time      15,  sd time   36 -- 
+Frame   3416, sd time very high  395 >>>   33 -- pos 58D10B8, Block 0, delay     0 ... 
+Frame   3844, sd time very high  429 >>>   33 -- pos 6439EB0, Block 0, delay     1 ... 
+Всего: 4010 кадров за  325.6 секунд, среднее недавних 100 кадров: размер и частота   26.9 kb, 12.52 fps
+Frame   4050, len  28499, cam time      20,  sd time   33 -- 
+Frame   4293, sd time very high  367 >>>   33 -- pos 7001CC8, Block 0, delay     0 ... 
 
 -------------------------------------------------------------------------------
 
