@@ -2,7 +2,7 @@
  * 
  *                                                 Обслужить работу с SD-картой
  *                                                     
- * v1.0.0, 24.01.2026                                 Автор:      Труфанов В.Е.
+ * v1.0.1, 09.02.2026                                 Автор:      Труфанов В.Е.
  * Copyright © 2026 tve                               Дата создания: 24.01.2026
 **/
 
@@ -22,7 +22,7 @@
 // ранее было fbs=64 - столько КБ статической оперативной памяти 
 // для psram -> буфер sram для записи на sd
 #define fbs  1 
-uint8_t fb_record_static[fbs * 1024 + 20];
+uint8_t fb_record_static[fbs * 1024 + 20]; 
 
 //////////////////////////////
 //61.3 oneframe find_a_frame (char * avi_file_name, int frame_pct) ; // from avi.cpp file
@@ -103,13 +103,11 @@ static void inline print_quartet(unsigned long i, File fd)
   y[3] = (i >> 24) % 0x100;
   size_t i1_err = fd.write(y,4);
 }
-
-
-//
-// Writes 2 uint32_t in Big Endian at current file position
-//
-static void inline print_2quartet(unsigned long i, unsigned long j, File fd) {
-
+// ****************************************************************************
+// *     Записать uint32_t в порядке возрастания в текущей позиции файла      *
+// ****************************************************************************
+static void inline print_2quartet(unsigned long i, unsigned long j, File fd) 
+{
   uint8_t y[8];
   y[0] = i % 0x100;
   y[1] = (i >> 8) % 0x100;
@@ -119,14 +117,13 @@ static void inline print_2quartet(unsigned long i, unsigned long j, File fd) {
   y[5] = (j >> 8) % 0x100;
   y[6] = (j >> 16) % 0x100;
   y[7] = (j >> 24) % 0x100;
-  size_t i1_err = fd.write(y , 8);
+  size_t i1_err = fd.write(y,8);
 }
-
 //
 // Writes an uint32_t in Big Endian at current file position
 //
-static void inline print_dc_quartet(unsigned long i, File fd) {
-
+static void inline print_dc_quartet(unsigned long i, File fd) 
+{
   uint8_t y[8];
   y[0] = 0x30;       // "00dc"
   y[1] = 0x30;
