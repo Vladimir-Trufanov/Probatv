@@ -53,6 +53,7 @@ long total_frame_data = 0;
 long last_frame_length = 0;
 int done = 0;
 
+// Переменные отлова каждого 50 кадра до 1000
 int gframe_cnt;
 int gfblen;
 int gj;
@@ -362,7 +363,8 @@ camera_fb_t *  get_good_jpeg()
   long start;
   // Инициируем нулевую попытку захвата изображения камеры
   int failures = 0;
-  // Делаем до 10 попыток захвата изображения
+  // Делаем до 10 попыток захвата изображения,
+  // обычно цикл завершается по break
   do 
   {
     int fblen = 0;
@@ -385,7 +387,7 @@ camera_fb_t *  get_good_jpeg()
       totalp = totalp + millis() - bp;
       time_in_camera = totalp;
       fblen = fb->len;
-
+      // Отлавливаем признак конца изображения в последних 1025 байтах
       for (int j = 1; j <= 1025; j++) 
       {
         if (fb->buf[fblen - j] != 0xD9) 
@@ -394,74 +396,74 @@ camera_fb_t *  get_good_jpeg()
         } 
         else 
         { 
-          // Serial.println("Found a D9");
+          // Через предшествующий байт убеждаемся, что это точно конец изображения
           if (fb->buf[fblen - j - 1] == 0xFF ) 
           {     
-            // Serial.print("Found the FFD9, junk is "); Serial.println(j);
+            // Отмечаем, что кадр обычный ("конец файла найден сразу")
             if (j == 1) 
             {
               normal_jpg++;
             } 
+            // Отмечаем, что кадр расширенный ("имеет хвостик с доп.информацией")
             else 
             {
               extend_jpg++;
             }
-            foundffd9 = 1;
-            
-            // Lots_of_Stats
+            foundffd9 = 1;  // отметили, что кадр хороший
+            // Lots_of_Stats = true, включена трассировка
             if (Lots_of_Stats) 
             {
+              /*
               if (j > 9000) 
-              {                // was 900             //  rarely happens - sometimes on 2640
-                jpr("get_good_jpeg 9000 ???:  Frame %d, Len %d, Extra %d ", frame_cnt, fblen, j - 1 );
+              {
+                // Ранее 900 - иногда случалось на 2640
+                jpr("9000: Кадр %d, длина %d, Extra %d ", frame_cnt, fblen, j - 1 );
                 logfile.flush();
               }
+              */
+              // Отлавливаем и помечаем 50-ые кадры для их показа при трассировке
               if ( (frame_cnt % 1000 == 50) || (frame_cnt < 1000 && frame_cnt % 100 == 50)) 
               {
                 gframe_cnt = frame_cnt;
                 gfblen = fblen;
                 gj = j;
                 gmdelay = mdelay;
-                //Serial.printf("Frame %6d, len %6d, extra  %4d, cam time %7d ", frame_cnt, fblen, j - 1, mdelay / 1000);
-                //logfile.printf("Frame %6d, len %6d, extra  %4d, cam time %7d ", frame_cnt, fblen, j - 1, mdelay / 1000);
                 do_it_now = 1;
               }
             }
-            // end Lots_of_Stats
             break;
           }
         }
       }
-
+      // Отмечаем плохой кадр и чистим буфер камеры (кадр не уйдет в выходной файл)
       if (!foundffd9) 
       {
         bad_jpg++;
-        jpr("get_good_jpeg: Bad jpeg, Frame %d, Len = %d \n", frame_cnt, fblen);
+        jprln("Плохой кадр %d, длина = %d", frame_cnt, fblen);
         esp_camera_fb_return(fb);
         failures++;
       } 
       else 
       {
         break;
-        // count up the useless bytes
       }
     }
 
-  } while (failures < 10);   // normally leave the loop with a break()
+  } 
+  while (failures < 10);  
 
-  // if we get 10 bad frames in a row, then quality parameters are too high - set them lower (+5), and start new movie
+  // !!! Если мы получаем 10 плохих кадров подряд, значит, параметры качества 
+  // слишком высоки - понизьте их (+5) и запустите новый ролик
   if (failures == 10) 
   {
-    jpr("10 failures");
+    jprln("\n10 плохих кадров подряд!");
     sensor_t * ss = esp_camera_sensor_get();
     int qual = ss->status.quality ;
     ss->set_quality(ss, qual + 5);
     quality = qual + 5;
-    jpr("\n\nDecreasing quality due to frame failures %d -> %d\n\n", qual, qual + 5);
+    jprln("Снижение качества из-за сбоев кадров: %d -> %d\n", qual, qual + 5);
     delay(1000);
-
     start_record = 0;
-    //reboot_now = true;
   }
   return fb;
 }
@@ -827,12 +829,12 @@ static void another_save_avi(uint8_t* fb_buf, int fblen )
   idx_offset = idx_offset + jpeg_size + remnant + 8;
   // Увеличиваем длину видео-файла на remnant последнего блока  
   movi_size = movi_size + remnant;
-  // 
+  // Трассируем 50-ые кадры из первой тысячи по признаку do_it_now,
+  // установленному в get_good_jpeg()
   if (do_it_now == 1 ) 
   {  // && frame_cnt < 1011
     do_it_now = 0;
-    //jpr("Frame %6d, len %6d, extra  %4d, cam time %7d,  sd time %4d -- \n", gframe_cnt, gfblen, gj - 1, gmdelay / 1000, millis() - bw);
-    jpr("do_it_now ??? Frame %6d, len %6d, cam time %7d,  sd time %4d -- \n", gframe_cnt, gfblen, gmdelay / 1000, millis() - bw);
+    jprln("Кадр:  %6d, длина %6d, время камеры %7d, время записи %4d", gframe_cnt, gfblen, gmdelay / 1000, millis() - bw);
     logfile.flush();
   }
   // Пересчитываем общее время записи всех кадров файла AVI
@@ -840,30 +842,22 @@ static void another_save_avi(uint8_t* fb_buf, int fblen )
   // Пересчитываем время, потраченное на работу с sd-картой
   time_in_sd += (millis() - start);
 
-
-  if ( (millis() - bw) > totalw / frame_cnt * 10) 
+  // Отмечаем кадры, которые долго записывались
+  if ((millis() - bw) > totalw / frame_cnt * 10) 
   {
-  
-    jprln("             totalw: %d", totalw);
-    jprln("     frame_cnt * 10: %d", frame_cnt * 10);
-    jprln("        millis()-bw: %d", millis() - bw);
-    jprln("totalw/frame_cnt*10: %d", totalw / frame_cnt * 10);
-  
     unsigned long x = avifile.position();
-    jpr ("Frame %6d, sd time very high %4d >>> %4d -- pos %X, ",  frame_cnt, millis() - bw, (totalw / frame_cnt), x );
-
+    jprln("Кадр:  %6d, время записи велико к среднему %4d > %4d, позиция в файле %X, ",  frame_cnt, millis() - bw, (totalw / frame_cnt), x );
     very_high++;
-    jpr("Block %d, delay %5d ... \n", 0, block_delay[0]);
-    //for (int i = 1; i < block_num; i++) {
-    //  jpr("Block %d, delay %5d ..., ", i, block_delay[i] - block_delay[i - 1]);
-    //}
-    //Serial.println(" ");
-    //logfile.println(" ");
+    /*
+    for (int i = 1; i < block_num; i++) 
+    {
+      jpr("Блок %d, время %5d; ", i, block_delay[i] - block_delay[i - 1]);
+    }
+    */
   }
   // Освобождаем буферы
   avifile.flush();
   idxfile.flush();
-
 } 
 
 
@@ -1028,7 +1022,7 @@ void the_camera_loop (void* pvParameter)
 
           if ( (Lots_of_Stats && frame_cnt < 1011) || (Lots_of_Stats && frame_cnt % 1000 == 10)) 
           {
-            jprln("Всего: %04d кадров за %6.1f секунд, среднее недавних 100 кадров: размер и частота %6.1f kb, %.2f fps", frame_cnt, 0.001 * (millis() - avi_start_time), 1.0 / 1024  * most_recent_avg_framesize, most_recent_fps);
+            jprln("Всего: %5d кадров за %6.1f секунд, среднее недавних 100 кадров: размер и частота %6.1f kb, %.2f fps", frame_cnt, 0.001 * (millis() - avi_start_time), 1.0 / 1024  * most_recent_avg_framesize, most_recent_fps);
           }
           bytes_before_last_100_frames = movi_size;
           time_before_last_100_frames = millis();
