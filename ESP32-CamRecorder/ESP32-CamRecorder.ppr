@@ -56,19 +56,19 @@ ESP32-CamRecorder
 5=sd.h
 [Selected Project Files]
 Main=
-Selected=camera.h
+Selected=Prot-2026-02-06.txt
 [ESP32-CamRecorder.ino]
-TopLine=618
-Caret=9,656
+TopLine=449
+Caret=12,487
 [camera.h]
-TopLine=998
-Caret=1,1025
+TopLine=656
+Caret=80,694
 [inimem.h]
 TopLine=25
 Caret=9,40
 [Prot-2026-02-06.txt]
-TopLine=107
-Caret=1,1
+TopLine=215
+Caret=1,254
 [CameraServer.h]
 TopLine=984
 Caret=5,1022

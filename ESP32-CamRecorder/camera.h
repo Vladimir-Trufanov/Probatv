@@ -138,8 +138,8 @@ static const frameSizeStruct frameSizeData[] =
 };
 
 uint16_t remnant = 0;
-uint32_t startms;             // начало работы с камерой и файлом avi    
-uint32_t elapsedms;
+uint32_t startms;             // время начала работы с камерой и файлом avi    
+uint32_t elapsedms;           // общее время работы с камерой и файлом avi 
 
 long current_frame_time=0;    // 
 long last_frame_time=0;
@@ -588,7 +588,6 @@ static void end_avi()
 {
   long start = millis();
   unsigned long current_end = avifile.position();
-  jpr("Запись avi завершена, файлы закрываются");
   if (frame_cnt < 5) 
   {
     jprln("Запись испорчена, менее 5 кадров, убираем индекс");
@@ -599,112 +598,96 @@ static void end_avi()
   } 
   else 
   {
-
+    // Фиксируем общее время работы с камерой и файлом avi
     elapsedms = millis() - startms;
-
+    // Считаем среднюю частоту кадров в секунду
     float fRealFPS = (1000.0f * (float)frame_cnt) / ((float)elapsedms) * speed_up_factor;
-
     float fmicroseconds_per_frame = 1000000.0f / fRealFPS;
-    uint8_t iAttainedFPS = round(fRealFPS) ;
+    uint8_t iAttainedFPS = round(fRealFPS);
+    // Считаем среднее время кадра
     uint32_t us_per_frame = round(fmicroseconds_per_frame);
-
-    //Modify the MJPEG header from the beginning of the file, overwriting various placeholders
-
-    avifile.seek( 4 , SeekSet);
-    print_quartet(movi_size + 240 + 16 * frame_cnt + 8 * frame_cnt, avifile);
-
-    avifile.seek( 0x20 , SeekSet);
-    print_quartet(us_per_frame, avifile);
-
+    // Считаем максимальную скорость передачи байт в секунду
     unsigned long max_bytes_per_sec = (1.0f * movi_size * iAttainedFPS) / frame_cnt;
 
-    avifile.seek( 0x24 , SeekSet);
+    // Изменяем заголовок в начале файла JPEG, заменив различные заполнители
+    avifile.seek(4, SeekSet);
+    print_quartet(movi_size + 240 + 16 * frame_cnt + 8 * frame_cnt, avifile);
+    avifile.seek(0x20 , SeekSet);
+    print_quartet(us_per_frame, avifile);
+    avifile.seek(0x24 , SeekSet);
     print_quartet(max_bytes_per_sec, avifile);
-
-    avifile.seek( 0x30 , SeekSet);
+    avifile.seek(0x30 , SeekSet);
     print_quartet(frame_cnt, avifile);
-
-    avifile.seek( 0x8c , SeekSet);
+    avifile.seek(0x8c , SeekSet);
     print_quartet(frame_cnt, avifile);
-
-    avifile.seek( 0x84 , SeekSet);
+    avifile.seek(0x84 , SeekSet);
     print_quartet((int)iAttainedFPS, avifile);
-
-    avifile.seek( 0xe8 , SeekSet);
+    avifile.seek(0xe8 , SeekSet);
     print_quartet(movi_size + frame_cnt * 8 + 4, avifile);
-
-    jprln("\n*** Видео записано и сохранено ***");
-
-    jpr("Снято и записано %5d кадров за %5d секунд\n", frame_cnt, elapsedms / 1000);
-    jpr("File size is %u bytes\n", movi_size + 12 * frame_cnt + 4);
-    jpr("Adjusted FPS is %5.2f\n", fRealFPS);
-    jpr("Max data rate is %lu bytes/s\n", max_bytes_per_sec);
-    jpr("Frame duration is %d us\n", us_per_frame);
-    jpr("Average frame length is %d bytes\n", uVideoLen / frame_cnt);
-    jpr("Среднее время съемки (ms) %f\n", 1.0 * totalp / frame_cnt);
-    jpr("Average write time (ms)  %f\n", 1.0 * totalw / frame_cnt );
-    jpr("Normal jpg % %3.1f\n", 100.0 * normal_jpg / frame_cnt );
-    jpr("Extend jpg % %3.1f\n", 100.0 * extend_jpg / frame_cnt );
-    jpr("Bad    jpg % %6.5f\n", 100.0 * bad_jpg / frame_cnt);
-    jpr("Slow sd writes %d, %5.3f %% \n", very_high, 100.0 * very_high / frame_cnt, 5 );
-
-    jpr("Writng the index, %d frames\n", frame_cnt);
-
-    avifile.seek( current_end , SeekSet);
-
+    avifile.seek(current_end, SeekSet);
     idxfile.close();
-
     size_t i1_err = avifile.write(idx1_buf, 4);
-
     print_quartet(frame_cnt * 16, avifile);
 
     idxfile = SD_MMC.open("/idx.tmp", "r");
-
-    if (idxfile)  {
+    if (idxfile)  
+    {
       //Serial.printf("File open: %s\n", "//idx.tmp");
       //logfile.printf("File open: %s\n", "/idx.tmp");
-    }  else  {
-      jpr("Could not open index file");
+    }  
+    else  
+    {
+      jprln("Не удалось открыть индексный файл");
       major_fail();
     }
-
+    // Записываем индексную информацию
     char * AteBytes;
     AteBytes = (char*) malloc (8);
-
     for (int i = 0; i < frame_cnt; i++) 
     {
-      size_t res = idxfile.readBytes( AteBytes, 8);
+      size_t res = idxfile.readBytes(AteBytes, 8);
       size_t i1_err = avifile.write(dc_buf, 4);
       size_t i2_err = avifile.write(zero_buf, 4);
       size_t i3_err = avifile.write((uint8_t *)AteBytes, 8);
     }
-
     free(AteBytes);
 
     idxfile.close();
     avifile.close();
 
+ 
+    jprln("\n*** Видео записано и сохранено ***");
+    jprln("---");
+    jprln("Снято и записано %5d кадров за %5d секунд", frame_cnt, elapsedms / 1000);
+    jprln("Размер файла составляет %u байт", movi_size + 12 * frame_cnt + 4);
+    jprln("Средняя частота равна %5.2f кадров в секунду", fRealFPS);
+    jprln("Максимальная скорость передачи данных %lu байт в секунду", max_bytes_per_sec);
+    jprln("Cреднее время длительности кадра %d мксек", us_per_frame);
+    jprln("Средняя длина кадра составляет %d байт", uVideoLen / frame_cnt);
+    jprln("Среднее время съемки (мсек) %f", 1.0 * totalp / frame_cnt);
+    jprln("Среднее время записи (мсек) %f", 1.0 * totalw / frame_cnt );
+    jprln("Количество нормальных  кадров %3.1f %", 100.0 * normal_jpg / frame_cnt );
+    jprln("Количество расширенных кадров %3.1f %", 100.0 * extend_jpg / frame_cnt );
+    jprln("Количество сломанных   кадров %3.1f %", 100.0 * bad_jpg / frame_cnt);
+    jprln("Медленная запись на SD-карту %d, %5.3f %", very_high, 100.0 * very_high / frame_cnt, 5 );
+    jprln("Проиндексировано (записано) %d кадров", frame_cnt);
+
     //    int resss = SD_MMC.mkdir(the_directory);
     //    Serial.printf("remake the foler ?? %d\n",resss);
     int xx = SD_MMC.remove("/idx.tmp");
   }
-
-  jpr("---\n");
-
+  jprln("---");
   time_in_sd += (millis() - start);
-
-  //Serial.println("");
   time_total = millis() - startms;
-  jpr("waiting for cam %10dms, %4.1f%%\n", wait_for_cam , 100.0 * wait_for_cam  / time_total);
-  jpr("Time in camera  %10dms, %4.1f%%\n", time_in_camera, 100.0 * time_in_camera / time_total);
-  jpr("waiting for sd  %10dms, %4.1f%%\n", delay_wait_for_sd , 100.0 * delay_wait_for_sd  / time_total);
-  jpr("Time in sd      %10dms, %4.1f%%\n", time_in_sd    , 100.0 * time_in_sd     / time_total);
-  jpr("web (core 1)    %10dms, %4.1f%%\n", time_in_web1  , 100.0 * time_in_web1   / time_total);
-  jpr("time total      %10dms, %4.1f%%\n", time_total    , 100.0 * time_total     / time_total);
-
+  jpr("Время ожидания камеры %10dms, %4.1f%%\n", wait_for_cam , 100.0 * wait_for_cam  / time_total);
+  jpr("Время съёмки          %10dms, %4.1f%%\n", time_in_camera, 100.0 * time_in_camera / time_total);
+  jpr("Время ожидания SD     %10dms, %4.1f%%\n", delay_wait_for_sd , 100.0 * delay_wait_for_sd  / time_total);
+  jpr("Время записи на SD    %10dms, %4.1f%%\n", time_in_sd    , 100.0 * time_in_sd     / time_total);
+  jpr("Время работы браузера %10dms, %4.1f%%\n", time_in_web1  , 100.0 * time_in_web1   / time_total);
+  jpr("Общее время           %10dms, %4.1f%%\n", time_total    , 100.0 * time_total     / time_total);
   logfile.flush();
-
-  if (file_number == 100) {
+  if (file_number == 100) 
+  {
     reboot_now = true;
   }
 }
@@ -941,15 +924,13 @@ void the_camera_loop (void* pvParameter)
       if (blinking) digitalWrite(33, frame_cnt % 2); // blink
     } 
     ///////////////////  END THE MOVIE //////////////////
-    else if ( restart_now || reboot_now || (frame_cnt > 0 && start_record == 0) ||  millis() > (avi_start_time + avi_length * 1000)) 
-    { // end the avi
-
-      jprln("End the Avi");
+    else if (restart_now || reboot_now || (frame_cnt > 0 && start_record == 0) ||  millis() > (avi_start_time + avi_length * 1000)) 
+    { 
+      jprln("Завершается запись avi-файла");
       restart_now = false;
-
       if (blinking)  digitalWrite(33, frame_cnt % 2);
 
-      end_avi();                                // end the movie
+      end_avi();                                
 
       if (blinking) digitalWrite(33, HIGH);          // light off
 
