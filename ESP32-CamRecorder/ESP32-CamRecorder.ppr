@@ -55,6 +55,7 @@ ESP32-CamRecorder
 4=CameraServer.h
 5=sd.h
 6=stream32.h
+7=config.h
 [Selected Project Files]
 Main=
 Selected=stream32.h
@@ -62,14 +63,14 @@ Selected=stream32.h
 TopLine=951
 Caret=1,972
 [camera.h]
-TopLine=306
-Caret=1,321
+TopLine=921
+Caret=1,947
 [inimem.h]
-TopLine=25
-Caret=9,40
+TopLine=34
+Caret=55,49
 [Prot-2026-02-06.txt]
-TopLine=179
-Caret=1,254
+TopLine=151
+Caret=1,1
 [CameraServer.h]
 TopLine=1024
 Caret=29,1039
@@ -77,5 +78,8 @@ Caret=29,1039
 TopLine=1
 Caret=1,8
 [stream32.h]
-TopLine=189
-Caret=1,112
+TopLine=298
+Caret=176,318
+[config.h]
+TopLine=370
+Caret=3,409

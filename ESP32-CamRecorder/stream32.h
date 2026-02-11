@@ -194,54 +194,64 @@ void the_streaming_loop (void* pvParameter)
     {
       if (stream_81) stream_81_frames++;
       if (stream_82) stream_82_frames++;
-
-      xSemaphoreTake( baton, portMAX_DELAY );
-
+      // Если уже запись идет больше, чем полсекунды, то в буфер потока
+      // выбираем текущий кадр через семафор
+      xSemaphoreTake(baton, portMAX_DELAY );
       if (fb_record_time > (millis() - 500)) 
       {
-        //Serial.printf("*");
         fb_streaming_len = fb_record_len;
         fb_streaming_time = fb_record_time;
-        memcpy(fb_streaming, fb_record,  fb_record_len);  // v59.5
+        memcpy(fb_streaming, fb_record,  fb_record_len); 
         xSemaphoreGive( baton );
       } 
       else 
       {
-        xSemaphoreGive( baton );
-        fb = esp_camera_fb_get(); //get_good_jpeg();
-        //Serial.println("loop take");
-        //Serial.printf("millis %d, fb1 %d, fb2 %d\n", millis(), fb_record_time, fb_streaming_time);
+        xSemaphoreGive(baton);
+        // Если запись ведётся менее полсекунды, то делаем
+        // самостоятельный кадр и выбираем его в буфер потока 
+        fb = esp_camera_fb_get();
+        // Ошибка может случиться, уже транслируем предыдущее содержимое fb_streaming 
         if (!fb) 
         {
-          Serial.println("Photos - Camera Capture Failed");  // i guess we stream the previous contents of fb_streaming //34
-          //start_streaming = false;
+          Serial.println("В потоке не удалось выполнить захват камерой");
         } 
         else 
         {
-          //34 xSemaphoreTake( baton, portMAX_DELAY );
+          xSemaphoreTake(baton,portMAX_DELAY);
           fb_streaming_len = fb->len;
           fb_streaming_time = millis();
           memcpy(fb_streaming, fb->buf, fb->len);
-          //34 xSemaphoreGive( baton );
+          xSemaphoreGive(baton);
           esp_camera_fb_return(fb);
         }
       }
 
       _jpg_buf_len = fb_streaming_len;
       _jpg_buf = fb_streaming;
-
+      
+      // Формируем заголовок отправки изображения
       size_t hlen = snprintf((char *)part_buf, 64, _STREAM_PART, _jpg_buf_len);
 
       long send_time = millis();
       long xx;
       xx = millis();
 
-      if (stream_82) {
+      // С помощью функции httpd_resp_send_chunk отправляем HTTP-ответ последовательными кусками. 
+      //   Функция использует метод передачи HTTP-данных Chunked Transfer Encoding, 
+      // при котором тело ответа или запроса разбивается на отдельные «чанки» (куски). 
+      // Каждый чанк имеет свой размер и передаётся отдельно. Если код статуса и тип содержимого 
+      // не были заданы, по умолчанию отправляется код статуса 200 OK и тип содержимого как text/html. 
+      //   Функция вызывается только из контекста URI-обработчика, где указатель запроса httpd_req_t* достоверный.
+      // После её вызова на запрос выдаётся ответ, никаких дополнительных данных не может быть отправлено для запроса. 
+      
+      // 1-ый чанк
+      if (stream_82) 
+      {
         res = httpd_resp_send_chunk(req_82, (const char *)part_buf, hlen);
         if (res != ESP_OK) 
         {
           stream_82 = false;
-          Serial.printf("Stream error - 82/1st %d\n", res);
+          Serial.printf("Ошибка потока 82_STREAM_PART: %d\n", res);
         }
       }
       if (stream_81) 
@@ -250,19 +260,18 @@ void the_streaming_loop (void* pvParameter)
         if (res != ESP_OK) 
         {
           stream_81 = false;
-          Serial.printf("Stream error - 81/1st %d\n", res);
+          Serial.printf("Ошибка потока 81_STREAM_PART: %d\n", res);
         }
       }
-
+      // 2-ой чанк
       xx = millis();
-
       if (stream_82) 
       {
         res = httpd_resp_send_chunk(req_82, (const char *)_jpg_buf, _jpg_buf_len);
         if (res != ESP_OK) 
         {
           stream_82 = false;
-          Serial.printf("Stream error - 82/2nd %d\n", res);
+          Serial.printf("Ошибка потока 82_jpg_buf: %d\n", res);
         }
       }
       if (stream_81) 
@@ -271,19 +280,18 @@ void the_streaming_loop (void* pvParameter)
         if (res != ESP_OK) 
         {
           stream_81 = false;
-          Serial.printf("Stream error - 81/2nd %d\n", res);
+          Serial.printf("Ошибка потока 81_jpg_buf: %d\n", res);
         }
       }
-
+      // 3-ий чанк
       xx = millis();
-
       if (stream_82) 
       {
         res = httpd_resp_send_chunk(req_82, _STREAM_BOUNDARY, strlen(_STREAM_BOUNDARY));
         if (res != ESP_OK) 
         {
           stream_82 = false;
-          Serial.printf("Stream error - 82/3rd %d\n", res);
+          Serial.printf("Ошибка потока 82_STREAM_BOUNDARY: %d\n", res);
         }
       }
       if (stream_81) 
@@ -292,42 +300,35 @@ void the_streaming_loop (void* pvParameter)
         if (res != ESP_OK) 
         {
           stream_81 = false;
-          Serial.printf("Stream error - 81/3rd %d\n", res);
+          jprln("Ошибка потока 81_STREAM_BOUNDARY: %d\n", res);
         }
       }
-
+      // Трассируем каждый 10-ый кадр с расчетными данными по частоте кадров
       if (stream_81_frames % 100 == 10) 
       {
         if (Lots_of_Stats) 
         {
-          jpr("Stream 81 at %3.3f fps\n", (float)1000 * stream_81_frames / (millis() - stream_81_start));
+           jprln("Поток 81: время = %3.3f сек, частота кадров = %3.3f кадров/сек", (float)(millis() - stream_81_start)/1000, (float)(stream_81_frames/((millis() - stream_81_start)/1000)));
         }
       }
-      if (stream_82_frames % 100 == 10) {
-        if (Lots_of_Stats) {
-          jpr("Stream 82 at %3.3f fps\n", (float)1000 * stream_82_frames / (millis() - stream_82_start));
+      if (stream_82_frames % 100 == 10) 
+      {
+        if (Lots_of_Stats) 
+        {
+          jprln("Поток 81: время = %3.3f сек, частота кадров = %3.1f кадров/сек", (float)(millis() - stream_82_start)/1000, (float)(stream_82_frames/((millis() - stream_82_start)/1000)));
         }
       }
-
-      int new_delay = stream_delay - (millis() - send_time);
-      //Serial.printf(", streamdelay %5d, send_time %5d, newdelay %5d\n", stream_delay, millis() - send_time, new_delay);
+      // Делаем задержку между кадрами в потоке
+      int new_delay = 10; 
       if (millis() - send_time > 5000) 
       {
         new_delay = 1000;
-        Serial.printf("wifi slow %d - take a 1s break\n", millis() - send_time);
+        jprln("Медленный доступ к Wi-Fi: отправка кадра %d мсек", millis() - send_time);
       }
-
-      if (new_delay < 10) 
-      {
-        new_delay = 10;
-      }
-
-      delay(new_delay) ; //delay(stream_delay);
-
+      delay(new_delay); 
       start = millis();
-
     }
-  }  // stream forever
+  }  
 }
 
 // ************************************************************* stream32.h ***

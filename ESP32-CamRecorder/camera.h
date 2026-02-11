@@ -889,8 +889,8 @@ void the_camera_loop (void* pvParameter)
       // Отмечаем точку начала ожидания камеры
       wait_for_cam_start = millis();
       
-      jpr("Началась видеозапись на %d мс. ", avi_start_time);
-      jpr("Размер кадра %d, качество %d, время %d секунд\n", framesize, quality, avi_length);
+      jprln("Началась видеозапись на %d мс. ", avi_start_time);
+      jprln("Размер кадра %d, качество %d, время %d секунд\n", framesize, quality, avi_length);
       logfile.flush();
 
       // Открываем avi-файл и записываем заголовки
