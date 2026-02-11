@@ -2,13 +2,12 @@
  * 
  *         Обеспечить формирование потоков изображений от контроллера Esp32-CAM
  *                                                     
- * v1.0.0, 31.01.2026                                 Автор:      Труфанов В.Е.
+ * v1.0.1, 10.02.2026                                 Автор:      Труфанов В.Е.
  * Copyright © 2026 tve                               Дата создания: 31.01.2026
  * 
 **/
 
 #pragma once   
-
 
 #define PART_BOUNDARY "123456789000000000000987654321"
 
@@ -17,19 +16,14 @@ static const char* _STREAM_BOUNDARY = "\r\n--" PART_BOUNDARY "\r\n";
 static const char* _STREAM_PART = "Content-Type: image/jpeg\r\nContent-Length: %u\r\n\r\n";
 
 void the_streaming_loop (void* pvParameter);
-int stream_81_frames ;
-long stream_81_start ;
-int stream_82_frames ;
-long stream_82_start ;
-
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-//
-//  Streaming stuff based on Random Nerd
-//
+int stream_81_frames;
+long stream_81_start;
+int stream_82_frames;
+long stream_82_start;
 
 bool start_streaming = false;
-bool stream_82 = false;
-bool stream_81 = false;
+bool stream_82 = false;         // true - из браузера заказано вещание 2-ого потока
+bool stream_81 = false;         // true - из браузера заказано вещание 1-ого потока
 
 httpd_req_t *req_82;
 httpd_req_t *req_81;
@@ -42,142 +36,156 @@ httpd_req_t *req_81;
 httpd_handle_t stream81_httpd = NULL;
 httpd_handle_t stream82_httpd = NULL;
 
-
-
-static esp_err_t stream_82_handler(httpd_req_t *req) {
-
+///////////////////////////////////////////////////////////////////////////////
+//                            stream_81_handler()                            //
+///////////////////////////////////////////////////////////////////////////////
+static esp_err_t stream_81_handler(httpd_req_t *req) 
+{
   esp_err_t res;
   long start = millis();
-
-  print_mem("stream_82_handler");
-
-  stream_82 = true;
-  req_82 = req;
-  stream_82_frames = 0;
-  stream_82_start = millis();
-
-  if (stream_82) {
-    res = httpd_resp_set_type(req_82, _STREAM_CONTENT_TYPE);
-    if (res != ESP_OK) {
-      stream_82 = false;
-    }
-  }
-
-  time_in_web1 += (millis() - start);
-
-  while (stream_82 == true) {          // we have to keep the *req alive
-    delay(1000);
-    //Serial.print("<82>");
-  }
-  Serial.println(" stream_82 done");
-  delay(500);
-  httpd_resp_send_408(req_82);
-  req_82 = NULL;
-
-  return ESP_OK;
-}
-
-static esp_err_t stream_81_handler(httpd_req_t *req) {
-
-  esp_err_t res;
-  long start = millis();
-
-  print_mem("stream_81_handler");
-
-  stream_81 = true;
+  print_mem("MEM - перед запуском stream_81_handler         ");
   req_81 = req;
   stream_81_frames = 0;
   stream_81_start = millis();
-
-  time_in_web1 += (millis() - start);
-
-  if (stream_81) {
-    res = httpd_resp_set_type(req_81, _STREAM_CONTENT_TYPE);
-    if (res != ESP_OK) {
+  // Отмечаем запуск потока
+  stream_81 = true;
+  // Устанавливаем тип содержимого, который будем передавать:
+  // _STREAM_CONTENT_TYPE - application/octet-stream — общий MIME-тип, определённый в RFC 2046. 
+  // Он предназначен для неинтерпретируемых бинарных данных — произвольных байтов, 
+  // которые не относятся к конкретному типу медиа. Octet означает 8-битный байт 
+  // (основную единицу бинарных данных в вычислениях), а stream — непрерывную последовательность байтов без внутренней структуры. 
+  if (stream_81) 
+  {
+    res = httpd_resp_set_type(req_81,_STREAM_CONTENT_TYPE);
+    if (res != ESP_OK) 
+    {
       stream_81 = false;
     }
   }
-
-  while (stream_81 == true) {          // we have to keep the *req alive
+  time_in_web1 += (millis() - start);
+  // Циклимся - держим задачу в рабочем состоянии
+  while (stream_81 == true) 
+  {         
     delay(1000);
-    //Serial.print("<81>");
   }
-  Serial.println(" stream_81 done");
+  // При сбросе флага завершаем поток
+  Serial.println("Поток stream_81 завершен");
   delay(500);
+  // Функцией httpd_resp_send_408 отправляем ответ клиенту с кодом 408, чтобы сообщить ему, 
+  // что запрос не был обработан в течение указанного времени.
   httpd_resp_send_408(req_81);
   req_81 = NULL;
   return ESP_OK;
 }
-
+///////////////////////////////////////////////////////////////////////////////
+//                            stream_82_handler()                            //
+///////////////////////////////////////////////////////////////////////////////
+static esp_err_t stream_82_handler(httpd_req_t *req) 
+{
+  esp_err_t res;
+  long start = millis();
+  print_mem("MEM - перед запуском stream_82_handler         ");
+  req_82 = req;
+  stream_82_frames = 0;
+  stream_82_start = millis();
+  // Отмечаем запуск потока и устанавливаем тип содержимого
+  stream_82 = true;
+  if (stream_82) 
+  {
+    res = httpd_resp_set_type(req_82, _STREAM_CONTENT_TYPE);
+    if (res != ESP_OK) 
+    {
+      stream_82 = false;
+    }
+  }
+  time_in_web1 += (millis() - start);
+  // Циклимся - держим задачу в рабочем состоянии
+  while (stream_82 == true) 
+  {          
+    delay(1000);
+  }
+  // При сбросе флага завершаем поток
+  Serial.println("Поток stream_82 завершен");
+  delay(500);
+  httpd_resp_send_408(req_82);
+  req_82 = NULL;
+  return ESP_OK;
+}
+///////////////////////////////////////////////////////////////////////////////
+//                         start_Stream_81_server()                          //
+///////////////////////////////////////////////////////////////////////////////
 void start_Stream_81_server() 
 {
   httpd_config_t config2 = HTTPD_DEFAULT_CONFIG();
   config2.server_port = 81;
-  config2.ctrl_port = 32123; //         = 32768,
-  Serial.print("http Stream task prio: "); Serial.println(config2.task_priority);
+  config2.ctrl_port = 32123; 
+  // По умолчанию задача стартуется с пятым приоритетом
+  // Serial.print("http Stream task prio: "); Serial.println(config2.task_priority);
 
-  httpd_uri_t stream_uri = {
+  httpd_uri_t stream_uri = 
+  {
     .uri       = "/stream",
     .method    = HTTP_GET,
     .handler   = stream_81_handler,
     .user_ctx  = NULL
   };
 
-  if (httpd_start(&stream81_httpd, &config2) == ESP_OK) {
+  if (httpd_start(&stream81_httpd, &config2) == ESP_OK) 
+  {
     httpd_register_uri_handler(stream81_httpd, &stream_uri);
-  } else {
-    Serial.println("Error with stream start 81");
+  } 
+  else 
+  {
+    Serial.println("Ошибка старта потока 81");
   }
-
-  Serial.println("Stream 81 http started");
+  Serial.println("Поток 81 http стартовал");
 }
-
+///////////////////////////////////////////////////////////////////////////////
+//                         start_Stream_82_server()                          //
+///////////////////////////////////////////////////////////////////////////////
 void start_Stream_82_server() 
 {
   httpd_config_t config2 = HTTPD_DEFAULT_CONFIG();
   config2.server_port = 82;
-  config2.ctrl_port = 32124; //         = 32768,
-  Serial.print("http Stream task prio: "); Serial.println(config2.task_priority);
+  config2.ctrl_port = 32124; 
+  // По умолчанию задача стартуется с пятым приоритетом
+  // Serial.print("http Stream task prio: "); Serial.println(config2.task_priority);
 
-  httpd_uri_t stream_uri = {
+  httpd_uri_t stream_uri = 
+  {
     .uri       = "/stream",
     .method    = HTTP_GET,
     .handler   = stream_82_handler,
     .user_ctx  = NULL
   };
 
-  if (httpd_start(&stream82_httpd, &config2) == ESP_OK) {
+  if (httpd_start(&stream82_httpd, &config2) == ESP_OK) 
+  {
     httpd_register_uri_handler(stream82_httpd, &stream_uri);
-  } else {
-    Serial.println("Error with stream start 82");
+  } 
+  else 
+  {
+    Serial.println("Ошибка старта потока 82");
   }
-
-  Serial.println("Stream 82 http started");
+  Serial.println("Поток 82 http стартовал");
 }
 
-////////////////////////////////
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-//
-//  Streaming stuff based on Random Nerd
-//
-
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// the_streaming_loop - видео-поток отправки изображений (имеет приоритет 2)
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 void the_streaming_loop (void* pvParameter) 
 {
-
   camera_fb_t * fb = NULL;
   esp_err_t res = ESP_OK;
   size_t _jpg_buf_len = 0;
   uint8_t * _jpg_buf = NULL;
   char * part_buf[64];
-
   long start = millis();
-
   print_mem("MEM - стартовала задача the_streaming_loop     ");
 
   while (true) 
   {
-
     if (!stream_81 && !stream_82) 
     {
       delay(5);
@@ -321,6 +329,5 @@ void the_streaming_loop (void* pvParameter)
     }
   }  // stream forever
 }
-
 
 // ************************************************************* stream32.h ***

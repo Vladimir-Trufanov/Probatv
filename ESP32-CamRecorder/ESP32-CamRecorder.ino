@@ -274,21 +274,6 @@ bool init_wifi()
 //
 //
 #include <HTTPClient.h>
-
-/*
-httpd_handle_t camera_httpd = NULL;
-httpd_handle_t stream81_httpd = NULL;
-httpd_handle_t stream82_httpd = NULL;
-
-char the_page[4200];
-int previous_capture = 0;
-int capture_timer = 0;
-int captures = 0;
-int total_captures = 0;
-int skips = 0;
-int extras = 0;
-*/
-
 #include "lwip/sockets.h"
 
 
