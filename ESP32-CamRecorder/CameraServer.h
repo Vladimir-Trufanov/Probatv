@@ -1265,5 +1265,29 @@ void stopCameraServer()
   httpd_stop(camera_httpd);
 }
 
+/*                                                          *** Обработчики ***
+CameraServer.h
+--------------
+--httpd_register_uri_handler(camera_httpd, &index_uri);     index_handler
+--httpd_register_uri_handler(camera_httpd, &capture_uri);   capture_handler
+--httpd_register_uri_handler(camera_httpd, &photos_uri);    photos_handler
+--httpd_register_uri_handler(camera_httpd, &fphotos_uri);   fphotos_handler
+--httpd_register_uri_handler(camera_httpd, &sphotos_uri);   sphotos_handler
+--httpd_register_uri_handler(camera_httpd, &reboot_uri);    reboot_handler
+--httpd_register_uri_handler(camera_httpd, &restart_uri);   restart_handler
+--httpd_register_uri_handler(camera_httpd, &time_uri);      time_handler         /time
+--httpd_register_uri_handler(camera_httpd, &start_uri);     start_handler        /start
+--httpd_register_uri_handler(camera_httpd, &stop_uri);      stop_handler
+--httpd_register_uri_handler(camera_httpd, &edit_uri);      edit_handler         /edit
+--httpd_register_uri_handler(camera_httpd, &find_uri);      find_handler         /find
+--httpd_register_uri_handler(camera_httpd, &status_uri);    status_handler       /status
+--httpd_register_uri_handler(camera_httpd, &reindex_uri);   reindex_handler      /reindex_handler
+--httpd_register_uri_handler(camera_httpd, &ota_uri);       ota_handler          /ota
+
+stream32.h
+----------
+httpd_register_uri_handler(stream81_httpd, &stream_uri);    stream_81_handler    /stream
+httpd_register_uri_handler(stream82_httpd, &stream_uri);    stream_82_handler    /stream
+*/
 
 // ********************************************************* CameraServer.h ***
