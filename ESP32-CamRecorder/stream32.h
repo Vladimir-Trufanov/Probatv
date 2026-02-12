@@ -66,7 +66,8 @@ static esp_err_t stream_81_handler(httpd_req_t *req)
   // Циклимся - держим задачу в рабочем состоянии
   while (stream_81 == true) 
   {         
-    delay(1000);
+    //delay(1000);
+    delay(200);
   }
   // При сбросе флага завершаем поток
   Serial.println("Поток stream_81 завершен");
@@ -85,9 +86,10 @@ static esp_err_t stream_82_handler(httpd_req_t *req)
   esp_err_t res;
   long start = millis();
   print_mem("MEM - перед запуском stream_82_handler         ");
-  req_82 = req;
   stream_82_frames = 0;
   stream_82_start = millis();
+  // Связываем идентификатор запроса с потоком the_streaming_loop через req_82 
+  req_82 = req;
   // Отмечаем запуск потока и устанавливаем тип содержимого
   stream_82 = true;
   if (stream_82) 

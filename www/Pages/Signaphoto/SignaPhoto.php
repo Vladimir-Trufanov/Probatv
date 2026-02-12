@@ -119,6 +119,17 @@ try
 
    // Выводим отладочную информацию
    // DebugView($c_Orient);
+   
+   // 2026-02-11
+   $p1=memory_get_usage(false);
+   prown\ConsoleLog('Память, занимаемая кодом PHP: '.$p1);
+   $p2=memory_get_usage(true);
+   prown\ConsoleLog('Память, выделенная для сайта: '.$p2);
+   $p3=memory_get_peak_usage(false);
+   prown\ConsoleLog('Пик потребления памяти:       '.$p3);
+   $p4=memory_get_peak_usage(true);
+   prown\ConsoleLog('Пик выделения памяти сайту:   '.$p4);
+
    // Запускаем построение базовой разметки
    prown\ConsoleLog('$s_Counter='.$s_Counter);
    MarkupBase($c_FileImg,$c_FileStamp,$c_FileProba,$RemoteAddr,$c_PerSizeImg,$c_PointCorner,

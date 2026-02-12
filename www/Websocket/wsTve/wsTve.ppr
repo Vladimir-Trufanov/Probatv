@@ -20,7 +20,6 @@ wsTve
 	+wsTve
 		favicon.ico
 		index.php
-		IsOpenPort.txt
 		LeadSocket.php
 		socket.js
 		SocketServer.php
@@ -37,7 +36,7 @@ wsTve
 4=LeadSocket.php
 [Selected Project Files]
 Main=
-Selected=LeadSocket.php
+Selected=WebSocketServer.php
 [index.php]
 TopLine=1
 Caret=26,9
@@ -45,11 +44,11 @@ Caret=26,9
 TopLine=1
 Caret=1,19
 [socket.js]
-TopLine=41
-Caret=18,41
+TopLine=31
+Caret=46,54
 [WebSocketServer.php]
-TopLine=109
-Caret=24,147
+TopLine=536
+Caret=3,366
 [LeadSocket.php]
-TopLine=19
-Caret=1,32
+TopLine=37
+Caret=103,42
