@@ -85,6 +85,14 @@ class WebSocketServer
     {
       $this->stopServer();
     }
+    
+    $pd1=memory_get_usage(false);
+    $pd2=memory_get_usage(true);
+    $pd3=memory_get_peak_usage(false);
+    $pd4=memory_get_peak_usage(true);
+    $md='destruct: {"$pd1":'.$pd1.',"$pd2":'.$pd2.',"$pd3":'.$pd3.',"$pd4":'.$pd4.'}';
+    $this->debug($md);
+    
     if ($this->logging) 
     {
       fclose($this->resource);
@@ -102,6 +110,13 @@ class WebSocketServer
     if ($this->logging) 
     {
       $this->resource = fopen($this->logFile,'a');
+          
+      $pd1=memory_get_usage(false);
+      $pd2=memory_get_usage(true);
+      $pd3=memory_get_peak_usage(false);
+      $pd4=memory_get_peak_usage(true);
+      $md='settings: {"$pd1":'.$pd1.',"$pd2":'.$pd2.',"$pd3":'.$pd3.',"$pd4":'.$pd4.'}';
+      $this->debug($md);
     }
   }
   // **************************************************************************

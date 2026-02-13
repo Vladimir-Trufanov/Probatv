@@ -19,7 +19,9 @@ Extensions=*.*
 wsTve
 	+wsTve
 		favicon.ico
+		j_getMems.php
 		index.php
+		j_getLastStateMess.php
 		LeadSocket.php
 		socket.js
 		SocketServer.php
@@ -30,25 +32,29 @@ wsTve
 		wsTve.ppr
 [Open project files]
 0=index.php
-1=SocketServer.php
+1=j_getMems.php
 2=socket.js
 3=WebSocketServer.php
 4=LeadSocket.php
+5=SocketServer.php
 [Selected Project Files]
 Main=
 Selected=WebSocketServer.php
 [index.php]
 TopLine=1
 Caret=26,9
-[SocketServer.php]
+[j_getMems.php]
 TopLine=1
-Caret=1,19
+Caret=1,21
 [socket.js]
-TopLine=31
-Caret=46,54
+TopLine=78
+Caret=7,96
 [WebSocketServer.php]
-TopLine=37
-Caret=1,607
+TopLine=79
+Caret=5,88
 [LeadSocket.php]
-TopLine=37
+TopLine=29
 Caret=103,42
+[SocketServer.php]
+TopLine=5
+Caret=1,1
