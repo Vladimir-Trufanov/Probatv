@@ -47,8 +47,8 @@ Caret=1,19
 TopLine=31
 Caret=46,54
 [WebSocketServer.php]
-TopLine=536
-Caret=3,366
+TopLine=37
+Caret=1,607
 [LeadSocket.php]
 TopLine=37
 Caret=103,42
