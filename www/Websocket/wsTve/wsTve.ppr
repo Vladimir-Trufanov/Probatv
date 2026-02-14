@@ -43,7 +43,7 @@ wsTve
 7=KwinGalleryClass.php
 [Selected Project Files]
 Main=
-Selected=socket.js
+Selected=LeadSocket.php
 [index.php]
 TopLine=1
 Caret=26,9
@@ -51,14 +51,14 @@ Caret=26,9
 TopLine=1
 Caret=1,21
 [socket.js]
-TopLine=278
-Caret=3,313
+TopLine=118
+Caret=7,203
 [WebSocketServer.php]
 TopLine=79
 Caret=5,88
 [LeadSocket.php]
-TopLine=98
-Caret=21,130
+TopLine=24
+Caret=4,32
 [SocketServer.php]
 TopLine=1
 Caret=1,1

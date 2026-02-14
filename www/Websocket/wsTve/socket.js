@@ -20,6 +20,8 @@
 
 var socket;
 var mybeImg='sampo.jpg';
+var timebeg;              // время отправки сообщения
+var timeend;              // время приема сообщения
 
 // ****************************************************************************
 // *                       Показать сообщение в #socket-info                  *
@@ -129,6 +131,7 @@ window.addEventListener('DOMContentLoaded', function ()
     socket.onmessage = function (event) 
     { 
       mybeImg=event.data;
+      timeend=Date.now();
       showMessage('Получено сообщение от сервера: ' + mybeImg);
     }
     // При установке соединения с сервером
@@ -198,8 +201,8 @@ window.addEventListener('DOMContentLoaded', function ()
       '=15============================= А вы, пишите письма мелким почерком, поскольку места мало в рюкзаке! *****************************'+
       '=16============================= А вы, пишите письма мелким почерком, поскольку места мало в рюкзаке! **************************123';
       socket.send(mesfile);
-      mesfile="Всем большой привет!";
-      socket.send(mesfile);
+      //mesfile="Всем большой привет!";
+      //socket.send(mesfile);
       //showMessage('Отправлено fil.txt: ' + mesfile);
     } 
     else 
@@ -251,6 +254,7 @@ window.addEventListener('DOMContentLoaded', function ()
        'rpXikgPI1DI/wBI+8NBgth6OoyTzR3s0VpPEIrlUZvkTEmr+SYmv3Hrxoe3TQjZNcq'+
        'EsGx4n5lWb7xZsVX9W/H9xioJbS/vvkY4XLXENlCDGjMSCpmNeT04j7a8f31dnamOB'+
        'PLwVTvA5DFOX9q79dbUhf/Z';
+      timebeg=Date.now();
       socket.send(mesimg);
       
       
@@ -311,6 +315,7 @@ async function delayedGreeting()
   console.log("мир");
   document.getElementById('imgCard').src = mybeImg;      
   document.getElementById('rem').innerHTML='Пока!';          // работает
+  console.log("Время на сообщение: "+(timeend-timebeg));
 }  
 
 

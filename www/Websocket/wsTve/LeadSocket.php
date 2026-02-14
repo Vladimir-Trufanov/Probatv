@@ -29,6 +29,8 @@ else if ($hostname=='localhost') $ip='127.0.0.1';
 else if ($hostname=='ittve.ru') $ip='90.156.240.217';
 else $ip='0.0.0.0';
 
+// $ip='90.156.240.217';
+
 if ($_SERVER['HTTPS']==1) $ws='wss';
 else $ws='ws';
 
