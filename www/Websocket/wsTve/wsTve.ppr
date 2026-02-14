@@ -19,15 +19,17 @@ Extensions=*.*
 wsTve
 	+wsTve
 		favicon.ico
-		j_getMems.php
+		getMems.php
 		index.php
 		j_getLastStateMess.php
+		j_getMems.php
+		Kwinflat.jpg
+		KwinGalleryClass.php
 		LeadSocket.php
 		socket.js
 		SocketServer.php
 		style.css
 		WebSocketServer.php
-		ws-log.txt
 		wsTve.md
 		wsTve.ppr
 [Open project files]
@@ -37,9 +39,11 @@ wsTve
 3=WebSocketServer.php
 4=LeadSocket.php
 5=SocketServer.php
+6=style.css
+7=KwinGalleryClass.php
 [Selected Project Files]
 Main=
-Selected=WebSocketServer.php
+Selected=socket.js
 [index.php]
 TopLine=1
 Caret=26,9
@@ -47,14 +51,20 @@ Caret=26,9
 TopLine=1
 Caret=1,21
 [socket.js]
-TopLine=78
-Caret=7,96
+TopLine=165
+Caret=11,192
 [WebSocketServer.php]
 TopLine=79
 Caret=5,88
 [LeadSocket.php]
-TopLine=29
-Caret=103,42
+TopLine=53
+Caret=54,77
 [SocketServer.php]
-TopLine=5
+TopLine=1
 Caret=1,1
+[style.css]
+TopLine=1
+Caret=14,23
+[KwinGalleryClass.php]
+TopLine=252
+Caret=1,279
