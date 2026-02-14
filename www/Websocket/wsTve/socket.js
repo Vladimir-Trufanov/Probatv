@@ -19,6 +19,7 @@
 **/ 
 
 var socket;
+var mybeImg='sampo.jpg';
 
 // ****************************************************************************
 // *                       Показать сообщение в #socket-info                  *
@@ -107,7 +108,6 @@ function resetSocket(ipath,iip)
 
 window.addEventListener('DOMContentLoaded', function () 
 {
-  var socket;
   // --------------------------------------------------------------------------
   //      Установить соединение с сервером и назначить обработчики событий                   
   // --------------------------------------------------------------------------
@@ -128,7 +128,8 @@ window.addEventListener('DOMContentLoaded', function ()
     // При получении данных от сервера
     socket.onmessage = function (event) 
     { 
-      showMessage('Получено сообщение от сервера: ' + event.data);
+      mybeImg=event.data;
+      showMessage('Получено сообщение от сервера: ' + mybeImg);
     }
     // При установке соединения с сервером
     socket.onopen = function () 
@@ -206,6 +207,78 @@ window.addEventListener('DOMContentLoaded', function ()
       showMessage('Невозможно отправить сообщение, нет соединения');
     }
   };
+  
+  // --------------------------------------------------------------------------
+  //                      Отправить base64
+  // --------------------------------------------------------------------------
+  document.getElementById('send-img').onclick = function () 
+  {
+    if (socket !== undefined && socket.readyState === 1) 
+    {
+      var mesimg=
+       'data:image/jpeg;base64,/9j/4AAQSkZJRgABAgAAZABkAAD/7AARRHVja3kAAQA'+
+       'EAAAAPAAA/+4ADkFkb2JlAGTAAAAAAf/bAIQABgQEBAUEBgUFBgkGBQYJCwgGBggLD'+
+       'AoKCwoKDBAMDAwMDAwQDA4PEA8ODBMTFBQTExwbGxscHx8fHx8fHx8fHwEHBwcNDA0'+
+       'YEBAYGhURFRofHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fH'+
+       'x8fHx8fHx8f/8AAEQgAGABkAwERAAIRAQMRAf/EAIgAAAICAwEBAAAAAAAAAAAAAAU'+
+       'GAwQAAgcBCAEAAgMBAAAAAAAAAAAAAAAAAgMAAQQFEAACAQMDBAEDBAMBAAAAAAABA'+
+       'gMRBAUAIRIxQRMGFFEiB2FxMkKxUjNDEQABAwIEBQIGAwAAAAAAAAABABECEgMhMUE'+
+       'EUSIyExRh0fBxgZHBBaHhI//aAAwDAQACEQMRAD8A+mczm7DDWD3t65EakKqgVZnPR'+
+       'FH1Ol3bsbcapIoQMiwSnL+UvNLPHisNdXfx4+csz0SMbVO45bD66wy/Ygh4RJWgbZu'+
+       'osih98x8eHtby4t5lv7qNXGJhUzXQZ+i8F6V+rU21o8uIAfqOmqV2S/pxTFaTSTW8c'+
+       'skLQO6qzwvQshIqVJG1R+mtMS4SypjTVqlg6aiizp+uoolLPfk313EvJCBNezxP43S'+
+       '2QMA4NCvJiBt+msdzfW4mnMp8dvIh0In/ACrkI54qevXK2clALiQso5N0WvDjU9t9I'+
+       'l+wkA9BZGNuHZ063GZx8F7aWM0nG8vP+UAHJqAFiWp0G1KnW6V6IkInqKziBIJ0Cu8'+
+       'VJ3FfppqFYwQfcwH7nUUXtRSvb6aiiGZn1/GZlLdL+NpYraTzLEHKqzUK0YDqKHSrt'+
+       'mNxqtEcJmOS5/kvZEvs7devllx/q9q5t3e0jq0kkdCwZxsqg9eINO+uZfvxq7cuW36'+
+       'LVbtlqhjJOtlF6zgMLPkbNY47NUMst0h8jyU7lySzEnsTroQFu3CqPSs0qpSY5oFbe'+
+       '9Zpi0s9pGpyDKmCx24nepIaSU1I8fTegr21lG9kztjLpH5KcbAfPLNEYffLVhlp3gP'+
+       'wsYywi4Uk+a4NQ6IpHQHv9N9MO+iKiRhH+TwCHxyWGpQ2T2eTBRJkshFNLl88/K3xL'+
+       'y0SCGLvyK0RQpqSV701Qu0CsvVLR8lKKsBkNVawnvFx7FnLuxsbY2+HtozFLkZCVk+'+
+       'RIB4/GDt32B3PXbTLe57kmA5eKGVqkOc1pa4z070O2DzzSSzv93lmHmmNT1HFRx30s'+
+       '9nbnHqP3Riu7lkgd/7tBnPY4Hit5zhsNby38qulBJcKKRczUgKK7dyTpMt1G4amNMM'+
+       'fqiFoxDalTesPPjrW49y9sYxyScmtoyhM7NJtULuRVaJEg/rueumWgI/6zz9/jBVMv'+
+       'yRRmD3PO3Gax1muLFtBevVknLGdYaV5lV/h+zakd5M3BGln+/z9FRsRESXQLJn3X23'+
+       'OZfE2t1bRYGylSN3XlTlSvEuAC7Dqy9AdtDcFy9IgEUgq4mMA5GK6V4D8T4/M8vHw8'+
+       'tBWvGnKnSuuksqhytndXeNntbS5NnPMvBbkLzZAdiQKjenTQ3ImUSAWKKJAOKr471r'+
+       'E2OEhwyQiSzhXjSTdmY/ydj/sxJJOgFiFFBDhX3C76pVuPxaY5p7bHZOWHCX4Zb+wk'+
+       'ZnI25I0THuHA69u+s3gs4iWidE3yNSMVLJ+NphPaXseWuDk4SwuL1hV2jZOASMV4px'+
+       'WtNQ7IuDUatT8ZKd/RsFcu/QMclmFwh+BepKkouXLy/ctKkqzUqf86u5sYkCnlILup'+
+       'HcHXEKKT8ZY65y9rlMhe3F9PEpFysrfbM1QVqAQFRf9AKHR+ICQZF/yh7xZgGUvqfo'+
+       'KYYtJfXjZCQTvcwIQViSR/wD04EtWSm3I9O2rs7WguS6k7r5BlpmZr/P5K4wmOt/Ba'+
+       'QEQ5LKyoQwDDk0duWG7UPXtoLtVydIDAZy9lcGiHJx4e6LXPq2Pf1iXAWg+NbPF40Y'+
+       'bkHryberEkb6dPbxNugYBALhEqkKl9HvLm1s2u8xNNk7GRHtrrgviThtQQn7Saf2ap'+
+       'rpXikgPI1DI/wBI+8NBgth6OoyTzR3s0VpPEIrlUZvkTEmr+SYmv3Hrxoe3TQjZNcq'+
+       'EsGx4n5lWb7xZsVX9W/H9xioJbS/vvkY4XLXENlCDGjMSCpmNeT04j7a8f31dnamOB'+
+       'PLwVTvA5DFOX9q79dbUhf/Z';
+      socket.send(mesimg);
+      
+      
+      //document.getElementById('imgCard').src = 'sampo.jpg';    // работает
+      //document.getElementById('imgCard').src = mesimg;           // работает
+      //document.getElementById('imgCard').src = mybeImg;           // работает
+      //document.getElementById('imgCard').innerHTML="<img id='imgCard' src='sampo.jpg'>";
+            
+      delayedGreeting();
+      console.log("Пока");
+      
+      
+      
+      
+      
+      //document.getElementById('imgCard').src = mybeImg;
+      
+      //document.getElementById('imgCard').innerHTML='<img id="imgCard" src="'+mybeImg+'">';
+
+      //document.getElementById('imgCard').innerHTML='<img id="imgCard" src="sampo.jpg">';
+      //                                            <img id="imgCard" src="Kwinflat.jpg">
+      
+    } 
+    else 
+    {
+      showMessage('Невозможно отправить сообщение, нет соединения');
+    }
+  };
   // --------------------------------------------------------------------------
   //                      Закрыть соединение с сервером
   // --------------------------------------------------------------------------
@@ -221,5 +294,24 @@ window.addEventListener('DOMContentLoaded', function ()
     }
   };
 });
+
+  
+  // --------------------------------------------------------------------------
+  // --------------------------------------------------------------------------
+
+function sleep(ms) 
+{
+  return new Promise(resolve => setTimeout(resolve, ms));
+}  
+  
+async function delayedGreeting() 
+{
+  console.log("Привет");
+  await sleep(2000);
+  console.log("мир");
+  document.getElementById('imgCard').src = mybeImg;      
+  document.getElementById('rem').innerHTML='Пока!';          // работает
+}  
+
 
 // ******************************************************** wsTve/socket.js ***

@@ -88,7 +88,8 @@ echo '<input id="send-img" type="button" value="Send IMG" />';
 
 // Делаем правую сторону - для изображений
 echo '<div id="right">';
-//$FileName='Kwinflat.jpg';
+$FileName='Kwinflat.jpg';
+/*
 $FileName=
        "data:image/jpeg;base64,/9j/4AAQSkZJRgABAgAAZABkAAD/7AARRHVja3kAAQA".
        "EAAAAPAAA/+4ADkFkb2JlAGTAAAAAAf/bAIQABgQEBAUEBgUFBgkGBQYJCwgGBggLD".
@@ -125,8 +126,9 @@ $FileName=
        "rpXikgPI1DI/wBI+8NBgth6OoyTzR3s0VpPEIrlUZvkTEmr+SYmv3Hrxoe3TQjZNcq".
        "EsGx4n5lWb7xZsVX9W/H9xioJbS/vvkY4XLXENlCDGjMSCpmNeT04j7a8f31dnamOB".
        "PLwVTvA5DFOX9q79dbUhf/Z";
-
-echo '<img class="imgCard" src="'.$FileName.'">';
+*/
+echo '<span id="rem">Привет!</span><br>';
+echo '<img id="imgCard" src="'.$FileName.'">';
 echo '</div>';
 
 
