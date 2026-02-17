@@ -29,13 +29,17 @@ else if ($hostname=='localhost') $ip='127.0.0.1';
 else if ($hostname=='ittve.ru') $ip='90.156.240.217';
 else $ip='0.0.0.0';
 
-// $ip='90.156.240.217';
-
 if ($_SERVER['HTTPS']==1) $ws='wss';
 else $ws='ws';
 
 $port=7774;
 $echoserver='SocketServer.php';
+
+//$ip='90.156.240.217';
+
+$ip='87.242.70.183';
+$ws='ws';
+
 
 //echo $_SERVER['HTTPS'].'<br>';
 //echo $_SERVER['SERVER_PORT'].'<br>';
