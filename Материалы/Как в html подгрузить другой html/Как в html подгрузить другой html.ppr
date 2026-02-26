@@ -1,0 +1,43 @@
+[Config]
+Compilator.SaveAll=0
+Compilator.Capture=0
+Compilator.CompileOnBackground=0
+Compilator.ProgSaveAll=0
+Compilator.ProgRunSelection=0
+Compilator.LogType=0
+Compilator.LogEncoding=0
+DefaultDir=C:\Probatv\Материалы\Как в html подгрузить другой html
+DefaultCP=0
+LogtoEnd=1
+DontOpen=0
+AbsolutePath=0
+FileFormat=0
+ProjectFilesOnly=0
+HTServer=localhost
+Extensions=*.*
+[Project tree]
+Как в html подгрузить другой html
+	+Как в html подгрузить другой html
+		+res
+			res\index.html
+			banner.html
+		-res2
+			res2\index.html
+			res2\intro.html
+			res2\timer.html
+		favicon.ico
+		index.html
+		Как в html подгрузить другой html.md
+		Как в html подгрузить другой html.ppr
+[Open project files]
+0=index.html
+1=banner.html
+[Selected Project Files]
+Main=
+Selected=index.html
+[index.html]
+TopLine=1
+Caret=49,9
+[banner.html]
+TopLine=1
+Caret=16,9

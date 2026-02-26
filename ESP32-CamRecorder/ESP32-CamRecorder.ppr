@@ -58,9 +58,9 @@ ESP32-CamRecorder
 7=config.h
 [Selected Project Files]
 Main=
-Selected=camera.h
+Selected=CameraServer.h
 [ESP32-CamRecorder.ino]
-TopLine=951
+TopLine=1163
 Caret=1,972
 [camera.h]
 TopLine=915
@@ -69,10 +69,10 @@ Caret=14,928
 TopLine=34
 Caret=55,49
 [Prot-2026-02-06.txt]
-TopLine=107
+TopLine=70
 Caret=1,1
 [CameraServer.h]
-TopLine=525
+TopLine=529
 Caret=14,537
 [sd.h]
 TopLine=1
